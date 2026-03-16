@@ -1,6 +1,7 @@
 [template]
 cargo_generate_version = ">=0.10.0"
 ignore = [".DS_Store", "target", "Cargo.lock", ".git"]
+exclude = ["scripts/postgres.sh", "crates/web-server/src/utils/llm_integration.rs", "scripts/*.sh"]
 
 [placeholders.description]
 type = "string"

@@ -15,7 +15,7 @@ if [ ! -d "$DATA_DIR" ]; then
 fi
 
 echo "🔍 检查是否已有同名容器：$CONTAINER_NAME"
-if docker ps -a --format '{{.Names}}' | grep -w "$CONTAINER_NAME" > /dev/null; then
+if docker ps -a | grep -w "$CONTAINER_NAME" > /dev/null; then
   echo "⚠️ 已存在容器：$CONTAINER_NAME"
   echo "❗ 停止并删除旧容器..."
   docker stop "$CONTAINER_NAME" > /dev/null 2>&1

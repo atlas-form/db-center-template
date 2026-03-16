@@ -6,10 +6,10 @@ members = [
 resolver = "3"
 
 [workspace.package]
-version = "{{version}}"
+version = "0.1.0"
 edition = "2024"
-description = "{{description}}"
-authors = ["{{authors}}"]
+description = "A clean, layered Rust application based on db-core-rs"
+authors = ["Atlas Form"]
 
 [workspace.dependencies]
 tokio = { version = "1" }
