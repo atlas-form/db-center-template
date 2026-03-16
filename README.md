@@ -15,7 +15,7 @@ cargo install cargo-generate
 
 Generate a new project from this template:
 ```bash
-cargo generate --git <your-template-repo-url> --name my-new-project
+cargo generate --git https://github.com/atlas-form/db-center-template.git --name my-new-project
 cd my-new-project
 ```
 
