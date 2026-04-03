@@ -36,6 +36,7 @@
 
 ```
 请阅读 ai_protocols/TABLE_ADDING_PROTOCOL.md 文件，了解本项目的架构规范。
+如果接口涉及登录用户，请继续阅读 ai_protocols/AUTH_INTEGRATION_GUIDE.md。
 阅读完成后，告诉我你理解的要点。
 ```
 
@@ -45,6 +46,7 @@ AI 应该能总结出：
 - `repo` 的防腐特性及单表原则
 - 跨表编排和聚合应在 `service` 层
 - Web 接口在 `web-server` 层且绝对不能碰 `sea-orm`
+- 认证统一由外部 `auth` 服务提供，业务服务默认只使用 JWT 中的 `user_id`
 
 ---
 

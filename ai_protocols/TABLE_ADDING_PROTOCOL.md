@@ -70,6 +70,8 @@
 | 新增/修改业务 API | service | 编排多个 Repo，处理业务逻辑 |
 | 新增/修改 HTTP 接口 | web-server | 路由、Handler、DTO、OpenAPI 注解 |
 
+如果需求涉及“当前登录用户”“用户自己的数据”“需要登录后访问”，必须同时阅读 `AUTH_INTEGRATION_GUIDE.md`。
+
 ### 禁止 AI 执行的任务
 
 | 禁止行为 | 原因 |

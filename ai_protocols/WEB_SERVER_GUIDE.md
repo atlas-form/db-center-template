@@ -11,6 +11,7 @@
 2. **OpenAPI 一等公民**：所有接口和 DTO 必须使用 `utoipa` 编写注释，保证 `/api-docs/openapi.json` 能生成完整的文档。
 3. **分层错误处理**：业务层的 `Error`（如 NotFound, ValidationError）在这一层需要被转换为合适的 HTTP 状态码并封装成标准响应。
 4. **强类型约束**：请求参数需通过 `validator` 和 `serde` 在进入 Handler 前完成校验。
+5. **统一认证来源**：如果接口需要登录态，请按 `AUTH_INTEGRATION_GUIDE.md` 集成 `auth` 服务，不要在当前业务服务内重复实现登录或 JWT 签发。
 
 ---
 

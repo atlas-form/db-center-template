@@ -1,1 +1,1 @@
-// empty handlers module
+pub mod auth_example;

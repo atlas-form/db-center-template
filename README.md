@@ -22,10 +22,13 @@ cd my-new-project
 ### 2. 准备环境
 
 ```bash
+# 先启动 auth 服务，业务服务会从 auth 拉取 JWT 验签配置
+# 参考: /Users/ancient/src/rust/auth
+
 # 启动 PostgreSQL (需要安装 Docker)
 make postgres
 
-# 如有需要，编辑 config/services.toml
+# 如有需要，编辑 config/services.toml，重点检查 jwt_verify.url/header/token
 cp config/services-example.toml config/services.toml
 ```
 
@@ -81,6 +84,7 @@ cp config/services-example.toml config/services.toml
 | 文件                                    | 用途                   |
 | --------------------------------------- | ---------------------- |
 | `ai_protocols/TABLE_ADDING_PROTOCOL.md` | 主执行规约 (从这里开始) |
+| `ai_protocols/AUTH_INTEGRATION_GUIDE.md` | 如何接入统一认证服务 |
 | `ai_protocols/MIGRATION_GUIDE.md`       | 如何新增/修改数据库表  |
 | `ai_protocols/REPO_GUIDE.md`            | 如何实现数据访问层     |
 | `ai_protocols/SERVICE_GUIDE.md`         | 如何实现业务逻辑层     |
@@ -101,6 +105,8 @@ cargo run -p web-server # 启动 API 服务
 ```
 
 Swagger UI: <http://localhost:19878/swagger-ui>
+
+示例受保护接口: `GET /example/me`
 
 ## 技术栈
 

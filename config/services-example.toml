@@ -1,10 +1,10 @@
 [http]
 port = 19878
 
-[jwt]
-public_key_pem = "ed25519 public key in PEM format"
-issuer = "test"
-audience = "test"
+[jwt_verify]
+url = "http://127.0.0.1:29001/internal/jwt_verify_config"
+header = "x-internal-token"
+token = "dev-internal-token-change-me"
 
 
 [[db]]
@@ -15,5 +15,4 @@ min_connections = 1
 connect_timeout = 30
 idle_timeout = 600
 sql_logging = false
-
 
