@@ -1,114 +1,302 @@
-# 数据库与接口全栈开发协议 (AI 专用)
+# AI 开发主协议
 
-> 本文档是 **执行规约**，AI 必须严格按步骤执行。
-> 不允许引入未明确要求的结构、逻辑或抽象。
+> 这是当前项目最重要的 AI 执行入口文档。
+> AI 在开始任何业务开发前，必须先阅读本文件。
 
 ---
 
-## 一、项目架构与职责边界
+## 一、目标
 
+本模板的目标不是让 AI 随意写代码，而是让 AI 按固定流程稳定实现业务服务。
+
+AI 必须遵守下面这条主流程：
+
+**用户提出业务需求 -> AI 输出服务端开发文档 -> 用户确认 -> AI 再开始编码**
+
+如果还没有完成“服务端开发文档确认”这一步，AI **不得直接开始写代码**。
+
+---
+
+## 二、先做什么，后做什么
+
+### 第一步：先理解用户需求
+
+如果用户给的是业务描述，例如：
+
+- 要做什么系统
+- 有哪些对象
+- 用户能做哪些操作
+- 哪些数据只能看自己的
+- 哪些接口需要登录
+
+AI 必须先把这些内容整理成结构化设计，而不是立刻改代码。
+
+### 第二步：先输出“服务端开发文档”
+
+在编码前，AI 必须先输出一份“服务端开发文档”，至少包含：
+
+1. 业务理解
+2. 数据表设计
+3. 每张表的字段、类型、约束
+4. 表之间的关系
+5. 权限设计
+6. HTTP 接口设计
+7. 哪些字段与当前登录用户 `user_id` 有关
+8. 开发顺序
+
+如果需求涉及登录用户，必须同时阅读 `AUTH_INTEGRATION_GUIDE.md`。
+
+### 第三步：等待用户确认
+
+用户没有明确确认之前，AI 不允许直接开始：
+
+- 写 migration
+- 写 repo
+- 写 service
+- 写 web-server
+- 改数据库结构
+
+### 第四步：确认后再编码
+
+用户确认服务端开发文档后，AI 才能开始正式开发。
+
+---
+
+## 三、项目结构与职责边界
+
+本项目按 5 层组织：
+
+### 1. `crates/migration`
+
+职责：
+
+- 定义数据库表结构
+- 管理数据库迁移
+
+允许：
+
+- 新增 migration 文件
+- 修改 migration 文件
+
+禁止：
+
+- 写业务逻辑
+- 写 HTTP 接口逻辑
+
+### 2. `db_core`
+
+职责：
+
+- 提供基础设施能力
+- 提供通用错误、连接池、仓储基础能力
+
+允许：
+
+- 调用它暴露出来的 API
+
+禁止：
+
+- 修改它的代码、接口和行为
+
+规则：
+
+- 默认永远不动
+
+### 3. `crates/repo`
+
+职责：
+
+- 负责单表数据访问
+- 隔离 `sea-orm`
+- 输出干净的单表 DTO
+
+允许：
+
+- 使用 `sea-orm`
+- 实现单表 CRUD
+- Model 和 DTO 的互转
+
+禁止：
+
+- 跨表 JOIN
+- 写业务编排
+- 做跨表权限判断
+
+### 4. `crates/service`
+
+职责：
+
+- 负责业务编排
+- 组合多个 repo
+- 处理权限、聚合、校验等业务语义
+
+允许：
+
+- 调用多个 repo service
+- 处理业务规则
+
+禁止：
+
+- 直接写数据库查询
+- 引入 `sea-orm`
+
+### 5. `crates/web-server`
+
+职责：
+
+- 提供 HTTP 接口
+- 处理请求参数、响应结构、OpenAPI、认证接入
+
+允许：
+
+- 参数校验
+- 调用 service
+- 挂 JWT 中间件
+
+禁止：
+
+- 直接访问数据库
+- 引入 `sea-orm`
+- 直接编写 repo 层逻辑
+
+---
+
+## 四、认证规则
+
+如果需求涉及：
+
+- 当前用户
+- 登录后访问
+- 我的数据
+- 用户自己的资源
+- `created_by` / `owner_user_id` / `updated_by`
+
+则 AI 必须同时阅读：
+
+- `AUTH_INTEGRATION_GUIDE.md`
+
+并遵守以下规则：
+
+1. 认证统一来自外部 `auth` 服务
+2. 当前登录用户的 `user_id` 一律视为 **UUID 字符串**
+3. AI 不得擅自把 `user_id` 改成整数类型
+4. AI 不得在业务服务内重复实现登录、注册、JWT 签发
+
+---
+
+## 五、数据库与 entity 规则
+
+### 1. migration 和 entity 是两步
+
+AI 必须明确区分：
+
+- **修改数据库结构**：通过 migration 完成
+- **生成 entity**：通过脚本从已有数据库结构生成
+
+### 2. 生成 entity 的正确方式
+
+在数据库中已经存在目标表结构后，使用：
+
+```bash
+./scripts/generate_entity.sh
 ```
-┌──────────────────────────────────────────────────────┐
-│                    web-server                        │  Layer 5: HTTP API
-├──────────────────────────────────────────────────────┤
-│                     service                          │  Layer 4: Business API
-├──────────────────────────────────────────────────────┤
-│                      repo                            │  Layer 3: Domain Services (隔离区)
-├──────────────────────────────────────────────────────┤
-│                    db_core                           │  Layer 2: Infrastructure
-├──────────────────────────────────────────────────────┤
-│                    migration                         │  Layer 1: Schema
-└──────────────────────────────────────────────────────┘
+
+或：
+
+```bash
+make entity-generate
 ```
 
-### Layer 1: migration
-| 项目 | 说明 |
-|------|------|
-| 职责 | 数据库表结构定义 |
-| 允许 | 新增/修改 migration 文件 |
-| 禁止 | 写业务逻辑、写 Rust struct（除 migration 所需） |
+这个操作：
 
-### Layer 2: db_core (代码中引用为 `db_core`)
-| 项目 | 说明 |
-|------|------|
-| 职责 | 基础能力（连接池、错误、Repository trait、分页） |
-| 允许 | 调用 `db_core` 提供的 API（如 DbContext、PgError、impl_repository! 等） |
-| 禁止 | 修改 `db_core` 的代码、接口或行为 |
-| 规则 | **永远不动**，新增表/业务不需要修改此层 |
+- 会生成 `crates/repo/src/entity`
+- 不会修改数据库结构
 
-### Layer 3: repo (原 pg-tables)
-| 项目 | 说明 |
-|------|------|
-| 职责 | 表级事实模型 + 单表 Service，隔离 `sea-orm` |
-| 包含 | entity（自动生成）、dto、service |
-| 规则 | 单表操作，不跨表 JOIN，不校验外键。**这是整个业务逻辑中唯一允许引入 `sea-orm` 的 crate**。 |
+### 3. `fresh_db.sh` 不是默认动作
 
-### Layer 4: service (原 demo-db)
-| 项目 | 说明 |
-|------|------|
-| 职责 | 业务 API 层，编排多个 Repo Service |
-| 包含 | api、dto（业务级 DTO） |
-| 规则 | 可跨表组合，处理业务语义，不直接操作数据库。**绝对禁止引入 `sea-orm`**。 |
+`fresh_db.sh` 属于破坏性操作。
 
-### Layer 5: web-server
-| 项目 | 说明 |
-|------|------|
-| 职责 | HTTP 接口适配 |
-| 包含 | routes、handlers、dto（请求/响应）、error |
-| 规则 | 参数校验、错误转换、调用 service API。**绝对禁止引入 `sea-orm` 或任何数据库类型**。 |
+它适合：
+
+- 明确需要重建数据库
+- 明确允许 refresh 数据库
+
+不能把它当成每次开发默认都要执行的步骤。
+
+### 4. 禁止手写 entity
+
+`crates/repo/src/entity` 下的文件必须由脚本生成，禁止手写和手改。
 
 ---
 
-## 二、AI 能做与不能做
+## 六、标准编码顺序
 
-### 允许 AI 执行的任务
+在用户已经确认“服务端开发文档”之后，推荐按下面顺序开发：
 
-| 任务类型 | 涉及 Crate | 说明 |
-|----------|-----------|------|
-| 新增表 | migration, repo | 按协议流程执行，先 migration 再生成 entity |
-| 新增单表操作 | repo | 仅操作单表，吐出 DTO |
-| 新增/修改业务 API | service | 编排多个 Repo，处理业务逻辑 |
-| 新增/修改 HTTP 接口 | web-server | 路由、Handler、DTO、OpenAPI 注解 |
+### Step 1: migration
 
-如果需求涉及“当前登录用户”“用户自己的数据”“需要登录后访问”，必须同时阅读 `AUTH_INTEGRATION_GUIDE.md`。
+先定义数据库表结构。
 
-### 禁止 AI 执行的任务
+参考：
 
-| 禁止行为 | 原因 |
-|----------|------|
-| 修改 db_core | 基础设施层稳定，不随业务变化 |
-| 在 repo 中跨表 JOIN | 违反单表原则，跨表逻辑应在 service 进行 |
-| 在 repo 中校验外键存在 | 这是 service 的职责 |
-| 在 repo 外使用 `sea-orm` | 破坏架构隔离层原则 |
-| 手写 entity | entity 由 sea-orm-cli 生成，运行 `./scripts/fresh_db.sh` 即可 |
+- `MIGRATION_GUIDE.md`
 
----
+### Step 2: 生成 entity
 
-## 三、标准开发全流程
+在数据库表结构准备好之后生成 entity。
 
-### Step 1: Migration（Layer 1）
-使用 `sea-orm-cli migrate generate <table_name> -d crates/migration` 生成文件，并使用 `.if_not_exists()` 和 DSL 编写建表语句。详见 `MIGRATION_GUIDE.md`。
+### Step 3: repo
 
-### Step 2: 生成 Entity
-运行 `./scripts/fresh_db.sh` 自动重建数据库并在 `crates/repo/src/entity` 中生成 Rust 结构体。**千万不要手写 entity。**
+实现单表 DTO 和单表 Service。
 
-### Step 3: Repo 单表开发（Layer 3）
-在 `crates/repo/src/table/<table_name>` 目录下创建 `dto.rs` 和 `service.rs`。
-使用 `db_core::impl_repository!` 宏包裹 entity，暴露只针对单表的 CRUD 方法，并负责将 `sea_orm::Model` 转换为干净的 DTO。详见 `REPO_GUIDE.md`。
+参考：
 
-### Step 4: Service 业务编排（Layer 4）
-在 `crates/service/src/api/<domain_name>.rs` 创建业务接口，通过注入相关的 `repo` 的 Service 实例，调用单表接口完成复杂业务聚合和外键验证。不直接触碰 SQL。详见 `SERVICE_GUIDE.md`。
+- `REPO_GUIDE.md`
 
-### Step 5: Web HTTP 暴露（Layer 5）
-在 `crates/web-server/src/handlers/<domain_name>.rs` 编写 handler，组装请求参数并调用 `service` 层的方法。用 `utoipa` 标注完整文档。详见 `WEB_SERVER_GUIDE.md`。
+### Step 4: service
+
+实现业务编排逻辑。
+
+参考：
+
+- `SERVICE_GUIDE.md`
+
+### Step 5: web-server
+
+实现 HTTP 接口、参数校验、鉴权接入和 OpenAPI。
+
+参考：
+
+- `WEB_SERVER_GUIDE.md`
 
 ---
 
-## 四、自检清单
+## 七、AI 必须避免的错误
 
-- [ ] `migration` 是否能无损回滚？
-- [ ] `entity` 确保是通过脚本生成的，没有手改？
-- [ ] `repo` 是不是业务层唯一引入了 `sea-orm` 的地方？
-- [ ] `service` 是否没有任何直接的数据库驱动调用，纯靠拿 `repo` 的 DTO 拼装？
-- [ ] `web-server` 的接口是否加上了 `utoipa` 的 OpenAPI 注解并且通过 `validator` 做好了入参拦截？
-- [ ] `web-server` 里的 Error 是否成功将业务 `Result` 转成了合适的 HTTP 状态码？
+1. 用户还没确认表结构，就直接开始写代码
+2. 在 `service` 或 `web-server` 中直接使用 `sea-orm`
+3. 为了图快，手写 entity
+4. 把登录用户 `user_id` 当成整数
+5. 在业务服务里重复实现认证体系
+6. 默认执行破坏性数据库脚本
+7. 越过 `repo` 直接在上层拼数据库查询
+
+---
+
+## 八、执行检查清单
+
+开始编码前，AI 必须先确认：
+
+- [ ] 是否已经输出“服务端开发文档”？
+- [ ] 用户是否已经明确确认该文档？
+- [ ] 如果涉及登录用户，是否已经阅读 `AUTH_INTEGRATION_GUIDE.md`？
+- [ ] 当前登录用户 `user_id` 是否按 UUID 字符串处理？
+
+编码完成后，AI 必须再确认：
+
+- [ ] migration 是否可回滚？
+- [ ] entity 是否通过脚本生成？
+- [ ] `repo` 是否保持单表原则？
+- [ ] `service` 是否只做业务编排？
+- [ ] `web-server` 是否只做 HTTP 适配与认证接入？
+- [ ] 是否没有在 `repo` 之外使用 `sea-orm`？

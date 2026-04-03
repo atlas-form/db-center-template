@@ -1,56 +1,44 @@
-# pg-tables
+# repo 层说明
 
-Business logic and data access layer for PostgreSQL operations.
+`repo` 是项目中的数据访问层。
 
-## Purpose
+它的职责很单一：
 
-`pg-tables` provides the business logic layer built on top of `pg-core`, including:
+- 封装单表读写
+- 隔离 `sea-orm`
+- 把数据库模型转换成业务可用的 DTO
 
-- Entity definitions (SeaORM models)
-- Business logic and operations
-- Data access patterns
-- Query builders specific to your domain
+## 核心原则
 
-## Usage
+1. 这里只做单表操作。
+2. 这里只负责数据访问，不负责业务编排。
+3. 这是业务代码里唯一允许直接依赖 `sea-orm` 的层。
 
-External crates should depend on both `pg-core` (for connection) and `pg-tables` (for business logic).
+## 为什么要单独拆一层
 
-```toml
-[dependencies]
-pg-core = { path = "path/to/pg-rs/crates/pg-core" }
-pg-tables = { path = "path/to/pg-rs/crates/pg-tables" }
+这样做的目的是避免：
+
+- `service` 直接拼 ORM 查询
+- `web-server` 直接依赖数据库模型
+- AI 在多个地方复制同样的数据库逻辑
+
+## 使用方式
+
+其他层不应该直接接触 entity，而应该通过 `repo` 暴露出的 Service 和 DTO 使用数据。
+
+推荐调用链路：
+
+```text
+web-server -> service -> repo -> database
 ```
 
-```rust
-use pg_core::{DatabaseConfig, DatabaseManager};
-use pg_tables; // Your business logic
+## 这层通常包含什么
 
-#[tokio::main]
-async fn main() -> pg_core::Result<()> {
-    // 1. Setup connection with pg-core
-    let config = DatabaseConfig::new(
-        "main",
-        "postgres://user:password@localhost/mydb"
-    );
-    let manager = DatabaseManager::new(vec![config]).await?;
-    let db = manager.default()?;
+- `entity/`
+  - 由脚本生成的 SeaORM 模型
 
-    // 2. Use pg-tables business logic with the connection
-    // let prompts = pg_tables::prompt::list_all(db).await?;
+- `table/<table_name>/dto.rs`
+  - 单表 DTO
 
-    Ok(())
-}
-```
-
-## Architecture
-
-- **pg-core**: Connection management (imported by pg-tables)
-- **pg-tables**: Business logic and entities (this crate)
-- Your app: Uses both for complete functionality
-
-## Why Two Crates?
-
-- **Separation of Concerns**: Connection management vs business logic
-- **Selective Dependencies**: Not all apps need all business logic
-- **Cleaner Testing**: Can test business logic with mock connections
-- **Better Organization**: Clear boundaries between layers
+- `table/<table_name>/service.rs`
+  - 单表 Service

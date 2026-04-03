@@ -1,73 +1,107 @@
-.PHONY: help fresh-db postgres init build test examples clean
+SHELL := /bin/bash
 
-# Default target
+.PHONY: help init \
+	db-up db-status db-stop db-rm db-init db-clear db-truncate \
+	migrate-up migrate-down migrate-fresh migrate-refresh migrate-reset migrate-status migrate-gen \
+	entity-generate fresh-db \
+	build test clean \
+	postgres generate-entity
+
 help:
-	@echo "Available commands:"
-	@echo "  make fresh-db    - Refresh database and generate entities"
-	@echo "  make postgres    - Manage PostgreSQL with Docker"
-	@echo "  make init        - Initialize project"
+	@echo "AI 数据库工具："
+	@echo "  make init                    - 初始化 .env"
+	@echo "  make db-up                   - 用 Docker 启动 PostgreSQL，并确保目标数据库存在"
+	@echo "  make db-status               - 查看数据库容器状态"
+	@echo "  make db-stop                 - 停止数据库容器"
+	@echo "  make db-rm                   - 删除数据库容器"
+	@echo "  make db-init                 - 初始化 DATABASE_URL 指向的数据库（默认 test）"
+	@echo "  make db-clear                - 清空整个数据库中的 public schema"
+	@echo "  make db-truncate TABLE=xxx   - 清空指定表并重置自增"
 	@echo ""
-	@echo "  make build       - Build all crates"
-	@echo "  make test        - Run all tests"
-	@echo "  make examples    - Build all examples"
-	@echo "  make clean       - Clean build artifacts"
+	@echo "SeaORM 工具："
+	@echo "  make migrate-up             - 执行待处理迁移"
+	@echo "  make migrate-down           - 回滚一次迁移"
+	@echo "  make migrate-fresh          - 删除全部表后重新执行所有迁移"
+	@echo "  make migrate-refresh        - 回滚全部迁移后重新执行"
+	@echo "  make migrate-reset          - 回滚全部迁移"
+	@echo "  make migrate-status         - 查看迁移状态"
+	@echo "  make migrate-gen NAME=xxx   - 生成新的迁移文件"
+	@echo "  make entity-generate        - 仅根据当前数据库表结构生成 entity，不修改数据库"
+	@echo "  make fresh-db               - refresh 数据库后重新生成 entity"
 	@echo ""
-	@echo "  make migrate-up     - Run migrations"
-	@echo "  make migrate-down   - Rollback migrations"
-	@echo "  make migrate-fresh  - Fresh migrations (drop all & rerun)"
-
-# Scripts
-fresh-db:
-	@./scripts/fresh_db.sh
-
-postgres:
-	@./scripts/postgres.sh
+	@echo "其它："
+	@echo "  make build"
+	@echo "  make test"
+	@echo "  make clean"
 
 init:
 	@./scripts/init.sh
 
-# Cargo commands
-build:
-	cargo build
+db-up:
+	@./scripts/postgres.sh up
 
-test:
-	cargo test
+db-status:
+	@./scripts/postgres.sh status
 
-examples:
-	cargo build --examples
+db-stop:
+	@./scripts/postgres.sh stop
 
-clean:
-	cargo clean
+db-rm:
+	@./scripts/postgres.sh rm
 
-# Migration commands
-migrate-up:
-	sea-orm-cli migrate up -d crates/migration
+db-init:
+	@./scripts/init_db.sh
 
-migrate-down:
-	sea-orm-cli migrate down -d crates/migration
+db-clear:
+	@./scripts/clear_db.sh
 
-migrate-fresh:
-	sea-orm-cli migrate fresh -d crates/migration
-
-migrate-refresh:
-	sea-orm-cli migrate refresh -d crates/migration
-
-# Generate new migration
-# Usage: make migrate-gen NAME=create_users
-migrate-gen:
-	@if [ -z "$(NAME)" ]; then \
-		echo "Error: NAME is required. Usage: make migrate-gen NAME=create_users"; \
+db-truncate:
+	@if [ -z "$(TABLE)" ]; then \
+		echo "错误：需要提供 TABLE。用法：make db-truncate TABLE=your_table"; \
 		exit 1; \
 	fi
-	sea-orm-cli migrate generate $(NAME) -d crates/migration
+	@./scripts/truncate_table.sh "$(TABLE)"
 
-# Generate entities
-generate-entity:
-	sea-orm-cli generate entity -o crates/pg-tables/src/entity --with-serde both
+migrate-up:
+	@./scripts/migrate.sh up
 
-# Run examples
-example-basic:
-	cargo run --example basic_usage
+migrate-down:
+	@./scripts/migrate.sh down
 
-example-multi:
-	cargo run --example multi_database
+migrate-fresh:
+	@./scripts/migrate.sh fresh
+
+migrate-refresh:
+	@./scripts/migrate.sh refresh
+
+migrate-reset:
+	@./scripts/migrate.sh reset
+
+migrate-status:
+	@./scripts/migrate.sh status
+
+migrate-gen:
+	@if [ -z "$(NAME)" ]; then \
+		echo "错误：需要提供 NAME。用法：make migrate-gen NAME=create_users"; \
+		exit 1; \
+	fi
+	@./scripts/migrate.sh generate "$(NAME)"
+
+entity-generate:
+	@./scripts/generate_entity.sh
+
+fresh-db:
+	@./scripts/fresh_db.sh
+
+build:
+	@cargo build
+
+test:
+	@cargo test
+
+clean:
+	@cargo clean
+
+# 兼容旧命令
+postgres: db-up
+generate-entity: entity-generate

@@ -11,6 +11,8 @@
 2. **禁止直接访问数据库**：所有对数据的读写**必须**通过调用 `repo`（原 `pg-tables`）层中提供的单表 Service 进行。绝不能直接使用 `sea-orm` 的查询构建器直接操作数据库。
 3. **业务逻辑中心**：外键校验、权限判断、数据聚合、复杂的计算逻辑都应该放在这一层。
 4. **面向业务的 DTO**：返回给上层（Web HTTP 层）的 DTO 应该是具有业务语义的复合结构，而非单一的表结构。
+5. **设计先行**：如果用户还没有确认“服务端开发文档”，不要直接开始实现业务 API。
+6. **登录用户 ID 默认是字符串**：如果参数来自 JWT 的当前用户 `user_id`，默认按 `String` 处理，不要擅自定义成 `i64`。
 
 ---
 
@@ -31,7 +33,7 @@ use repo::table::user_profile::UserProfile;
 /// 业务请求参数
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetUserOverviewRequest {
-    pub user_id: i64,
+    pub user_id: String,
 }
 
 /// 业务复合响应（聚合了多表数据）
@@ -49,7 +51,7 @@ pub struct UserOverviewResponse {
 在 `crates/service/src/api/user_biz.rs` 中创建 API 结构体，持有对应的 Repo Service，并实现业务方法。
 
 ```rust
-use db_core_rs::{DbContext, Result, PgError};
+use db_core::{DbContext, error::BizResult};
 use repo::table::user::UserService;
 use repo::table::user_profile::UserProfileService;
 
@@ -70,12 +72,12 @@ impl UserBizApi {
     }
 
     // 2. 编写业务逻辑方法
-    pub async fn get_user_overview(&self, req: GetUserOverviewRequest) -> Result<UserOverviewResponse> {
+    pub async fn get_user_overview(&self, req: GetUserOverviewRequest) -> BizResult<UserOverviewResponse> {
         // 编排 1: 获取主表数据。如果不存在，底层 repo svc 会返回 not_found 错误
-        let user = self.user_svc.get(req.user_id).await?;
+        let user = self.user_svc.get(&req.user_id).await?;
 
         // 编排 2: 获取关联表数据
-        let profiles = self.profile_svc.list_by_user(req.user_id).await?;
+        let profiles = self.profile_svc.list_by_user(&req.user_id).await?;
         
         // 业务计算
         let profile_count = profiles.len();

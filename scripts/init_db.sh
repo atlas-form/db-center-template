@@ -1,31 +1,18 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# ============================
-# ✅ 只需要改下面两个变量
-# ============================
-PG_URL_WITHOUT_DB="postgres://postgres:123456@localhost:15432"   # 不带 /db
-DB_NAME="sdk"                                           # 目标数据库名
-# ============================
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./common.sh
+. "$SCRIPT_DIR/common.sh"
 
-echo "🔧 Initializing database..."
-echo "🔗 PG_URL_WITHOUT_DB=$PG_URL_WITHOUT_DB"
-echo "📦 DB_NAME=$DB_NAME"
+load_env
+parse_database_url
+assert_safe_identifier "$DB_NAME" "数据库名"
 
-# 拼出目标数据库连接
-TARGET_URL="${PG_URL_WITHOUT_DB}/${DB_NAME}"
-ADMIN_URL="${PG_URL_WITHOUT_DB}/postgres"
-
-# 1) 如果目标库已存在且可连接，直接退出（幂等）
-if psql "$TARGET_URL" -c '\q' 2>/dev/null; then
-  echo "✅ Database '$DB_NAME' already exists"
+if run_psql postgres "SELECT 1 FROM pg_database WHERE datname = '${DB_NAME}'" | grep -q 1; then
+  echo "数据库已存在：$DB_NAME"
   exit 0
 fi
 
-echo "⚠️ Database '$DB_NAME' does not exist, creating..."
-
-# 2) 用 postgres 管理库创建目标库
-psql "$ADMIN_URL" -c "CREATE DATABASE \"$DB_NAME\";"
-
-echo "🎉 Database '$DB_NAME' created successfully"
-echo "✅ Target URL: $TARGET_URL"
+run_psql postgres "CREATE DATABASE ${DB_NAME};"
+echo "已创建数据库：$DB_NAME"

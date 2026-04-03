@@ -1,44 +1,76 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-CONTAINER_NAME="pg-tables"
-DATA_DIR="$HOME/db/postgres-tables/"
-POSTGRES_PASSWORD="123456"
-PORT="15432"
-IMAGE="postgres:latest"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./common.sh
+. "$SCRIPT_DIR/common.sh"
 
-echo "🔍 检查本地数据目录：$DATA_DIR"
-if [ ! -d "$DATA_DIR" ]; then
-  echo "📁 数据目录不存在，创建中..."
-  mkdir -p "$DATA_DIR"
-  chmod 700 "$DATA_DIR"
-  echo "✔ 数据目录创建完成。"
-fi
+load_env
+parse_database_url
 
-echo "🔍 检查是否已有同名容器：$CONTAINER_NAME"
-if docker ps -a | grep -w "$CONTAINER_NAME" > /dev/null; then
-  echo "⚠️ 已存在容器：$CONTAINER_NAME"
-  echo "❗ 停止并删除旧容器..."
-  docker stop "$CONTAINER_NAME" > /dev/null 2>&1
-  docker rm "$CONTAINER_NAME" > /dev/null 2>&1
-  echo "✔ 旧容器已删除。"
-fi
+require_command docker
 
-echo "🚀 启动 PostgreSQL 容器..."
-docker run -d \
-  --name "$CONTAINER_NAME" \
-  --restart=always \
-  -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
-  -v "$DATA_DIR":/var/lib/postgresql \
-  -p "$PORT":5432 \
-  "$IMAGE"
+ACTION="${1:-up}"
 
-if [ $? -eq 0 ]; then
-  echo ""
-  echo "🎉 PostgreSQL 启动成功！"
-  echo "📦 容器名：$CONTAINER_NAME"
-  echo "🔁 自动重启：已启用 (--restart=always)"
-  echo "📁 数据持久化目录：$DATA_DIR"
-  echo "🔐 数据库密码：$POSTGRES_PASSWORD"
-else
-  echo "❌ 启动失败，请检查 Docker 是否正常运行。"
-fi
+case "$ACTION" in
+  up)
+    mkdir -p "$PG_DATA_DIR"
+    chmod 700 "$PG_DATA_DIR"
+
+    if docker_container_running; then
+      echo "PostgreSQL 容器已在运行：$DB_CONTAINER_NAME"
+    elif docker_container_exists; then
+      echo "启动已有容器：$DB_CONTAINER_NAME"
+      docker start "$DB_CONTAINER_NAME" >/dev/null
+    else
+      echo "创建并启动 PostgreSQL 容器：$DB_CONTAINER_NAME"
+      docker run -d \
+        --name "$DB_CONTAINER_NAME" \
+        --restart unless-stopped \
+        -e POSTGRES_USER="$DB_USER" \
+        -e POSTGRES_PASSWORD="$DB_PASSWORD" \
+        -e POSTGRES_DB=postgres \
+        -v "$PG_DATA_DIR":/var/lib/postgresql/data \
+        -p "$DB_PORT":5432 \
+        "$PG_IMAGE" >/dev/null
+    fi
+
+    wait_for_postgres
+    "$SCRIPT_DIR/init_db.sh"
+    echo "PostgreSQL 已就绪"
+    echo "容器名: $DB_CONTAINER_NAME"
+    echo "数据库: $DB_NAME"
+    echo "地址: $DATABASE_URL"
+    ;;
+  status)
+    if docker_container_running; then
+      docker ps --filter "name=^${DB_CONTAINER_NAME}$" \
+        --format '容器 {{.Names}} 正在运行，端口：{{.Ports}}'
+    elif docker_container_exists; then
+      docker ps -a --filter "name=^${DB_CONTAINER_NAME}$" \
+        --format '容器 {{.Names}} 已存在但未运行，状态：{{.Status}}'
+    else
+      echo "容器不存在：$DB_CONTAINER_NAME"
+    fi
+    ;;
+  stop)
+    if docker_container_running; then
+      docker stop "$DB_CONTAINER_NAME" >/dev/null
+      echo "已停止容器：$DB_CONTAINER_NAME"
+    else
+      echo "容器未运行：$DB_CONTAINER_NAME"
+    fi
+    ;;
+  rm)
+    if docker_container_exists; then
+      docker rm -f "$DB_CONTAINER_NAME" >/dev/null
+      echo "已删除容器：$DB_CONTAINER_NAME"
+    else
+      echo "容器不存在：$DB_CONTAINER_NAME"
+    fi
+    ;;
+  *)
+    echo "用法: ./scripts/postgres.sh [up|status|stop|rm]"
+    exit 1
+    ;;
+esac

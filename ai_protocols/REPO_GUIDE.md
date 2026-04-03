@@ -11,6 +11,7 @@
 2. **避免业务逻辑**：不要在 `repo` 层的 `service` 中验证外键（比如检查 User 是否存在）。这是上层 `service`（原 demo-db）的职责。
 3. **数据转换**：负责 Entity Model 和 领域 DTO 之间的互相转换。
 4. **生成而非手写**：`entity` 目录下的文件全部由 `sea-orm-cli` 自动生成，**禁止手写或修改 entity 代码**。
+5. **不要误解认证用户 ID**：如果字段来自 JWT 中的当前用户 `user_id`，默认按字符串处理，不要擅自假设是 `i64`。
 
 ---
 
@@ -20,7 +21,9 @@
 
 ### Step 1: 确保 Entity 已生成
 
-运行 `./scripts/fresh_db.sh` 确保 `crates/repo/src/entity/user_profile.rs` 被生成，并在 `crates/repo/src/entity/mod.rs` 中被正确导出。
+在数据库已经存在最新表结构的前提下，运行 `./scripts/generate_entity.sh` 或 `make entity-generate`，确保 `crates/repo/src/entity/user_profile.rs` 被生成，并在 `crates/repo/src/entity/mod.rs` 中被正确导出。
+
+不要为了生成 entity 默认执行 `fresh_db.sh`，因为它会重建数据库。
 
 ### Step 2: 创建模块目录
 
@@ -42,7 +45,7 @@ use time::OffsetDateTime;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserProfile {
     pub id: i64,
-    pub user_id: i64,
+    pub user_id: String,
     pub bio: String,
     pub created_at: OffsetDateTime,
 }
@@ -50,24 +53,24 @@ pub struct UserProfile {
 /// 创建参数（不含 id、created_at，这些由 Service / 数据库处理）
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateUserProfile {
-    pub user_id: i64,
+    pub user_id: String,
     pub bio: String,
 }
 
 /// 查询/更新参数
 #[derive(Debug, Clone, Deserialize)]
 pub struct QueryUserProfile {
-    pub user_id: Option<i64>,
+    pub user_id: Option<String>,
 }
 ```
 
 ### Step 4: 实现单表 Service (`service.rs`)
 
-在 `crates/repo/src/table/user_profile/service.rs` 中使用 `core::impl_repository!` 宏并实现核心方法：
+在 `crates/repo/src/table/user_profile/service.rs` 中使用 `db_core::impl_repository!` 宏并实现核心方法：
 
 ```rust
 use sea_orm::*;
-use db_core_rs::{DbContext, PgError, Result, impl_repository};
+use db_core::{DbContext, error::BizResult};
 
 // 引入自动生成的 entity
 use crate::entity::user_profile;
@@ -75,7 +78,7 @@ use crate::entity::user_profile;
 use super::dto::{UserProfile, CreateUserProfile};
 
 // 1. 使用宏生成基础 Repository
-impl_repository!(UserProfileRepo, user_profile::Entity, user_profile::Model);
+db_core::impl_repository!(UserProfileRepo, user_profile::Entity, user_profile::Model);
 
 // 2. 定义 Service 结构体
 pub struct UserProfileService {
@@ -88,7 +91,7 @@ impl UserProfileService {
     }
 
     // 3. 实现创建逻辑 (不验证 user_id 对应的 User 是否存在)
-    pub async fn create(&self, input: CreateUserProfile) -> Result<UserProfile> {
+    pub async fn create(&self, input: CreateUserProfile) -> BizResult<UserProfile> {
         let model = user_profile::ActiveModel {
             user_id: Set(input.user_id),
             bio: Set(input.bio),
@@ -101,16 +104,16 @@ impl UserProfileService {
     }
 
     // 4. 实现查询逻辑
-    pub async fn get(&self, id: i64) -> Result<UserProfile> {
+    pub async fn get(&self, id: i64) -> BizResult<UserProfile> {
         let model = UserProfileRepo::find_by_id(&self.db, id)
             .await?
-            .ok_or_else(|| PgError::not_found("UserProfile", id))?;
+            .ok_or_else(|| db_core::error::Error::Custom(format!("UserProfile not found: {}", id)))?;
             
         Ok(Self::from_model(model))
     }
     
     // 按条件查询列表
-    pub async fn list_by_user(&self, user_id: i64) -> Result<Vec<UserProfile>> {
+    pub async fn list_by_user(&self, user_id: &str) -> BizResult<Vec<UserProfile>> {
         let models = UserProfileRepo::find(&self.db)
             .filter(user_profile::Column::UserId.eq(user_id))
             .all(&self.db.db)

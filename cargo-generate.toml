@@ -1,9 +1,4 @@
 [template]
 cargo_generate_version = ">=0.10.0"
-ignore = [".DS_Store", "target", "Cargo.lock", ".git"]
+ignore = [".DS_Store", "target", "Cargo.lock", ".git", "README.md"]
 exclude = ["scripts/postgres.sh", "crates/web-server/src/utils/llm_integration.rs", "scripts/*.sh"]
-
-[placeholders.description]
-type = "string"
-prompt = "请输入项目描述 (Project Description):"
-default = "A clean, layered Rust application based on db-core-rs"

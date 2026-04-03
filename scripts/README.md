@@ -1,96 +1,96 @@
-# Scripts
+# 脚本说明
 
-Utility scripts for database management and development.
+这些脚本主要是给 AI 和自动化流程使用的，不是给普通使用者直接操作的。
 
-## Recommended: Use Makefile
+目标只有一件事：
 
-For convenience, you can use `make` commands from the project root:
+把数据库相关动作拆成明确、可组合、可重复执行的独立命令。
 
-```bash
-make help        # Show all available commands
-make fresh-db    # Run fresh_db.sh
-make postgres    # Run postgres.sh
-make init        # Run init.sh
-```
+## 这套脚本能做什么
 
-See the main [README.md](../README.md) for all available make commands.
+1. 用 Docker 启动 PostgreSQL
+2. 初始化 `DATABASE_URL` 指向的数据库，默认是 `test`
+3. 单独执行 SeaORM 迁移命令
+4. 单独生成 entity，且不修改数据库
+5. 清空整个数据库，或者清空某一张表
 
-## Direct Script Usage
+## 推荐入口
 
-You can also run scripts directly:
-
-## Available Scripts
-
-### fresh_db.sh
-
-Complete database refresh and entity generation workflow.
-
-**What it does:**
-1. Runs `migrate refresh` - drops all tables and re-runs all migrations
-2. Generates SeaORM entities from the current database schema
-3. Outputs entities to `crates/pg-tables/src/entity`
-
-**Usage:**
-```bash
-# From project root
-./scripts/fresh_db.sh
-
-# Or from scripts directory
-cd scripts && ./fresh_db.sh
-```
-
-**Requirements:**
-- `sea-orm-cli` installed
-- PostgreSQL running
-- `DATABASE_URL` environment variable set
-
-### postgres.sh
-
-PostgreSQL Docker management script.
-
-**Usage:**
-```bash
-./scripts/postgres.sh
-```
-
-### init.sh
-
-Project initialization script.
-
-**Usage:**
-```bash
-./scripts/init.sh
-```
-
-## Environment Setup
-
-Make sure you have `DATABASE_URL` set:
+优先使用项目根目录的 `Makefile`：
 
 ```bash
-export DATABASE_URL="postgres://user:password@localhost:5432/dbname"
+make help
 ```
 
-Or create a `.env` file in the project root:
+## 脚本列表
 
-```env
-DATABASE_URL=postgres://user:password@localhost:5432/dbname
-```
+### `postgres.sh`
 
-## Common Workflows
+管理 PostgreSQL Docker 容器。
 
-### Starting Fresh
+支持：
 
 ```bash
-# 1. Start PostgreSQL
-./scripts/postgres.sh
-
-# 2. Run migrations and generate entities
-./scripts/fresh_db.sh
+./scripts/postgres.sh up
+./scripts/postgres.sh status
+./scripts/postgres.sh stop
+./scripts/postgres.sh rm
 ```
 
-### After Adding New Migration
+### `init_db.sh`
+
+初始化数据库。
+
+它会根据 `.env` 或 `DATABASE_URL` 中的数据库名创建目标数据库。
+
+默认数据库名是：
+
+```text
+test
+```
+
+### `migrate.sh`
+
+直接包装 `sea-orm-cli migrate`。
+
+支持：
 
 ```bash
-# Just run fresh_db.sh to apply and regenerate entities
-./scripts/fresh_db.sh
+./scripts/migrate.sh up
+./scripts/migrate.sh down
+./scripts/migrate.sh fresh
+./scripts/migrate.sh refresh
+./scripts/migrate.sh reset
+./scripts/migrate.sh status
+./scripts/migrate.sh generate create_users
 ```
+
+### `generate_entity.sh`
+
+根据当前数据库中的已有表结构生成 entity。
+
+注意：
+
+- 这个脚本不会修改数据库
+- 它要求数据库中已经有表
+
+### `clear_db.sh`
+
+清空整个数据库的 `public` schema。
+
+### `truncate_table.sh`
+
+清空指定表，并重置自增：
+
+```bash
+./scripts/truncate_table.sh your_table
+```
+
+### `fresh_db.sh`
+
+执行：
+
+1. `migrate refresh`
+2. `generate entity`
+
+适合在确认要重建数据库后使用。

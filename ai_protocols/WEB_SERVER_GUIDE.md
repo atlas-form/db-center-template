@@ -12,6 +12,7 @@
 3. **分层错误处理**：业务层的 `Error`（如 NotFound, ValidationError）在这一层需要被转换为合适的 HTTP 状态码并封装成标准响应。
 4. **强类型约束**：请求参数需通过 `validator` 和 `serde` 在进入 Handler 前完成校验。
 5. **统一认证来源**：如果接口需要登录态，请按 `AUTH_INTEGRATION_GUIDE.md` 集成 `auth` 服务，不要在当前业务服务内重复实现登录或 JWT 签发。
+6. **先确认接口设计**：如果“服务端开发文档”还没有被用户确认，不要直接开始写 Handler 和路由。
 
 ---
 
@@ -99,19 +100,39 @@ pub async fn create_user_handler(
 }
 ```
 
-### Step 3: 注册 Routes 与 OpenAPI (`routes/xxx.rs`)
-
-在 `crates/web-server/src/routes/user_biz.rs` 中定义子路由结构。使用 `utoipa_axum::router::OpenApiRouter` 以自动收集路由和文档：
+如果接口需要登录态，应额外提取：
 
 ```rust
-use axum::routing::post;
-use utoipa_axum::router::OpenApiRouter;
+use axum::Extension;
+use toolcraft_axum_kit::middleware::auth_mw::AuthUser;
+
+pub async fn my_handler(
+    Extension(auth_user): Extension<AuthUser>,
+) {
+    let user_id = auth_user.user_id;
+}
+```
+
+### Step 3: 注册 Routes 与 OpenAPI (`routes/xxx.rs`)
+
+在 `crates/web-server/src/routes/user_biz.rs` 中定义子路由结构。如果接口需要登录态，请给该子路由挂 `auth::<VerifyJwt>` 中间件：
+
+```rust
+use axum::{Router, middleware::from_fn, routing::post};
+use toolcraft_axum_kit::middleware::auth_mw::auth;
+use toolcraft_jwt::VerifyJwt;
+use utoipa::OpenApi;
 
 use crate::handlers::user_biz::create_user_handler;
 
-pub fn user_biz_routes() -> OpenApiRouter {
-    OpenApiRouter::new()
+#[derive(OpenApi)]
+#[openapi(paths(crate::handlers::user_biz::create_user_handler))]
+pub struct UserBizApiDoc;
+
+pub fn user_biz_routes() -> Router {
+    Router::new()
         .route("/users", post(create_user_handler))
+        .route_layer(from_fn(auth::<VerifyJwt>))
 }
 ```
 
@@ -125,26 +146,23 @@ mod user_biz; // 添加这个模块
 use std::sync::Arc;
 use axum::{Extension, Router};
 use toolcraft_axum_kit::middleware::cors::create_cors;
-use toolcraft_jwt::Jwt;
+use toolcraft_jwt::VerifyJwt;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi(
     nest(
-        (path = "/user-biz", api = user_biz::user_biz_routes), // 注册 API 模块的文档
+        (path = "/user-biz", api = user_biz::UserBizApiDoc),
     ),
 )]
 struct ApiDoc;
 
-pub fn create_routes(jwt: Arc<Jwt>) -> Router {
+pub fn create_routes(jwt: Arc<VerifyJwt>) -> Router {
     let cors = create_cors();
-    
-    // 这里使用 utoipa 收集出来的 OpenApi 定义
     let doc = ApiDoc::openapi();
 
     Router::new()
-        // 挂载实际的路由模块
         .nest("/user-biz", user_biz::user_biz_routes())
         .layer(Extension(jwt))
         .layer(cors)
@@ -163,6 +181,7 @@ pub mod user_biz;
 
 ## 三、自检清单
 
+- [ ] 在开始写 web-server 代码前，接口设计是否已经被用户确认？
 - [ ] 是否确保此层没有引入 `sea-orm` 或调用任何原 `repo` 层的直接方法？
 - [ ] 所有新创建的 DTO 和 Handler 是否都已经添加了完整的 `#[utoipa::...]` 注解？
 - [ ] 在 `routes/mod.rs` 中是否**既挂载了实际路由 (.nest)**，**又注册了文档 (.openapi(nest(...)))**？
