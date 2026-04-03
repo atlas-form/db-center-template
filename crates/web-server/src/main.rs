@@ -6,11 +6,9 @@ mod routes;
 mod settings;
 mod statics;
 
-use std::sync::Arc;
-
 use settings::Settings;
 use toolcraft_axum_kit::http_server;
-use toolcraft_jwt::Jwt;
+use toolcraft_jwt::VerifyJwt;
 
 use crate::{logging::init_tracing_to_file, statics::db_manager::init_db};
 
@@ -22,8 +20,8 @@ async fn main() {
         .await
         .expect("DatabaseManager initialization failed");
 
-    let jwt = Arc::new(Jwt::new(settings.jwt));
-    let router = routes::create_routes(jwt);
+    let jwt = VerifyJwt::new(settings.jwt).unwrap();
+    let router = routes::create_routes(jwt.into());
     let http_task = http_server::start(settings.http.port, router);
 
     let _ = tokio::join!(http_task);

@@ -1,14 +1,14 @@
 use db_core::DatabaseConfig;
 use serde::Deserialize;
 use toolcraft_config::load_settings;
-use toolcraft_jwt::JwtCfg;
+use toolcraft_jwt::VerifyJwtCfg;
 
 use crate::error::Result;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     pub http: HttpCfg,
-    pub jwt: JwtCfg,
+    pub jwt: VerifyJwtCfg,
     pub db: Vec<DatabaseConfig>,
 }
 

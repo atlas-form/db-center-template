@@ -2,115 +2,115 @@
 
 {{description}}
 
-This repository is a **template** to be used with `cargo-generate`. It provides a robust architecture that allows AI coding assistants (like Claude Code, Cursor, or Gemini CLI) to implement business logic with high consistency and clear separation of concerns.
+本项目是一个基于 `cargo-generate` 的 **项目模板**。它提供了一套基于 **[db-core-rs](https://github.com/your-username/db-core-rs)** 核心库构建的 5 层架构，使 AI 能够以极高的一致性实现业务逻辑。
 
-## Quick Start
+## 快速开始
 
-### 1. Generate Your Project
+### 1. 生成项目
 
-Install `cargo-generate` if you haven't:
+如果您还没有安装 `cargo-generate`：
 ```bash
 cargo install cargo-generate
 ```
 
-Generate a new project from this template:
+使用此模板生成新项目：
 ```bash
 cargo generate --git https://github.com/atlas-form/db-center-template.git --name my-new-project
 cd my-new-project
 ```
 
-### 2. Setup Environment
+### 2. 准备环境
 
 ```bash
-# Start PostgreSQL (requires Docker)
+# 启动 PostgreSQL (需要安装 Docker)
 make postgres
 
-# Edit config/services.toml if needed
+# 如有需要，编辑 config/services.toml
 cp config/services-example.toml config/services.toml
 ```
 
-### 3. Let AI Develop Features
+### 3. 让 AI 开发功能
 
-Open your AI tool and point it to the protocols:
+打开您的 AI 工具并将其引导至协议文档：
 
 ```text
-Please read ai_protocols/TABLE_ADDING_PROTOCOL.md first to understand the project architecture.
+请先阅读 ai_protocols/TABLE_ADDING_PROTOCOL.md 了解项目架构规范。
 
-Then help me implement a new feature:
-<describe your requirements>
+然后帮我实现一个新功能：
+<描述您的需求>
 ```
 
 ---
 
-## Architecture
+## 架构概览
 
-This template follows a strict layered architecture based on the **[db-core-rs](https://github.com/your-username/db-core-rs)** library.
+本模板遵循严格的分层架构，其核心逻辑抽象封装在外部库 **db-core-rs** 中。
 
 ```text
 ┌──────────────────────────────────────────────────────┐
 │                    web-server                        │  Layer 4: HTTP API (Axum)
 ├──────────────────────────────────────────────────────┤
-│                     service                          │  Layer 3: Business Logic (Orchestration)
+│                     service                          │  Layer 3: 业务逻辑 (编排层)
 ├──────────────────────────────────────────────────────┤
-│                      repo                            │  Layer 2: Data Access (SeaORM Isolation)
+│                      repo                            │  Layer 2: 数据访问 (隔离 SeaORM)
 ├──────────────────────────────────────────────────────┤
-│               (External) db-core-rs                  │  Layer 1: Shared Core & Base Traits
+│               (外部核心库) db-core-rs                 │  Layer 1: 基础设施与共享核心
 ├──────────────────────────────────────────────────────┤
-│                    migration                         │  Layer 0: Schema (SeaORM Migrations)
+│                    migration                         │  Layer 0: 数据库迁移 (SeaORM)
 └──────────────────────────────────────────────────────┘
 ```
 
-### Layer Responsibilities
+### 各层职责
 
-| Layer | Component     | Responsibility                                     | AI Modifiable |
-| ----- | ------------- | -------------------------------------------------- | ------------- |
-| 4     | `web-server`  | HTTP routes, handlers, OpenAPI, validation         | Yes           |
-| 3     | `service`     | Business APIs, orchestrates multiple repos         | Yes           |
-| 2     | `repo`        | Single-table services, DTOs, converts Entities     | Yes           |
-| 1     | `db-core-rs`  | **External Library**: Base traits, Error, DB Pool  | **Fixed**     |
-| 0     | `migration`   | Database schema definitions                        | Yes           |
+| 层级 | 组件           | 职责                               | AI 可修改 |
+| ---- | -------------- | ---------------------------------- | --------- |
+| 4    | `web-server`   | HTTP 路由、Handler、OpenAPI、校验  | 可以      |
+| 3    | `service`      | 业务 API，编排多个 Repo            | 可以      |
+| 2    | `repo`         | 单表 Service、DTO、转换 Entity     | 可以      |
+| 1    | `db-core-rs`   | **外部库**: 基础 Trait, 错误定义, 连接池 | **固定**  |
+| 0    | `migration`    | 数据库表结构定义                   | 可以      |
 
-**Note**: `repo` is the **only** layer allowed to depend on `sea-orm`. This isolates the ORM details from the rest of the application. All business logic in `service` and `web-server` uses pure Rust DTOs.
-
----
-
-## AI Development Protocols
-
-The project includes detailed guides in `ai_protocols/` that you should always provide to your AI assistant:
-
-| File                                    | Purpose                                |
-| --------------------------------------- | -------------------------------------- |
-| `ai_protocols/TABLE_ADDING_PROTOCOL.md` | Master execution protocol (Start here) |
-| `ai_protocols/MIGRATION_GUIDE.md`       | How to add/modify database tables      |
-| `ai_protocols/REPO_GUIDE.md`            | How to implement Data Access Layer     |
-| `ai_protocols/SERVICE_GUIDE.md`         | How to implement Business Logic        |
-| `ai_protocols/WEB_SERVER_GUIDE.md`      | How to implement HTTP Endpoints        |
-| `how_to_use_ai.md`                      | Copy-paste prompt templates            |
+**核心原则**：`repo` 层是 **唯一** 允许直接依赖 `sea-orm` 的业务层。这能确保 ORM 的细节被封装在数据访问层内，`service` 和 `web-server` 只处理纯 Rust DTO。
 
 ---
 
-## Development Commands
+## AI 开发执行规约
+
+项目中包含详细的 `ai_protocols/` 指南，您应该始终将其提供给您的 AI 助手：
+
+| 文件                                    | 用途                   |
+| --------------------------------------- | ---------------------- |
+| `ai_protocols/TABLE_ADDING_PROTOCOL.md` | 主执行规约 (从这里开始) |
+| `ai_protocols/MIGRATION_GUIDE.md`       | 如何新增/修改数据库表  |
+| `ai_protocols/REPO_GUIDE.md`            | 如何实现数据访问层     |
+| `ai_protocols/SERVICE_GUIDE.md`         | 如何实现业务逻辑层     |
+| `ai_protocols/WEB_SERVER_GUIDE.md`      | 如何实现 HTTP 接口层   |
+| `how_to_use_ai.md`                      | 提示词模板 (复制即用)  |
+
+---
+
+## 开发命令
 
 ```bash
-make help              # Show all commands
-make postgres          # Start PostgreSQL container
-make migrate-up        # Run pending migrations
-make migrate-fresh     # Reset DB and run all migrations
-make build             # Build all crates
-cargo run -p web-server # Start the API server
+make help              # 查看所有命令
+make postgres          # 启动 PostgreSQL 容器
+make migrate-up        # 运行待处理的迁移
+make migrate-fresh     # 重置数据库并运行所有迁移
+make build             # 编译所有 crate
+cargo run -p web-server # 启动 API 服务
 ```
 
 Swagger UI: <http://localhost:19878/swagger-ui>
 
-## Tech Stack
+## 技术栈
 
-| Component     | Technology          |
-| ------------- | ------------------- |
-| Runtime       | Tokio               |
-| ORM           | SeaORM 2.0          |
-| Web Framework | Axum 0.8            |
-| OpenAPI       | utoipa + Swagger UI |
-| **Core Lib**  | **db-core-rs**      |
+| 组件     | 技术                |
+| -------- | ------------------- |
+| 运行时   | Tokio               |
+| ORM      | SeaORM 2.0          |
+| Web 框架 | Axum 0.8            |
+| OpenAPI  | utoipa + Swagger UI |
+| **核心库** | **db-core-rs**      |
 
 ## License
 

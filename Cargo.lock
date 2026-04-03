@@ -3621,9 +3621,9 @@ dependencies = [
 
 [[package]]
 name = "toolcraft-jwt"
-version = "0.3.4"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dc87252346da4de9307cce62ded4e1e0ca3458e5b99eaa6f0118c14bc86fb42"
+checksum = "fef49d127f18c5df9ac082b5a36203eb833742569cd7fe7f8469318e0beabac2"
 dependencies = [
  "chrono",
  "jsonwebtoken",
