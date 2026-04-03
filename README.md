@@ -187,7 +187,17 @@ postgres://username:password@host:5432/database_name
 
 1. [user_docs/core_design.md](./user_docs/core_design.md)
 2. [user_docs/requirement_to_backend_doc.md](./user_docs/requirement_to_backend_doc.md)
-3. [user_docs/how_to_use_ai.md](./user_docs/how_to_use_ai.md)
+3. [user_docs/requirement_template.md](./user_docs/requirement_template.md)
+4. [user_docs/environment_setup_with_ai.md](./user_docs/environment_setup_with_ai.md)
+5. [user_docs/how_to_use_ai.md](./user_docs/how_to_use_ai.md)
+
+## 给 AI 的入口文档
+
+如果你希望 AI 按统一流程工作，建议它先阅读：
+
+1. [ai_protocols/AI_WORKFLOW.md](./ai_protocols/AI_WORKFLOW.md)
+2. [ai_protocols/TABLE_ADDING_PROTOCOL.md](./ai_protocols/TABLE_ADDING_PROTOCOL.md)
+3. 如果涉及登录用户，再阅读 [ai_protocols/AUTH_INTEGRATION_GUIDE.md](./ai_protocols/AUTH_INTEGRATION_GUIDE.md)
 
 ## 说明
 
