@@ -9,4 +9,6 @@ thiserror.workspace = true
 db-core.workspace = true
 error-code.workspace = true
 repo.workspace = true
+serde.workspace = true
 serde_json.workspace = true
+uuid.workspace = true

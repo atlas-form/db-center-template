@@ -1,0 +1,60 @@
+use db_core::{DbContext, Repository, error::BizResult};
+use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter};
+
+use crate::{
+    entity::role_permissions,
+    table::role_permissions::dto::{CreateRolePermission, RolePermission},
+};
+
+db_core::impl_repository!(
+    RolePermissionRepo,
+    role_permissions::Entity,
+    role_permissions::Model
+);
+
+pub struct RolePermissionService {
+    repo: RolePermissionRepo,
+}
+
+impl RolePermissionService {
+    pub fn new(db: DbContext) -> Self {
+        Self {
+            repo: RolePermissionRepo::new(db),
+        }
+    }
+
+    pub async fn create(&self, input: CreateRolePermission) -> BizResult<RolePermission> {
+        let model = role_permissions::ActiveModel {
+            role_id: Set(input.role_id),
+            permission_code: Set(input.permission_code),
+        };
+
+        Ok(Self::from_model(self.repo.insert(model).await?))
+    }
+
+    pub async fn list_by_role_ids(&self, role_ids: Vec<i64>) -> BizResult<Vec<RolePermission>> {
+        if role_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let query = self
+            .repo
+            .query()
+            .filter(role_permissions::Column::RoleId.is_in(role_ids));
+
+        Ok(self
+            .repo
+            .select_all(query)
+            .await?
+            .into_iter()
+            .map(Self::from_model)
+            .collect())
+    }
+
+    fn from_model(model: role_permissions::Model) -> RolePermission {
+        RolePermission {
+            role_id: model.role_id,
+            permission_code: model.permission_code,
+        }
+    }
+}

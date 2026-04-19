@@ -1,0 +1,70 @@
+use db_core::{DbContext, Repository, error::BizResult};
+use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, QueryOrder};
+
+use crate::{
+    entity::roles,
+    table::roles::dto::{CreateRole, Role},
+};
+
+db_core::impl_repository!(RoleRepo, roles::Entity, roles::Model);
+
+pub struct RoleService {
+    repo: RoleRepo,
+}
+
+impl RoleService {
+    pub fn new(db: DbContext) -> Self {
+        Self {
+            repo: RoleRepo::new(db),
+        }
+    }
+
+    pub async fn create(&self, input: CreateRole) -> BizResult<Role> {
+        let model = roles::ActiveModel {
+            name: Set(input.name),
+            code: Set(input.code),
+            ..Default::default()
+        };
+
+        Ok(Self::from_model(self.repo.insert(model).await?))
+    }
+
+    pub async fn list_all(&self) -> BizResult<Vec<Role>> {
+        let query = self.repo.query().order_by_asc(roles::Column::Id);
+        Ok(self
+            .repo
+            .select_all(query)
+            .await?
+            .into_iter()
+            .map(Self::from_model)
+            .collect())
+    }
+
+    pub async fn list_by_ids(&self, ids: Vec<i64>) -> BizResult<Vec<Role>> {
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let query = self
+            .repo
+            .query()
+            .filter(roles::Column::Id.is_in(ids))
+            .order_by_asc(roles::Column::Id);
+
+        Ok(self
+            .repo
+            .select_all(query)
+            .await?
+            .into_iter()
+            .map(Self::from_model)
+            .collect())
+    }
+
+    fn from_model(model: roles::Model) -> Role {
+        Role {
+            id: model.id,
+            name: model.name,
+            code: model.code,
+        }
+    }
+}

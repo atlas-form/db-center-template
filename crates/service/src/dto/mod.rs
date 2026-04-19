@@ -1,1 +1,1 @@
-// empty dto module
+pub mod admin;

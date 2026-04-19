@@ -1,1 +1,1 @@
-// empty api module
+pub mod admin;
