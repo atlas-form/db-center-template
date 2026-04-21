@@ -131,11 +131,21 @@ impl AdminApi {
             .await?;
         let permission = self
             .permission_svc
-            .create(CreatePermission { code: req.code })
+            .create(CreatePermission {
+                code: req.code,
+                name: req.name,
+                parent_code: req.parent_code,
+                sort: req.sort,
+                kind: req.kind,
+            })
             .await?;
         Ok(PermissionResponse {
             id: permission.id,
             code: permission.code,
+            name: permission.name,
+            parent_code: permission.parent_code,
+            sort: permission.sort,
+            kind: permission.kind,
         })
     }
 
@@ -153,6 +163,10 @@ impl AdminApi {
             .map(|permission| PermissionResponse {
                 id: permission.id,
                 code: permission.code,
+                name: permission.name,
+                parent_code: permission.parent_code,
+                sort: permission.sort,
+                kind: permission.kind,
             })
             .collect())
     }

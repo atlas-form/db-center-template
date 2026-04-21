@@ -43,32 +43,21 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Permissions::Code).string().not_null())
+                    .col(ColumnDef::new(Permissions::Name).string().not_null())
+                    .col(ColumnDef::new(Permissions::ParentCode).string().null())
+                    .col(
+                        ColumnDef::new(Permissions::Sort)
+                            .integer()
+                            .not_null()
+                            .default(0),
+                    )
+                    .col(ColumnDef::new(Permissions::Kind).string().not_null())
                     .index(
                         Index::create()
                             .name("uk_permissions_code")
                             .col(Permissions::Code)
                             .unique(),
                     )
-                    .to_owned(),
-            )
-            .await?;
-
-        manager
-            .create_table(
-                Table::create()
-                    .table(Menus::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(Menus::Id)
-                            .big_integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
-                    .col(ColumnDef::new(Menus::Name).string().not_null())
-                    .col(ColumnDef::new(Menus::Path).string().not_null())
-                    .col(ColumnDef::new(Menus::ParentId).big_integer().null())
-                    .col(ColumnDef::new(Menus::PermissionCode).string().null())
                     .to_owned(),
             )
             .await?;
@@ -133,10 +122,6 @@ impl MigrationTrait for Migration {
             .await?;
 
         manager
-            .drop_table(Table::drop().table(Menus::Table).cascade().to_owned())
-            .await?;
-
-        manager
             .drop_table(Table::drop().table(Permissions::Table).cascade().to_owned())
             .await?;
 
@@ -161,6 +146,10 @@ enum Permissions {
     Table,
     Id,
     Code,
+    Name,
+    ParentCode,
+    Sort,
+    Kind,
 }
 
 #[derive(DeriveIden)]
@@ -174,15 +163,5 @@ enum UserRoles {
 enum RolePermissions {
     Table,
     RoleId,
-    PermissionCode,
-}
-
-#[derive(DeriveIden)]
-enum Menus {
-    Table,
-    Id,
-    Name,
-    Path,
-    ParentId,
     PermissionCode,
 }

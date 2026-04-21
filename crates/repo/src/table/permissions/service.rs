@@ -22,6 +22,10 @@ impl PermissionService {
     pub async fn create(&self, input: CreatePermission) -> BizResult<Permission> {
         let model = permissions::ActiveModel {
             code: Set(input.code),
+            name: Set(input.name),
+            parent_code: Set(input.parent_code),
+            sort: Set(input.sort),
+            kind: Set(input.kind),
             ..Default::default()
         };
 
@@ -43,6 +47,10 @@ impl PermissionService {
         Permission {
             id: model.id,
             code: model.code,
+            name: model.name,
+            parent_code: model.parent_code,
+            sort: model.sort,
+            kind: model.kind,
         }
     }
 }

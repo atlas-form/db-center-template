@@ -29,12 +29,20 @@ pub struct RoleResponse {
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreatePermissionRequest {
     pub code: String,
+    pub name: String,
+    pub parent_code: Option<String>,
+    pub sort: i32,
+    pub kind: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PermissionResponse {
     pub id: i64,
     pub code: String,
+    pub name: String,
+    pub parent_code: Option<String>,
+    pub sort: i32,
+    pub kind: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

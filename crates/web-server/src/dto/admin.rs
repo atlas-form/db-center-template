@@ -21,12 +21,23 @@ pub struct RoleResponse {
 pub struct CreatePermissionRequest {
     #[validate(length(min = 1, max = 128))]
     pub code: String,
+    #[validate(length(min = 1, max = 128))]
+    pub name: String,
+    #[validate(length(min = 1, max = 128))]
+    pub parent_code: Option<String>,
+    pub sort: i32,
+    #[validate(length(min = 1, max = 32))]
+    pub kind: String,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct PermissionResponse {
     pub id: i64,
     pub code: String,
+    pub name: String,
+    pub parent_code: Option<String>,
+    pub sort: i32,
+    pub kind: String,
 }
 
 #[derive(Debug, Deserialize, Validate, ToSchema)]

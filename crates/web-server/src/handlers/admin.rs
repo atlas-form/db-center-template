@@ -99,7 +99,13 @@ pub async fn create_permission(
     let permission = api
         .create_permission(
             auth_user.user_id,
-            service::dto::admin::CreatePermissionRequest { code: req.code },
+            service::dto::admin::CreatePermissionRequest {
+                code: req.code,
+                name: req.name,
+                parent_code: req.parent_code,
+                sort: req.sort,
+                kind: req.kind,
+            },
         )
         .await
         .map_err(from_biz_error)?;
@@ -107,6 +113,10 @@ pub async fn create_permission(
     Ok(PermissionResponse {
         id: permission.id,
         code: permission.code,
+        name: permission.name,
+        parent_code: permission.parent_code,
+        sort: permission.sort,
+        kind: permission.kind,
     }
     .into_common_response()
     .to_json())
@@ -136,6 +146,10 @@ pub async fn list_permissions(
         .map(|permission| PermissionResponse {
             id: permission.id,
             code: permission.code,
+            name: permission.name,
+            parent_code: permission.parent_code,
+            sort: permission.sort,
+            kind: permission.kind,
         })
         .collect::<Vec<_>>()
         .into_common_response()

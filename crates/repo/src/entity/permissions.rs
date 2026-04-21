@@ -10,6 +10,10 @@ pub struct Model {
     pub id: i64,
     #[sea_orm(unique)]
     pub code: String,
+    pub name: String,
+    pub parent_code: Option<String>,
+    pub sort: i32,
+    pub kind: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
