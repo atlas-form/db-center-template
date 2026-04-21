@@ -23,14 +23,20 @@ use crate::{
         (status = 401, description = "Unauthorized")
     )
 )]
-pub async fn create_role(Json(req): Json<CreateRoleRequest>) -> ResponseResult<RoleResponse> {
+pub async fn create_role(
+    Extension(auth_user): Extension<AuthUser>,
+    Json(req): Json<CreateRoleRequest>,
+) -> ResponseResult<RoleResponse> {
     req.validate().map_err(Error::from)?;
     let api = AdminApi::new(get_default_ctx());
     let role = api
-        .create_role(service::dto::admin::CreateRoleRequest {
-            name: req.name,
-            code: req.code,
-        })
+        .create_role(
+            auth_user.user_id,
+            service::dto::admin::CreateRoleRequest {
+                name: req.name,
+                code: req.code,
+            },
+        )
         .await
         .map_err(from_biz_error)?;
 
@@ -53,9 +59,12 @@ pub async fn create_role(Json(req): Json<CreateRoleRequest>) -> ResponseResult<R
         (status = 401, description = "Unauthorized")
     )
 )]
-pub async fn list_roles() -> ResponseResult<Vec<RoleResponse>> {
+pub async fn list_roles(Extension(auth_user): Extension<AuthUser>) -> ResponseResult<Vec<RoleResponse>> {
     let api = AdminApi::new(get_default_ctx());
-    let roles = api.list_roles().await.map_err(from_biz_error)?;
+    let roles = api
+        .list_roles(auth_user.user_id)
+        .await
+        .map_err(from_biz_error)?;
 
     Ok(roles
         .into_iter()
@@ -82,12 +91,16 @@ pub async fn list_roles() -> ResponseResult<Vec<RoleResponse>> {
     )
 )]
 pub async fn create_permission(
+    Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreatePermissionRequest>,
 ) -> ResponseResult<PermissionResponse> {
     req.validate().map_err(Error::from)?;
     let api = AdminApi::new(get_default_ctx());
     let permission = api
-        .create_permission(service::dto::admin::CreatePermissionRequest { code: req.code })
+        .create_permission(
+            auth_user.user_id,
+            service::dto::admin::CreatePermissionRequest { code: req.code },
+        )
         .await
         .map_err(from_biz_error)?;
 
@@ -109,9 +122,14 @@ pub async fn create_permission(
         (status = 401, description = "Unauthorized")
     )
 )]
-pub async fn list_permissions() -> ResponseResult<Vec<PermissionResponse>> {
+pub async fn list_permissions(
+    Extension(auth_user): Extension<AuthUser>,
+) -> ResponseResult<Vec<PermissionResponse>> {
     let api = AdminApi::new(get_default_ctx());
-    let permissions = api.list_permissions().await.map_err(from_biz_error)?;
+    let permissions = api
+        .list_permissions(auth_user.user_id)
+        .await
+        .map_err(from_biz_error)?;
 
     Ok(permissions
         .into_iter()
@@ -136,16 +154,22 @@ pub async fn list_permissions() -> ResponseResult<Vec<PermissionResponse>> {
         (status = 401, description = "Unauthorized")
     )
 )]
-pub async fn create_menu(Json(req): Json<CreateMenuRequest>) -> ResponseResult<MenuResponse> {
+pub async fn create_menu(
+    Extension(auth_user): Extension<AuthUser>,
+    Json(req): Json<CreateMenuRequest>,
+) -> ResponseResult<MenuResponse> {
     req.validate().map_err(Error::from)?;
     let api = AdminApi::new(get_default_ctx());
     let menu = api
-        .create_menu(service::dto::admin::CreateMenuRequest {
-            name: req.name,
-            path: req.path,
-            parent_id: req.parent_id,
-            permission_code: req.permission_code,
-        })
+        .create_menu(
+            auth_user.user_id,
+            service::dto::admin::CreateMenuRequest {
+                name: req.name,
+                path: req.path,
+                parent_id: req.parent_id,
+                permission_code: req.permission_code,
+            },
+        )
         .await
         .map_err(from_biz_error)?;
 
@@ -170,9 +194,12 @@ pub async fn create_menu(Json(req): Json<CreateMenuRequest>) -> ResponseResult<M
         (status = 401, description = "Unauthorized")
     )
 )]
-pub async fn list_menus() -> ResponseResult<Vec<MenuResponse>> {
+pub async fn list_menus(Extension(auth_user): Extension<AuthUser>) -> ResponseResult<Vec<MenuResponse>> {
     let api = AdminApi::new(get_default_ctx());
-    let menus = api.list_menus().await.map_err(from_biz_error)?;
+    let menus = api
+        .list_menus(auth_user.user_id)
+        .await
+        .map_err(from_biz_error)?;
 
     Ok(menus
         .into_iter()
@@ -201,15 +228,19 @@ pub async fn list_menus() -> ResponseResult<Vec<MenuResponse>> {
     )
 )]
 pub async fn assign_user_role(
+    Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<AssignUserRoleRequest>,
 ) -> ResponseResult<UserRoleResponse> {
     req.validate().map_err(Error::from)?;
     let api = AdminApi::new(get_default_ctx());
     let user_role = api
-        .assign_user_role(service::dto::admin::AssignUserRoleRequest {
-            user_id: req.user_id,
-            role_id: req.role_id,
-        })
+        .assign_user_role(
+            auth_user.user_id,
+            service::dto::admin::AssignUserRoleRequest {
+                user_id: req.user_id,
+                role_id: req.role_id,
+            },
+        )
         .await
         .map_err(from_biz_error)?;
 
@@ -234,9 +265,15 @@ pub async fn assign_user_role(
         (status = 401, description = "Unauthorized")
     )
 )]
-pub async fn list_user_roles(Path(user_id): Path<String>) -> ResponseResult<Vec<RoleResponse>> {
+pub async fn list_user_roles(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(user_id): Path<String>,
+) -> ResponseResult<Vec<RoleResponse>> {
     let api = AdminApi::new(get_default_ctx());
-    let roles = api.list_user_roles(user_id).await.map_err(from_biz_error)?;
+    let roles = api
+        .list_user_roles(auth_user.user_id, user_id)
+        .await
+        .map_err(from_biz_error)?;
 
     Ok(roles
         .into_iter()
@@ -263,15 +300,19 @@ pub async fn list_user_roles(Path(user_id): Path<String>) -> ResponseResult<Vec<
     )
 )]
 pub async fn grant_role_permission(
+    Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<GrantRolePermissionRequest>,
 ) -> ResponseResult<RolePermissionResponse> {
     req.validate().map_err(Error::from)?;
     let api = AdminApi::new(get_default_ctx());
     let role_permission = api
-        .grant_role_permission(service::dto::admin::GrantRolePermissionRequest {
-            role_id: req.role_id,
-            permission_code: req.permission_code,
-        })
+        .grant_role_permission(
+            auth_user.user_id,
+            service::dto::admin::GrantRolePermissionRequest {
+                role_id: req.role_id,
+                permission_code: req.permission_code,
+            },
+        )
         .await
         .map_err(from_biz_error)?;
 

@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
 use db_core::error::{BIZ_INTERNAL_ERROR, BizError};
+use error_code::admin as admin_error;
 use thiserror::Error;
 use toolcraft_axum_kit::{ApiError, CommonError};
 
@@ -37,8 +38,16 @@ impl From<Error> for ApiError {
 }
 
 pub fn from_biz_error(err: BizError) -> ApiError {
+    let status = match err.code() {
+        admin_error::ADMIN_USER_NOT_FOUND
+        | admin_error::ADMIN_USER_DISABLED
+        | admin_error::ADMIN_PERMISSION_DENIED
+        | admin_error::ADMIN_ROLE_RESERVED => StatusCode::FORBIDDEN,
+        _ => StatusCode::BAD_REQUEST,
+    };
+
     (
-        StatusCode::BAD_REQUEST,
+        status,
         CommonError {
             code: err.code(),
             message: err.message().to_string(),

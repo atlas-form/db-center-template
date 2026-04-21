@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod admin_users;
 pub mod menus;
 pub mod permissions;
 pub mod role_permissions;

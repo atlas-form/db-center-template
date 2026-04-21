@@ -1,3 +1,4 @@
+pub mod admin_users;
 pub mod dto;
 pub mod menus;
 pub mod permissions;

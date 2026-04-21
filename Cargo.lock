@@ -4574,6 +4574,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "db-core-rs",
+ "error-code",
  "serde",
  "serde_json",
  "service",

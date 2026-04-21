@@ -1,0 +1,56 @@
+use db_core::{DbContext, Repository, error::BizResult};
+use sea_orm::{ActiveValue::Set, QueryOrder};
+use uuid::Uuid;
+
+use crate::{
+    entity::admin_users,
+    table::admin_users::dto::{AdminUser, AdminUserStatus, CreateAdminUser},
+};
+
+db_core::impl_repository!(AdminUserRepo, admin_users::Entity, admin_users::Model);
+
+pub struct AdminUserService {
+    repo: AdminUserRepo,
+}
+
+impl AdminUserService {
+    pub fn new(db: DbContext) -> Self {
+        Self {
+            repo: AdminUserRepo::new(db),
+        }
+    }
+
+    pub async fn create(&self, input: CreateAdminUser) -> BizResult<AdminUser> {
+        let model = admin_users::ActiveModel {
+            user_id: Set(input.user_id),
+            status: Set(input.status.as_str().to_owned()),
+        };
+
+        Self::from_model(self.repo.insert(model).await?)
+    }
+
+    pub async fn list_all(&self) -> BizResult<Vec<AdminUser>> {
+        let query = self.repo.query().order_by_asc(admin_users::Column::UserId);
+        self.repo
+            .select_all(query)
+            .await?
+            .into_iter()
+            .map(Self::from_model)
+            .collect()
+    }
+
+    pub async fn get_by_user_id(&self, user_id: Uuid) -> BizResult<Option<AdminUser>> {
+        self.repo
+            .find_by_id(user_id)
+            .await?
+            .map(Self::from_model)
+            .transpose()
+    }
+
+    fn from_model(model: admin_users::Model) -> BizResult<AdminUser> {
+        Ok(AdminUser {
+            user_id: model.user_id,
+            status: AdminUserStatus::try_from(model.status)?,
+        })
+    }
+}
