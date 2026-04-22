@@ -44,6 +44,25 @@ impl UserRoleService {
             .collect())
     }
 
+    pub async fn list_by_user_ids(&self, user_ids: Vec<Uuid>) -> BizResult<Vec<UserRole>> {
+        if user_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let query = self
+            .repo
+            .query()
+            .filter(user_roles::Column::UserId.is_in(user_ids));
+
+        Ok(self
+            .repo
+            .select_all(query)
+            .await?
+            .into_iter()
+            .map(Self::from_model)
+            .collect())
+    }
+
     fn from_model(model: user_roles::Model) -> UserRole {
         UserRole {
             user_id: model.user_id,

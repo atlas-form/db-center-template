@@ -25,6 +25,27 @@ fn map_permission_kind(kind: PermissionKind) -> service::dto::admin::PermissionK
     }
 }
 
+fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
+    RoleResponse {
+        id: role.id,
+        name: role.name,
+        code: role.code,
+    }
+}
+
+fn map_admin_user_response(admin_user: service::dto::admin::AdminUserResponse) -> AdminUserResponse {
+    AdminUserResponse {
+        user_id: admin_user.user_id,
+        display_name: admin_user.display_name,
+        remark: admin_user.remark,
+        status: match admin_user.status {
+            service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
+            service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
+        },
+        roles: admin_user.roles.into_iter().map(map_role_response).collect(),
+    }
+}
+
 #[utoipa::path(
     post,
     path = "/admin-users",
@@ -56,17 +77,9 @@ pub async fn create_admin_user(
         .await
         .map_err(from_biz_error)?;
 
-    Ok(AdminUserResponse {
-        user_id: admin_user.user_id,
-        display_name: admin_user.display_name,
-        remark: admin_user.remark,
-        status: match admin_user.status {
-            service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
-            service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
-        },
-    }
-    .into_common_response()
-    .to_json())
+    Ok(map_admin_user_response(admin_user)
+        .into_common_response()
+        .to_json())
 }
 
 #[utoipa::path(
@@ -90,15 +103,7 @@ pub async fn list_admin_users(
 
     Ok(admin_users
         .into_iter()
-        .map(|admin_user| AdminUserResponse {
-            user_id: admin_user.user_id,
-            display_name: admin_user.display_name,
-            remark: admin_user.remark,
-            status: match admin_user.status {
-                service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
-                service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
-            },
-        })
+        .map(map_admin_user_response)
         .collect::<Vec<_>>()
         .into_common_response()
         .to_json())

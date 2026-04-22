@@ -16,6 +16,7 @@ pub struct AdminUserResponse {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,
+    pub roles: Vec<RoleResponse>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

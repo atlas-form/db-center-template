@@ -74,18 +74,45 @@ impl AdminApi {
             })
             .await?;
 
-        Ok(Self::map_admin_user(admin_user))
+        Ok(Self::map_admin_user(admin_user, Vec::new()))
     }
 
     pub async fn list_admin_users(&self, current_user_id: String) -> BizResult<Vec<AdminUserResponse>> {
         self.ensure_permission(&current_user_id, PERM_ADMIN_USER_LIST)
             .await?;
-        Ok(self
-            .admin_user_svc
-            .list_all()
+        let admin_users = self.admin_user_svc.list_all().await?;
+        let user_ids = admin_users.iter().map(|user| user.user_id).collect::<Vec<_>>();
+        let user_roles = self.user_role_svc.list_by_user_ids(user_ids).await?;
+        let role_ids = user_roles
+            .iter()
+            .map(|user_role| user_role.role_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let roles_by_id = self
+            .role_svc
+            .list_by_ids(role_ids)
             .await?
             .into_iter()
-            .map(Self::map_admin_user)
+            .map(|role| (role.id, Self::map_role(role)))
+            .collect::<HashMap<_, _>>();
+        let mut roles_by_user_id = HashMap::<Uuid, Vec<RoleResponse>>::new();
+
+        for user_role in user_roles {
+            if let Some(role) = roles_by_id.get(&user_role.role_id) {
+                roles_by_user_id
+                    .entry(user_role.user_id)
+                    .or_default()
+                    .push(role.clone());
+            }
+        }
+
+        Ok(admin_users
+            .into_iter()
+            .map(|admin_user| {
+                let roles = roles_by_user_id.remove(&admin_user.user_id).unwrap_or_default();
+                Self::map_admin_user(admin_user, roles)
+            })
             .collect())
     }
 
@@ -524,12 +551,13 @@ impl AdminApi {
         }
     }
 
-    fn map_admin_user(admin_user: AdminUser) -> AdminUserResponse {
+    fn map_admin_user(admin_user: AdminUser, roles: Vec<RoleResponse>) -> AdminUserResponse {
         AdminUserResponse {
             user_id: admin_user.user_id.to_string(),
             display_name: admin_user.display_name,
             remark: admin_user.remark,
             status: admin_user.status,
+            roles,
         }
     }
 
