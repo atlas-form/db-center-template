@@ -1,4 +1,5 @@
-use repo::table::admin_users::AdminUserStatus;
+pub use repo::table::admin_users::AdminUserStatus;
+pub use repo::table::permissions::PermissionKind;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -32,7 +33,7 @@ pub struct CreatePermissionRequest {
     pub name: String,
     pub parent_code: Option<String>,
     pub sort: i32,
-    pub kind: String,
+    pub kind: PermissionKind,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -42,13 +43,12 @@ pub struct PermissionResponse {
     pub name: String,
     pub parent_code: Option<String>,
     pub sort: i32,
-    pub kind: String,
+    pub kind: PermissionKind,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateMenuRequest {
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
 }
@@ -57,7 +57,6 @@ pub struct CreateMenuRequest {
 pub struct MenuResponse {
     pub id: i64,
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
 }
@@ -97,7 +96,6 @@ pub struct CurrentUserPermissionsResponse {
 pub struct MenuTreeNode {
     pub id: i64,
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
     pub children: Vec<MenuTreeNode>,

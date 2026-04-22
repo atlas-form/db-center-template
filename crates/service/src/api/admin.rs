@@ -182,7 +182,6 @@ impl AdminApi {
             .menu_svc
             .create(CreateMenu {
                 name: req.name,
-                path: req.path,
                 parent_id: req.parent_id,
                 permission_code: req.permission_code,
             })
@@ -470,7 +469,6 @@ impl AdminApi {
                     MenuTreeNode {
                         id: menu.id,
                         name: menu.name,
-                        path: menu.path,
                         parent_id: menu.parent_id,
                         permission_code: menu.permission_code,
                         children: Vec::new(),
@@ -535,7 +533,6 @@ impl AdminApi {
         MenuResponse {
             id: menu.id,
             name: menu.name,
-            path: menu.path,
             parent_id: menu.parent_id,
             permission_code: menu.permission_code,
         }

@@ -19,7 +19,6 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Menus::Name).string().not_null())
-                    .col(ColumnDef::new(Menus::Path).string().not_null())
                     .col(ColumnDef::new(Menus::ParentId).big_integer().null())
                     .col(ColumnDef::new(Menus::PermissionCode).string().null())
                     .to_owned(),
@@ -39,7 +38,6 @@ enum Menus {
     Table,
     Id,
     Name,
-    Path,
     ParentId,
     PermissionCode,
 }

@@ -22,7 +22,6 @@ impl MenuService {
     pub async fn create(&self, input: CreateMenu) -> BizResult<Menu> {
         let model = menus::ActiveModel {
             name: Set(input.name),
-            path: Set(input.path),
             parent_id: Set(input.parent_id),
             permission_code: Set(input.permission_code),
             ..Default::default()
@@ -46,7 +45,6 @@ impl MenuService {
         Menu {
             id: model.id,
             name: model.name,
-            path: model.path,
             parent_id: model.parent_id,
             permission_code: model.permission_code,
         }

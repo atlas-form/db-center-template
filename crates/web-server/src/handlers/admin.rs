@@ -11,6 +11,93 @@ use crate::{
     statics::db_manager::get_default_ctx,
 };
 
+fn map_admin_user_status(status: AdminUserStatus) -> service::dto::admin::AdminUserStatus {
+    match status {
+        AdminUserStatus::Enabled => service::dto::admin::AdminUserStatus::Enabled,
+        AdminUserStatus::Disabled => service::dto::admin::AdminUserStatus::Disabled,
+    }
+}
+
+fn map_permission_kind(kind: PermissionKind) -> service::dto::admin::PermissionKind {
+    match kind {
+        PermissionKind::Group => service::dto::admin::PermissionKind::Group,
+        PermissionKind::Action => service::dto::admin::PermissionKind::Action,
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/admin-users",
+    tag = "admin",
+    security(("Bearer" = [])),
+    request_body = CreateAdminUserRequest,
+    responses(
+        (status = 200, description = "Create admin user", body = CommonResponse<AdminUserResponse>),
+        (status = 400, description = "Validation or business error"),
+        (status = 401, description = "Unauthorized")
+    )
+)]
+pub async fn create_admin_user(
+    Extension(auth_user): Extension<AuthUser>,
+    Json(req): Json<CreateAdminUserRequest>,
+) -> ResponseResult<AdminUserResponse> {
+    req.validate().map_err(Error::from)?;
+    let api = AdminApi::new(get_default_ctx());
+    let admin_user = api
+        .create_admin_user(
+            auth_user.user_id,
+            service::dto::admin::CreateAdminUserRequest {
+                user_id: req.user_id,
+                status: map_admin_user_status(req.status),
+            },
+        )
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(AdminUserResponse {
+        user_id: admin_user.user_id,
+        status: match admin_user.status {
+            service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
+            service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
+        },
+    }
+    .into_common_response()
+    .to_json())
+}
+
+#[utoipa::path(
+    get,
+    path = "/admin-users",
+    tag = "admin",
+    security(("Bearer" = [])),
+    responses(
+        (status = 200, description = "List admin users", body = CommonResponse<Vec<AdminUserResponse>>),
+        (status = 401, description = "Unauthorized")
+    )
+)]
+pub async fn list_admin_users(
+    Extension(auth_user): Extension<AuthUser>,
+) -> ResponseResult<Vec<AdminUserResponse>> {
+    let api = AdminApi::new(get_default_ctx());
+    let admin_users = api
+        .list_admin_users(auth_user.user_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(admin_users
+        .into_iter()
+        .map(|admin_user| AdminUserResponse {
+            user_id: admin_user.user_id,
+            status: match admin_user.status {
+                service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
+                service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
+            },
+        })
+        .collect::<Vec<_>>()
+        .into_common_response()
+        .to_json())
+}
+
 #[utoipa::path(
     post,
     path = "/roles",
@@ -104,7 +191,7 @@ pub async fn create_permission(
                 name: req.name,
                 parent_code: req.parent_code,
                 sort: req.sort,
-                kind: req.kind,
+                kind: map_permission_kind(req.kind),
             },
         )
         .await
@@ -116,7 +203,10 @@ pub async fn create_permission(
         name: permission.name,
         parent_code: permission.parent_code,
         sort: permission.sort,
-        kind: permission.kind,
+        kind: match permission.kind {
+            service::dto::admin::PermissionKind::Group => PermissionKind::Group,
+            service::dto::admin::PermissionKind::Action => PermissionKind::Action,
+        },
     }
     .into_common_response()
     .to_json())
@@ -149,7 +239,10 @@ pub async fn list_permissions(
             name: permission.name,
             parent_code: permission.parent_code,
             sort: permission.sort,
-            kind: permission.kind,
+            kind: match permission.kind {
+                service::dto::admin::PermissionKind::Group => PermissionKind::Group,
+                service::dto::admin::PermissionKind::Action => PermissionKind::Action,
+            },
         })
         .collect::<Vec<_>>()
         .into_common_response()
@@ -179,7 +272,6 @@ pub async fn create_menu(
             auth_user.user_id,
             service::dto::admin::CreateMenuRequest {
                 name: req.name,
-                path: req.path,
                 parent_id: req.parent_id,
                 permission_code: req.permission_code,
             },
@@ -190,7 +282,6 @@ pub async fn create_menu(
     Ok(MenuResponse {
         id: menu.id,
         name: menu.name,
-        path: menu.path,
         parent_id: menu.parent_id,
         permission_code: menu.permission_code,
     }
@@ -220,7 +311,6 @@ pub async fn list_menus(Extension(auth_user): Extension<AuthUser>) -> ResponseRe
         .map(|menu| MenuResponse {
             id: menu.id,
             name: menu.name,
-            path: menu.path,
             parent_id: menu.parent_id,
             permission_code: menu.permission_code,
         })
@@ -401,7 +491,6 @@ fn map_menu_tree(node: service::dto::admin::MenuTreeNode) -> MenuTreeNode {
     MenuTreeNode {
         id: node.id,
         name: node.name,
-        path: node.path,
         parent_id: node.parent_id,
         permission_code: node.permission_code,
         children: node.children.into_iter().map(map_menu_tree).collect(),

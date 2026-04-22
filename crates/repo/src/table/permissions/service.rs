@@ -3,7 +3,7 @@ use sea_orm::{ActiveValue::Set, QueryOrder};
 
 use crate::{
     entity::permissions,
-    table::permissions::dto::{CreatePermission, Permission},
+    table::permissions::dto::{CreatePermission, Permission, PermissionKind},
 };
 
 db_core::impl_repository!(PermissionRepo, permissions::Entity, permissions::Model);
@@ -25,32 +25,31 @@ impl PermissionService {
             name: Set(input.name),
             parent_code: Set(input.parent_code),
             sort: Set(input.sort),
-            kind: Set(input.kind),
+            kind: Set(input.kind.as_str().to_owned()),
             ..Default::default()
         };
 
-        Ok(Self::from_model(self.repo.insert(model).await?))
+        Self::from_model(self.repo.insert(model).await?)
     }
 
     pub async fn list_all(&self) -> BizResult<Vec<Permission>> {
         let query = self.repo.query().order_by_asc(permissions::Column::Id);
-        Ok(self
-            .repo
+        self.repo
             .select_all(query)
             .await?
             .into_iter()
             .map(Self::from_model)
-            .collect())
+            .collect()
     }
 
-    fn from_model(model: permissions::Model) -> Permission {
-        Permission {
+    fn from_model(model: permissions::Model) -> BizResult<Permission> {
+        Ok(Permission {
             id: model.id,
             code: model.code,
             name: model.name,
             parent_code: model.parent_code,
             sort: model.sort,
-            kind: model.kind,
-        }
+            kind: PermissionKind::try_from(model.kind)?,
+        })
     }
 }

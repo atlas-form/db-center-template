@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct Menu {
     pub id: i64,
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
 }
@@ -12,7 +11,6 @@ pub struct Menu {
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateMenu {
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
 }

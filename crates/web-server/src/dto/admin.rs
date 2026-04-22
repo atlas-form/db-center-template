@@ -2,6 +2,33 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum AdminUserStatus {
+    Enabled,
+    Disabled,
+}
+
+#[derive(Debug, Deserialize, Validate, ToSchema)]
+pub struct CreateAdminUserRequest {
+    #[validate(length(min = 1, max = 128))]
+    pub user_id: String,
+    pub status: AdminUserStatus,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct AdminUserResponse {
+    pub user_id: String,
+    pub status: AdminUserStatus,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum PermissionKind {
+    Group,
+    Action,
+}
+
 #[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreateRoleRequest {
     #[validate(length(min = 1, max = 64))]
@@ -26,8 +53,7 @@ pub struct CreatePermissionRequest {
     #[validate(length(min = 1, max = 128))]
     pub parent_code: Option<String>,
     pub sort: i32,
-    #[validate(length(min = 1, max = 32))]
-    pub kind: String,
+    pub kind: PermissionKind,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -37,15 +63,13 @@ pub struct PermissionResponse {
     pub name: String,
     pub parent_code: Option<String>,
     pub sort: i32,
-    pub kind: String,
+    pub kind: PermissionKind,
 }
 
 #[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreateMenuRequest {
     #[validate(length(min = 1, max = 64))]
     pub name: String,
-    #[validate(length(min = 1, max = 255))]
-    pub path: String,
     pub parent_id: Option<i64>,
     #[validate(length(min = 1, max = 128))]
     pub permission_code: Option<String>,
@@ -55,7 +79,6 @@ pub struct CreateMenuRequest {
 pub struct MenuResponse {
     pub id: i64,
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
 }
@@ -97,7 +120,6 @@ pub struct CurrentUserPermissionsResponse {
 pub struct MenuTreeNode {
     pub id: i64,
     pub name: String,
-    pub path: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
     #[schema(no_recursion)]

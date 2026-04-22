@@ -2,6 +2,7 @@
 /logs
 .env
 /sql
+/api_docs
 
 #MacOS
 **/.DS_Store

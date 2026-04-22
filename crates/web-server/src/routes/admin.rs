@@ -8,14 +8,16 @@ use toolcraft_jwt::VerifyJwt;
 use utoipa::OpenApi;
 
 use crate::handlers::admin::{
-    assign_user_role, create_menu, create_permission, create_role, current_user_menus,
-    current_user_permissions, grant_role_permission, list_menus, list_permissions, list_roles,
-    list_user_roles,
+    assign_user_role, create_admin_user, create_menu, create_permission, create_role,
+    current_user_menus, current_user_permissions, grant_role_permission, list_admin_users,
+    list_menus, list_permissions, list_roles, list_user_roles,
 };
 
 #[derive(OpenApi)]
 #[openapi(
     paths(
+        crate::handlers::admin::create_admin_user,
+        crate::handlers::admin::list_admin_users,
         crate::handlers::admin::create_role,
         crate::handlers::admin::list_roles,
         crate::handlers::admin::create_permission,
@@ -36,6 +38,7 @@ pub struct AdminApiDoc;
 
 pub fn admin_routes() -> Router {
     Router::new()
+        .route("/admin-users", post(create_admin_user).get(list_admin_users))
         .route("/roles", post(create_role).get(list_roles))
         .route(
             "/permissions",
