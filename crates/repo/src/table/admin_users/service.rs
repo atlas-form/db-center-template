@@ -23,6 +23,8 @@ impl AdminUserService {
     pub async fn create(&self, input: CreateAdminUser) -> BizResult<AdminUser> {
         let model = admin_users::ActiveModel {
             user_id: Set(input.user_id),
+            display_name: Set(input.display_name),
+            remark: Set(input.remark),
             status: Set(input.status.as_str().to_owned()),
         };
 
@@ -50,6 +52,8 @@ impl AdminUserService {
     fn from_model(model: admin_users::Model) -> BizResult<AdminUser> {
         Ok(AdminUser {
             user_id: model.user_id,
+            display_name: model.display_name,
+            remark: model.remark,
             status: AdminUserStatus::try_from(model.status)?,
         })
     }

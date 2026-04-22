@@ -48,6 +48,8 @@ pub async fn create_admin_user(
             auth_user.user_id,
             service::dto::admin::CreateAdminUserRequest {
                 user_id: req.user_id,
+                display_name: req.display_name,
+                remark: req.remark,
                 status: map_admin_user_status(req.status),
             },
         )
@@ -56,6 +58,8 @@ pub async fn create_admin_user(
 
     Ok(AdminUserResponse {
         user_id: admin_user.user_id,
+        display_name: admin_user.display_name,
+        remark: admin_user.remark,
         status: match admin_user.status {
             service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
             service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
@@ -88,6 +92,8 @@ pub async fn list_admin_users(
         .into_iter()
         .map(|admin_user| AdminUserResponse {
             user_id: admin_user.user_id,
+            display_name: admin_user.display_name,
+            remark: admin_user.remark,
             status: match admin_user.status {
                 service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
                 service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
