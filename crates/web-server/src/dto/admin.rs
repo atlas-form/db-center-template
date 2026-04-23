@@ -14,6 +14,8 @@ pub struct CreateAdminUserRequest {
     #[validate(length(min = 1, max = 128))]
     pub user_id: String,
     #[validate(length(min = 1, max = 64))]
+    pub display_id: String,
+    #[validate(length(min = 1, max = 64))]
     pub display_name: String,
     #[validate(length(min = 1, max = 255))]
     pub remark: Option<String>,
@@ -23,6 +25,7 @@ pub struct CreateAdminUserRequest {
 #[derive(Debug, Serialize, ToSchema)]
 pub struct AdminUserResponse {
     pub user_id: String,
+    pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,

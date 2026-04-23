@@ -10,6 +10,7 @@ require_command sed
 require_command awk
 require_command tr
 require_command base64
+require_command python3
 
 load_env
 parse_database_url
@@ -65,18 +66,35 @@ decode_sub_from_jwt() {
     | sed -n 's/.*"sub"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
 }
 
+extract_user_profile() {
+  python3 -c '
+import json, sys
+
+payload = json.load(sys.stdin)
+data = payload.get("data")
+if isinstance(data, dict):
+    payload = data
+
+user_id = payload.get("id", "")
+display_id = payload.get("display_user_id", "")
+display_name = payload.get("display_name", "")
+
+print(user_id)
+print(display_id)
+print(display_name)
+'
+}
+
 extract_access_token() {
   sed -n 's/.*"accessToken"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
 }
 
 json_escape() {
-  printf '%s' "$1" \
-    | sed \
-        -e 's/\\/\\\\/g' \
-        -e 's/"/\\"/g' \
-        -e 's/\t/\\t/g' \
-        -e 's/\r/\\r/g' \
-        -e ':a;N;$!ba;s/\n/\\n/g'
+  python3 -c 'import json, sys; print(json.dumps(sys.argv[1])[1:-1])' "$1"
+}
+
+sql_escape() {
+  printf '%s' "$1" | sed "s/'/''/g"
 }
 
 JWT_VERIFY_URL="$(read_jwt_verify_url)"
@@ -87,6 +105,7 @@ fi
 
 AUTH_BASE_URL="${JWT_VERIFY_URL%/internal/jwt_verify_config}"
 LOGIN_URL="${AUTH_BASE_URL}/auth/session/login"
+ME_URL="${AUTH_BASE_URL}/auth/user/me"
 
 printf "请输入 root 账号（用户名或邮箱）: "
 read -r IDENTIFIER
@@ -114,21 +133,49 @@ LOGIN_RESPONSE="$(curl -fsS \
 )"
 
 ACCESS_TOKEN="$(printf '%s' "$LOGIN_RESPONSE" | extract_access_token)"
-USER_ID="$(decode_sub_from_jwt "$ACCESS_TOKEN")"
+if [ -z "$ACCESS_TOKEN" ]; then
+  echo "错误：登录响应中缺少 accessToken"
+  exit 1
+fi
+
+ME_RESPONSE="$(curl -fsS \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+  "$ME_URL"
+)"
+
+USER_PROFILE="$(printf '%s' "$ME_RESPONSE" | extract_user_profile)"
+USER_ID="$(printf '%s\n' "$USER_PROFILE" | sed -n '1p')"
+DISPLAY_ID="$(printf '%s\n' "$USER_PROFILE" | sed -n '2p')"
+DISPLAY_NAME="$(printf '%s\n' "$USER_PROFILE" | sed -n '3p')"
+
+if [ -z "$USER_ID" ]; then
+  USER_ID="$(decode_sub_from_jwt "$ACCESS_TOKEN")"
+fi
 
 if [ -z "$USER_ID" ]; then
   echo "错误：无法从 auth access token 中解析 user_id"
   exit 1
 fi
 
+if [ -z "$DISPLAY_ID" ]; then
+  DISPLAY_ID="$USER_ID"
+fi
+
+if [ -z "$DISPLAY_NAME" ]; then
+  DISPLAY_NAME="$IDENTIFIER"
+fi
+
 ROLE_ID="$(
   run_psql "$DB_NAME" "
-    INSERT INTO roles (name, code)
-    VALUES ('Root', 'root')
-    ON CONFLICT (code) DO UPDATE
-    SET name = EXCLUDED.name
-    RETURNING id
-  " | tr -d '[:space:]'
+    WITH upserted AS (
+      INSERT INTO roles (name, code)
+      VALUES ('Root', 'root')
+      ON CONFLICT (code) DO UPDATE
+      SET name = EXCLUDED.name
+      RETURNING id
+    )
+    SELECT id FROM upserted;
+  " | awk 'NF { print $1 }' | tail -n 1 | tr -d '[:space:]'
 )"
 
 if [ -z "$ROLE_ID" ]; then
@@ -137,11 +184,20 @@ if [ -z "$ROLE_ID" ]; then
 fi
 
 run_psql "$DB_NAME" "
-  INSERT INTO admin_users (user_id, status)
-  VALUES ('${USER_ID}', 'enabled')
+  INSERT INTO admin_users (user_id, display_id, display_name, remark, status)
+  VALUES (
+    '${USER_ID}',
+    '$(sql_escape "$DISPLAY_ID")',
+    '$(sql_escape "$DISPLAY_NAME")',
+    NULL,
+    'enabled'
+  )
   ON CONFLICT (user_id) DO UPDATE
-  SET status = EXCLUDED.status;
-"
+  SET display_id = EXCLUDED.display_id,
+      display_name = EXCLUDED.display_name,
+      remark = EXCLUDED.remark,
+      status = EXCLUDED.status;
+" >/dev/null
 
 run_psql "$DB_NAME" "
   INSERT INTO user_roles (user_id, role_id)
@@ -149,7 +205,7 @@ run_psql "$DB_NAME" "
   FROM roles
   WHERE code = 'root'
   ON CONFLICT (user_id, role_id) DO NOTHING;
-"
+" >/dev/null
 
 run_psql "$DB_NAME" "
   INSERT INTO role_permissions (role_id, permission_code)
@@ -158,7 +214,7 @@ run_psql "$DB_NAME" "
   CROSS JOIN permissions
   WHERE roles.code = 'root'
   ON CONFLICT (role_id, permission_code) DO NOTHING;
-"
+" >/dev/null
 
 USER_ROLE_COUNT="$(
   run_psql "$DB_NAME" "
@@ -166,7 +222,7 @@ USER_ROLE_COUNT="$(
     FROM user_roles
     WHERE user_id = '${USER_ID}'::uuid
       AND role_id = ${ROLE_ID};
-  " | tr -d '[:space:]'
+  " | awk 'NF { print $1 }' | tail -n 1 | tr -d '[:space:]'
 )"
 
 if [ "${USER_ROLE_COUNT:-0}" != "1" ]; then
@@ -176,5 +232,7 @@ fi
 
 echo "root 初始化完成"
 echo "auth user_id: ${USER_ID}"
+echo "display_id: ${DISPLAY_ID}"
+echo "display_name: ${DISPLAY_NAME}"
 echo "role_id: ${ROLE_ID}"
 echo "auth login url: ${LOGIN_URL}"

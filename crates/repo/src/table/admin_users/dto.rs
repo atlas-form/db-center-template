@@ -44,6 +44,7 @@ impl TryFrom<String> for AdminUserStatus {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AdminUser {
     pub user_id: Uuid,
+    pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,
@@ -52,6 +53,7 @@ pub struct AdminUser {
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateAdminUser {
     pub user_id: Uuid,
+    pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,

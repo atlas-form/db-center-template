@@ -68,6 +68,7 @@ impl AdminApi {
             .admin_user_svc
             .create(CreateAdminUser {
                 user_id,
+                display_id: req.display_id,
                 display_name: req.display_name,
                 remark: req.remark,
                 status: req.status,
@@ -554,6 +555,7 @@ impl AdminApi {
     fn map_admin_user(admin_user: AdminUser, roles: Vec<RoleResponse>) -> AdminUserResponse {
         AdminUserResponse {
             user_id: admin_user.user_id.to_string(),
+            display_id: admin_user.display_id,
             display_name: admin_user.display_name,
             remark: admin_user.remark,
             status: admin_user.status,

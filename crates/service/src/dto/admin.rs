@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateAdminUserRequest {
     pub user_id: String,
+    pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,
@@ -13,6 +14,7 @@ pub struct CreateAdminUserRequest {
 #[derive(Debug, Clone, Serialize)]
 pub struct AdminUserResponse {
     pub user_id: String,
+    pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,

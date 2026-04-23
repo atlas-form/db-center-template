@@ -36,6 +36,7 @@ fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
 fn map_admin_user_response(admin_user: service::dto::admin::AdminUserResponse) -> AdminUserResponse {
     AdminUserResponse {
         user_id: admin_user.user_id,
+        display_id: admin_user.display_id,
         display_name: admin_user.display_name,
         remark: admin_user.remark,
         status: match admin_user.status {
@@ -69,6 +70,7 @@ pub async fn create_admin_user(
             auth_user.user_id,
             service::dto::admin::CreateAdminUserRequest {
                 user_id: req.user_id,
+                display_id: req.display_id,
                 display_name: req.display_name,
                 remark: req.remark,
                 status: map_admin_user_status(req.status),

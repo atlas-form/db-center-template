@@ -17,7 +17,20 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
+                    .col(ColumnDef::new(AdminUsers::DisplayId).string_len(64).not_null())
+                    .col(
+                        ColumnDef::new(AdminUsers::DisplayName)
+                            .string_len(64)
+                            .not_null(),
+                    )
+                    .col(ColumnDef::new(AdminUsers::Remark).string_len(255).null())
                     .col(ColumnDef::new(AdminUsers::Status).string().not_null())
+                    .index(
+                        Index::create()
+                            .name("uk_admin_users_display_id")
+                            .col(AdminUsers::DisplayId)
+                            .unique(),
+                    )
                     .to_owned(),
             )
             .await
@@ -34,5 +47,8 @@ impl MigrationTrait for Migration {
 enum AdminUsers {
     Table,
     UserId,
+    DisplayId,
+    DisplayName,
+    Remark,
     Status,
 }
