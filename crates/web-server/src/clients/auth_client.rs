@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use axum::http::StatusCode;
+use serde::Deserialize;
 use toolcraft_jwt::{VerifyJwt, VerifyJwtCfg};
 
 use crate::{
@@ -59,9 +59,10 @@ pub async fn get_user_by_identifier(identifier: &str) -> Result<Option<AuthUserR
 
     let status = response.status();
     if status == StatusCode::NOT_FOUND {
-        let body = response.text().await.map_err(|e| {
-            Error::Custom(format!("fetch auth user by identifier failed: {e}"))
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| Error::Custom(format!("fetch auth user by identifier failed: {e}")))?;
         let payload: ErrorResponse = serde_json::from_str(&body).map_err(|e| {
             Error::Custom(format!(
                 "decode fetch auth user by identifier error response failed: {e}"
@@ -72,9 +73,10 @@ pub async fn get_user_by_identifier(identifier: &str) -> Result<Option<AuthUserR
     }
 
     if !status.is_success() {
-        let body = response.text().await.map_err(|e| {
-            Error::Custom(format!("fetch auth user by identifier failed: {e}"))
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| Error::Custom(format!("fetch auth user by identifier failed: {e}")))?;
         let payload: ErrorResponse = serde_json::from_str(&body).map_err(|e| {
             Error::Custom(format!(
                 "decode fetch auth user by identifier error response failed: {e}"

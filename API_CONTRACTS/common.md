@@ -1,0 +1,87 @@
+# 通用约定
+
+## 1. 认证方式
+
+所有当前已暴露接口都需要 JWT 鉴权。
+
+请求头：
+
+```http
+Authorization: Bearer <access_token>
+```
+
+服务启动时会从远程 `auth` 服务拉取 JWT 验签配置，配置样例见 `config/services-example.toml`：
+
+```toml
+[jwt_verify]
+url = "http://127.0.0.1:29001/internal/jwt_verify_config"
+header = "x-internal-token"
+token = "dev-internal-token-change-me"
+```
+
+## 2. 统一响应格式
+
+项目中的 handler 统一通过 `CommonResponse<T>` 返回成功结果，通过 `CommonError` 返回错误结果。
+
+成功响应示例：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "user_id": "demo-user-id"
+  }
+}
+```
+
+错误响应示例：
+
+```json
+{
+  "code": -11002,
+  "message": "permission denied: admin:role:list"
+}
+```
+
+## 3. HTTP 状态码
+
+- `200 OK`：请求成功
+- `400 Bad Request`：参数校验失败，或一般业务错误
+- `401 Unauthorized`：未登录、Token 无效、JWT 校验失败
+- `403 Forbidden`：已登录，但不是有效后台管理员，或权限不足
+- `500 Internal Server Error`：服务内部错误
+
+## 4. 后台权限模型
+
+后台相关接口默认要求当前用户：
+
+1. 是 `admin_users` 中存在的后台用户
+2. 状态为 `Enabled`
+3. 拥有接口要求的权限码，或拥有 `root` 角色
+
+`root` 角色有两个特殊限制：
+
+- 角色编码 `root` 是保留值，不能通过普通创建接口创建
+- 非 `root` 用户不能给别人分配 `root` 角色
+- 非 `root` 用户不能修改 `root` 角色的权限
+
+## 5. 后台业务错误码
+
+来自 `crates/error-code/src/admin.rs`：
+
+| 错误码 | 含义 |
+| --- | --- |
+| `-11000` | 后台用户不存在 |
+| `-11001` | 后台用户已禁用 |
+| `-11002` | 权限不足 |
+| `-11003` | 保留角色限制触发，例如 `root` 角色相关操作 |
+
+## 6. 文档维护方式
+
+项目不再暴露 Swagger UI 或 OpenAPI JSON。
+
+当前接口文档统一维护在本目录下的 Markdown 文件中：
+
+- `API_CONTRACTS/common.md`
+- `API_CONTRACTS/admin.md`

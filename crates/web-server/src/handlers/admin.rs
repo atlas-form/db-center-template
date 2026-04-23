@@ -2,9 +2,7 @@ use axum::{Extension, Json, extract::Path};
 use db_core::error::BizError;
 use error_code::admin as admin_error;
 use service::api::admin::AdminApi;
-use toolcraft_axum_kit::{
-    CommonResponse, IntoCommonResponse, ResponseResult, middleware::auth_mw::AuthUser,
-};
+use toolcraft_axum_kit::{IntoCommonResponse, ResponseResult, middleware::auth_mw::AuthUser};
 use validator::Validate;
 
 use crate::{
@@ -29,7 +27,9 @@ fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
     }
 }
 
-fn map_admin_user_response(admin_user: service::dto::admin::AdminUserResponse) -> AdminUserResponse {
+fn map_admin_user_response(
+    admin_user: service::dto::admin::AdminUserResponse,
+) -> AdminUserResponse {
     AdminUserResponse {
         user_id: admin_user.user_id,
         display_id: admin_user.display_id,
@@ -39,30 +39,21 @@ fn map_admin_user_response(admin_user: service::dto::admin::AdminUserResponse) -
             service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
             service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
         },
-        roles: admin_user.roles.into_iter().map(map_role_response).collect(),
+        roles: admin_user
+            .roles
+            .into_iter()
+            .map(map_role_response)
+            .collect(),
     }
 }
 
-#[utoipa::path(
-    post,
-    path = "/admin-users",
-    tag = "admin",
-    security(("Bearer" = [])),
-    request_body = CreateAdminUserRequest,
-    responses(
-        (status = 200, description = "Create admin user", body = CommonResponse<AdminUserResponse>),
-        (status = 400, description = "Validation or business error"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn create_admin_user(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreateAdminUserRequest>,
 ) -> ResponseResult<AdminUserResponse> {
     req.validate().map_err(Error::from)?;
     let target_user = auth_client::get_user_by_identifier(&req.identifier)
-        .await
-        ?
+        .await?
         .ok_or_else(|| {
             from_biz_error(BizError::new(
                 admin_error::ADMIN_AUTH_USER_NOT_FOUND,
@@ -92,16 +83,6 @@ pub async fn create_admin_user(
         .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/admin-users",
-    tag = "admin",
-    security(("Bearer" = [])),
-    responses(
-        (status = 200, description = "List admin users", body = CommonResponse<Vec<AdminUserResponse>>),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn list_admin_users(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<AdminUserResponse>> {
@@ -119,18 +100,6 @@ pub async fn list_admin_users(
         .to_json())
 }
 
-#[utoipa::path(
-    post,
-    path = "/roles",
-    tag = "admin",
-    security(("Bearer" = [])),
-    request_body = CreateRoleRequest,
-    responses(
-        (status = 200, description = "Create role", body = CommonResponse<RoleResponse>),
-        (status = 400, description = "Validation or business error"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn create_role(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreateRoleRequest>,
@@ -157,17 +126,9 @@ pub async fn create_role(
     .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/roles",
-    tag = "admin",
-    security(("Bearer" = [])),
-    responses(
-        (status = 200, description = "List roles", body = CommonResponse<Vec<RoleResponse>>),
-        (status = 401, description = "Unauthorized")
-    )
-)]
-pub async fn list_roles(Extension(auth_user): Extension<AuthUser>) -> ResponseResult<Vec<RoleResponse>> {
+pub async fn list_roles(
+    Extension(auth_user): Extension<AuthUser>,
+) -> ResponseResult<Vec<RoleResponse>> {
     let api = AdminApi::new(get_default_ctx());
     let roles = api
         .list_roles(auth_user.user_id)
@@ -186,18 +147,6 @@ pub async fn list_roles(Extension(auth_user): Extension<AuthUser>) -> ResponseRe
         .to_json())
 }
 
-#[utoipa::path(
-    post,
-    path = "/permissions",
-    tag = "admin",
-    security(("Bearer" = [])),
-    request_body = CreatePermissionRequest,
-    responses(
-        (status = 200, description = "Create permission", body = CommonResponse<PermissionResponse>),
-        (status = 400, description = "Validation or business error"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn create_permission(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreatePermissionRequest>,
@@ -233,16 +182,6 @@ pub async fn create_permission(
     .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/permissions",
-    tag = "admin",
-    security(("Bearer" = [])),
-    responses(
-        (status = 200, description = "List permissions", body = CommonResponse<Vec<PermissionResponse>>),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn list_permissions(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<PermissionResponse>> {
@@ -270,18 +209,6 @@ pub async fn list_permissions(
         .to_json())
 }
 
-#[utoipa::path(
-    post,
-    path = "/menus",
-    tag = "admin",
-    security(("Bearer" = [])),
-    request_body = CreateMenuRequest,
-    responses(
-        (status = 200, description = "Create menu", body = CommonResponse<MenuResponse>),
-        (status = 400, description = "Validation or business error"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn create_menu(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreateMenuRequest>,
@@ -310,17 +237,9 @@ pub async fn create_menu(
     .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/menus",
-    tag = "admin",
-    security(("Bearer" = [])),
-    responses(
-        (status = 200, description = "List menus", body = CommonResponse<Vec<MenuResponse>>),
-        (status = 401, description = "Unauthorized")
-    )
-)]
-pub async fn list_menus(Extension(auth_user): Extension<AuthUser>) -> ResponseResult<Vec<MenuResponse>> {
+pub async fn list_menus(
+    Extension(auth_user): Extension<AuthUser>,
+) -> ResponseResult<Vec<MenuResponse>> {
     let api = AdminApi::new(get_default_ctx());
     let menus = api
         .list_menus(auth_user.user_id)
@@ -340,18 +259,6 @@ pub async fn list_menus(Extension(auth_user): Extension<AuthUser>) -> ResponseRe
         .to_json())
 }
 
-#[utoipa::path(
-    post,
-    path = "/user-roles",
-    tag = "admin",
-    security(("Bearer" = [])),
-    request_body = AssignUserRoleRequest,
-    responses(
-        (status = 200, description = "Assign role to user", body = CommonResponse<UserRoleResponse>),
-        (status = 400, description = "Validation or business error"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn assign_user_role(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<AssignUserRoleRequest>,
@@ -377,19 +284,6 @@ pub async fn assign_user_role(
     .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/users/{user_id}/roles",
-    tag = "admin",
-    security(("Bearer" = [])),
-    params(
-        ("user_id" = String, Path, description = "Auth user id")
-    ),
-    responses(
-        (status = 200, description = "List roles of a user", body = CommonResponse<Vec<RoleResponse>>),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn list_user_roles(
     Extension(auth_user): Extension<AuthUser>,
     Path(user_id): Path<String>,
@@ -412,18 +306,6 @@ pub async fn list_user_roles(
         .to_json())
 }
 
-#[utoipa::path(
-    post,
-    path = "/role-permissions",
-    tag = "admin",
-    security(("Bearer" = [])),
-    request_body = GrantRolePermissionRequest,
-    responses(
-        (status = 200, description = "Grant permission to role", body = CommonResponse<RolePermissionResponse>),
-        (status = 400, description = "Validation or business error"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn grant_role_permission(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<GrantRolePermissionRequest>,
@@ -449,20 +331,6 @@ pub async fn grant_role_permission(
     .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/me/permissions",
-    tag = "admin",
-    security(("Bearer" = [])),
-    responses(
-        (
-            status = 200,
-            description = "Current user permissions",
-            body = CommonResponse<CurrentUserPermissionsResponse>
-        ),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn current_user_permissions(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<CurrentUserPermissionsResponse> {
@@ -481,16 +349,6 @@ pub async fn current_user_permissions(
     .to_json())
 }
 
-#[utoipa::path(
-    get,
-    path = "/me/menus",
-    tag = "admin",
-    security(("Bearer" = [])),
-    responses(
-        (status = 200, description = "Current user menu tree", body = CommonResponse<Vec<MenuTreeNode>>),
-        (status = 401, description = "Unauthorized")
-    )
-)]
 pub async fn current_user_menus(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<MenuTreeNode>> {

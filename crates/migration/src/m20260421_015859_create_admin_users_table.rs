@@ -17,7 +17,11 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(AdminUsers::DisplayId).string_len(64).not_null())
+                    .col(
+                        ColumnDef::new(AdminUsers::DisplayId)
+                            .string_len(64)
+                            .not_null(),
+                    )
                     .col(
                         ColumnDef::new(AdminUsers::DisplayName)
                             .string_len(64)

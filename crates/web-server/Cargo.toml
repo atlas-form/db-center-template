@@ -21,10 +21,7 @@ thiserror.workspace = true
 time.workspace = true
 uuid.workspace = true
 axum = {version = "0.8.8", features = ["macros", "multipart"]}
-utoipa = { version = "5", features = ["axum_extras"] }
-utoipa-swagger-ui = { version = "9", features = ["axum"] }
-utoipa-axum = { version = "0.2" }
-toolcraft-axum-kit = {version = "0.2.5"}
+toolcraft-axum-kit = {version = "0.2.10"}
 toolcraft-config= {version = "0.2.0"}
 toolcraft-jwt= {version = "0.3.6"}
 toolcraft-request= {version = "0.2.3"}

@@ -15,10 +15,7 @@ use toolcraft_axum_kit::http_server;
 
 use crate::{
     logging::init_tracing_to_file,
-    statics::{
-        db_manager::init_db,
-        request_client::init_request_client,
-    },
+    statics::{db_manager::init_db, request_client::init_request_client},
 };
 
 #[tokio::main]

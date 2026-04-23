@@ -109,7 +109,7 @@ postgres://username:password@host:5432/database_name
 6. 检查 auth 服务是否可访问
 7. 运行数据库初始化和迁移
 8. 启动当前服务
-9. 验证 Swagger 是否可访问
+9. 核对 `API_CONTRACTS/` 下的 Markdown 接口文档是否与当前代码一致
 10. 告诉我当前环境是否已经可以开始开发
 
 如果中间发现问题，请先自行排查和修复，不要直接开始写业务代码。

@@ -51,8 +51,8 @@
 
 AI 在真正开发前，必须先阅读：
 
-- `ai_protocols/TABLE_ADDING_PROTOCOL.md`
-- 如果涉及登录用户：`ai_protocols/AUTH_INTEGRATION_GUIDE.md`
+- `AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md`
+- 如果涉及登录用户：`AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md`
 
 然后先输出一份“服务端实现文档”，供用户确认。
 
@@ -94,8 +94,8 @@ AI 输出文档后，用户需要先确认：
 开发时必须严格按照：
 
 - 已确认的服务端实现文档
-- `ai_protocols/TABLE_ADDING_PROTOCOL.md`
-- 如果涉及登录用户：`ai_protocols/AUTH_INTEGRATION_GUIDE.md`
+- `AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md`
+- 如果涉及登录用户：`AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md`
 
 推荐顺序：
 
@@ -115,8 +115,8 @@ AI 输出文档后，用户需要先确认：
 ```text
 请先不要直接写代码。
 
-先阅读 ai_protocols/TABLE_ADDING_PROTOCOL.md。
-如果需求涉及登录用户，请继续阅读 ai_protocols/AUTH_INTEGRATION_GUIDE.md。
+先阅读 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
+如果需求涉及登录用户，请继续阅读 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
 
 然后根据我的业务需求，先输出一份“服务端实现文档”，内容至少包括：
 1. 业务理解
@@ -141,8 +141,8 @@ AI 输出文档后，用户需要先确认：
 现在开始开发。
 
 请严格按照已经确认的服务端实现文档执行。
-同时遵守 ai_protocols/TABLE_ADDING_PROTOCOL.md。
-如果涉及登录用户，同时遵守 ai_protocols/AUTH_INTEGRATION_GUIDE.md。
+同时遵守 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
+如果涉及登录用户，同时遵守 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
 
 按以下顺序完成：
 1. migration
@@ -217,5 +217,5 @@ AI 输出文档后，用户需要先确认：
 
 1. `user_docs/core_design.md`
 2. `user_docs/requirement_to_backend_doc.md`
-3. `ai_protocols/TABLE_ADDING_PROTOCOL.md`
-4. `ai_protocols/AUTH_INTEGRATION_GUIDE.md`
+3. `AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md`
+4. `AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md`

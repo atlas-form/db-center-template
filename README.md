@@ -47,8 +47,7 @@
 - PostgreSQL 是否可用
 - `auth` 服务是否可访问
 - 当前项目是否能正常启动
-- Swagger 是否能打开
-- 示例鉴权接口是否可测试
+- 管理端接口是否可测试
 
 如果过程中出现报错，优先让 AI 自己排查和修复，不要立刻停下来等用户处理。
 
@@ -64,7 +63,7 @@
 4. 检查 auth 服务是否可访问
 5. 运行数据库初始化和迁移
 6. 启动当前服务
-7. 验证 Swagger 是否可访问
+7. 核对 `API_CONTRACTS/` 下的 Markdown 接口文档是否与当前代码一致
 8. 告诉我当前环境是否已经可以开始开发
 
 如果中间发现问题，请先修复环境问题，不要直接开始写业务代码。
@@ -144,8 +143,8 @@ postgres://username:password@host:5432/database_name
 请先不要直接写代码。
 
 先阅读：
-1. ai_protocols/TABLE_ADDING_PROTOCOL.md
-2. 如果涉及登录用户，再阅读 ai_protocols/AUTH_INTEGRATION_GUIDE.md
+1. AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md
+2. 如果涉及登录用户，再阅读 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md
 
 然后根据我的业务需求，先输出一份“服务端开发文档”，内容至少包括：
 1. 业务理解
@@ -170,8 +169,8 @@ postgres://username:password@host:5432/database_name
 现在开始开发。
 
 请严格按照已经确认的服务端开发文档执行。
-同时遵守 ai_protocols/TABLE_ADDING_PROTOCOL.md。
-如果涉及登录用户，同时遵守 ai_protocols/AUTH_INTEGRATION_GUIDE.md。
+同时遵守 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
+如果涉及登录用户，同时遵守 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
 
 按以下顺序完成：
 1. migration
@@ -195,9 +194,9 @@ postgres://username:password@host:5432/database_name
 
 如果你希望 AI 按统一流程工作，建议它先阅读：
 
-1. [ai_protocols/AI_WORKFLOW.md](./ai_protocols/AI_WORKFLOW.md)
-2. [ai_protocols/TABLE_ADDING_PROTOCOL.md](./ai_protocols/TABLE_ADDING_PROTOCOL.md)
-3. 如果涉及登录用户，再阅读 [ai_protocols/AUTH_INTEGRATION_GUIDE.md](./ai_protocols/AUTH_INTEGRATION_GUIDE.md)
+1. [AI_PROTOCOLS/AI_WORKFLOW.md](./AI_PROTOCOLS/AI_WORKFLOW.md)
+2. [AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md](./AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md)
+3. 如果涉及登录用户，再阅读 [AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md](./AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md)
 
 ## 说明
 

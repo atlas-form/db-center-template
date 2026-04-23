@@ -78,11 +78,17 @@ impl AdminApi {
         Ok(Self::map_admin_user(admin_user, Vec::new()))
     }
 
-    pub async fn list_admin_users(&self, current_user_id: String) -> BizResult<Vec<AdminUserResponse>> {
+    pub async fn list_admin_users(
+        &self,
+        current_user_id: String,
+    ) -> BizResult<Vec<AdminUserResponse>> {
         self.ensure_permission(&current_user_id, PERM_ADMIN_USER_LIST)
             .await?;
         let admin_users = self.admin_user_svc.list_all().await?;
-        let user_ids = admin_users.iter().map(|user| user.user_id).collect::<Vec<_>>();
+        let user_ids = admin_users
+            .iter()
+            .map(|user| user.user_id)
+            .collect::<Vec<_>>();
         let user_roles = self.user_role_svc.list_by_user_ids(user_ids).await?;
         let role_ids = user_roles
             .iter()
@@ -111,7 +117,9 @@ impl AdminApi {
         Ok(admin_users
             .into_iter()
             .filter_map(|admin_user| {
-                let roles = roles_by_user_id.remove(&admin_user.user_id).unwrap_or_default();
+                let roles = roles_by_user_id
+                    .remove(&admin_user.user_id)
+                    .unwrap_or_default();
                 if roles.iter().any(|role| role.code == ROOT_ROLE_CODE) {
                     return None;
                 }
@@ -243,7 +251,8 @@ impl AdminApi {
         let access = self
             .ensure_permission(&current_user_id, PERM_USER_ROLE_ASSIGN)
             .await?;
-        self.ensure_role_assignment_allowed(&access, req.role_id).await?;
+        self.ensure_role_assignment_allowed(&access, req.role_id)
+            .await?;
         let user_id = parse_user_id(&req.user_id)?;
         let user_role = self
             .user_role_svc
@@ -316,7 +325,8 @@ impl AdminApi {
                 .map(|permission| permission.code)
                 .collect()
         } else {
-            self.collect_permission_codes(access.role_ids.clone()).await?
+            self.collect_permission_codes(access.role_ids.clone())
+                .await?
         };
 
         Ok(CurrentUserPermissionsResponse {
@@ -403,13 +413,19 @@ impl AdminApi {
         })
     }
 
-    async fn ensure_permission(&self, user_id: &str, permission_code: &str) -> BizResult<AdminAccess> {
+    async fn ensure_permission(
+        &self,
+        user_id: &str,
+        permission_code: &str,
+    ) -> BizResult<AdminAccess> {
         let access = self.ensure_admin_user(user_id).await?;
         if access.is_root() {
             return Ok(access);
         }
 
-        let permission_codes = self.collect_permission_codes(access.role_ids.clone()).await?;
+        let permission_codes = self
+            .collect_permission_codes(access.role_ids.clone())
+            .await?;
         if permission_codes.iter().any(|code| code == permission_code) {
             return Ok(access);
         }

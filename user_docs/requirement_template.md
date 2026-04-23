@@ -95,8 +95,8 @@
 这是我的业务需求。
 
 请先不要直接写代码。
-先阅读 ai_protocols/AI_WORKFLOW.md 和 ai_protocols/TABLE_ADDING_PROTOCOL.md。
-如果需求涉及登录用户，请继续阅读 ai_protocols/AUTH_INTEGRATION_GUIDE.md。
+先阅读 AI_PROTOCOLS/AI_WORKFLOW.md 和 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
+如果需求涉及登录用户，请继续阅读 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
 
 然后根据我的需求，先输出一份“服务端开发文档”，等我确认后再开始开发。
 

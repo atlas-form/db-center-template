@@ -1,14 +1,14 @@
 # Web Server 层开发协议 (AI 专用)
 
 > 本文档是 **执行规约**，AI 必须严格按步骤在 `crates/web-server` 中添加或修改 HTTP 接口。
-> `web-server` 负责 HTTP 请求响应、参数校验、身份认证、OpenAPI 文档生成。它直接调用 `service` 层的业务 API。
+> `web-server` 负责 HTTP 请求响应、参数校验、身份认证，以及同步维护 `API_CONTRACTS/` 下的 Markdown 接口文档。它直接调用 `service` 层的业务 API。
 
 ---
 
 ## 一、核心原则
 
 1. **绝对禁止数据库操作**：此层绝不允许出现 `sea-orm` 或任何数据库特有类型（比如 `DbErr`、`Model`）。所有业务逻辑都应代理给 `service` 层的 API。
-2. **OpenAPI 一等公民**：所有接口和 DTO 必须使用 `utoipa` 编写注释，保证 `/api-docs/openapi.json` 能生成完整的文档。
+2. **Markdown 文档同步**：所有新增或修改的接口，都必须同步更新 `API_CONTRACTS/` 中对应的 Markdown 文档，保证文档和真实路由、请求结构、响应结构一致。
 3. **分层错误处理**：业务层的 `Error`（如 NotFound, ValidationError）在这一层需要被转换为合适的 HTTP 状态码并封装成标准响应。
 4. **强类型约束**：请求参数需通过 `validator` 和 `serde` 在进入 Handler 前完成校验。
 5. **统一认证来源**：如果接口需要登录态，请按 `AUTH_INTEGRATION_GUIDE.md` 集成 `auth` 服务，不要在当前业务服务内重复实现登录或 JWT 签发。
@@ -22,16 +22,14 @@
 
 ### Step 1: 编写 Web DTO (`dto/xxx.rs`)
 
-在 `crates/web-server/src/dto/user_biz.rs` 中定义 HTTP 专用的请求和响应结构，并加上 `utoipa` 和 `validator` 注解：
+在 `crates/web-server/src/dto/user_biz.rs` 中定义 HTTP 专用的请求和响应结构，并加上 `validator` 注解：
 
 ```rust
 use serde::{Deserialize, Serialize};
-use utoipa::{ToSchema, IntoParams};
 use validator::Validate;
 
 /// 创建用户请求参数
-#[derive(Debug, Deserialize, Validate, IntoParams)]
-#[into_params(parameter_in = Query)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct CreateUserRequest {
     #[validate(length(min = 3, max = 20))]
     pub username: String,
@@ -41,7 +39,7 @@ pub struct CreateUserRequest {
 }
 
 /// HTTP 通用响应数据体
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct UserResponse {
     pub id: i64,
     pub username: String,
@@ -61,17 +59,6 @@ use service::api::user_biz::UserBizApi;
 // 引入全局静态依赖
 use crate::{dto::user_biz::*, error::Error, statics::db_manager::get_default_ctx};
 
-#[utoipa::path(
-    post,
-    path = "/users",
-    tag = "用户业务 (User Biz)",
-    params(CreateUserRequest),
-    responses(
-        (status = 200, description = "成功创建", body = CommonResponse<UserResponse>),
-        (status = 400, description = "参数校验失败"),
-        (status = 500, description = "服务器内部错误")
-    )
-)]
 pub async fn create_user_handler(
     Query(req): Query<CreateUserRequest>,
 ) -> ResponseResult<UserResponse> {
@@ -113,7 +100,7 @@ pub async fn my_handler(
 }
 ```
 
-### Step 3: 注册 Routes 与 OpenAPI (`routes/xxx.rs`)
+### Step 3: 注册 Routes (`routes/xxx.rs`)
 
 在 `crates/web-server/src/routes/user_biz.rs` 中定义子路由结构。如果接口需要登录态，请给该子路由挂 `auth::<VerifyJwt>` 中间件：
 
@@ -121,13 +108,8 @@ pub async fn my_handler(
 use axum::{Router, middleware::from_fn, routing::post};
 use toolcraft_axum_kit::middleware::auth_mw::auth;
 use toolcraft_jwt::VerifyJwt;
-use utoipa::OpenApi;
 
 use crate::handlers::user_biz::create_user_handler;
-
-#[derive(OpenApi)]
-#[openapi(paths(crate::handlers::user_biz::create_user_handler))]
-pub struct UserBizApiDoc;
 
 pub fn user_biz_routes() -> Router {
     Router::new()
@@ -147,26 +129,14 @@ use std::sync::Arc;
 use axum::{Extension, Router};
 use toolcraft_axum_kit::middleware::cors::create_cors;
 use toolcraft_jwt::VerifyJwt;
-use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
-
-#[derive(OpenApi)]
-#[openapi(
-    nest(
-        (path = "/user-biz", api = user_biz::UserBizApiDoc),
-    ),
-)]
-struct ApiDoc;
 
 pub fn create_routes(jwt: Arc<VerifyJwt>) -> Router {
     let cors = create_cors();
-    let doc = ApiDoc::openapi();
 
     Router::new()
-        .nest("/user-biz", user_biz::user_biz_routes())
+        .nest("/api/user-biz", user_biz::user_biz_routes())
         .layer(Extension(jwt))
         .layer(cors)
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", doc))
 }
 ```
 
@@ -177,12 +147,23 @@ pub fn create_routes(jwt: Arc<VerifyJwt>) -> Router {
 pub mod user_biz;
 ```
 
+### Step 6: 更新 Markdown API 文档
+
+在 `API_CONTRACTS/` 中补充或更新对应模块的 Markdown 文档，至少包含：
+
+- 实际路由前缀
+- 请求方法和路径
+- 请求体或路径参数
+- 字段约束
+- 成功响应示例
+- 关键权限要求
+
 ---
 
 ## 三、自检清单
 
 - [ ] 在开始写 web-server 代码前，接口设计是否已经被用户确认？
 - [ ] 是否确保此层没有引入 `sea-orm` 或调用任何原 `repo` 层的直接方法？
-- [ ] 所有新创建的 DTO 和 Handler 是否都已经添加了完整的 `#[utoipa::...]` 注解？
-- [ ] 在 `routes/mod.rs` 中是否**既挂载了实际路由 (.nest)**，**又注册了文档 (.openapi(nest(...)))**？
+- [ ] `API_CONTRACTS/` 中对应的 Markdown 文档是否已经同步更新？
+- [ ] `routes/mod.rs` 中是否已经正确挂载实际路由前缀？
 - [ ] 数据结构的参数验证是否完整使用了 `validator` 标签？

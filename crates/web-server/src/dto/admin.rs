@@ -1,15 +1,14 @@
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AdminUserStatus {
     Enabled,
     Disabled,
 }
 
-#[derive(Debug, Deserialize, Validate, ToSchema)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct CreateAdminUserRequest {
     #[validate(length(min = 1, max = 128))]
     pub identifier: String,
@@ -17,7 +16,7 @@ pub struct CreateAdminUserRequest {
     pub remark: Option<String>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct AdminUserResponse {
     pub user_id: String,
     pub display_id: String,
@@ -27,14 +26,14 @@ pub struct AdminUserResponse {
     pub roles: Vec<RoleResponse>,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PermissionKind {
     Group,
     Action,
 }
 
-#[derive(Debug, Deserialize, Validate, ToSchema)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct CreateRoleRequest {
     #[validate(length(min = 1, max = 64))]
     pub name: String,
@@ -42,14 +41,14 @@ pub struct CreateRoleRequest {
     pub code: String,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct RoleResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
 }
 
-#[derive(Debug, Deserialize, Validate, ToSchema)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct CreatePermissionRequest {
     #[validate(length(min = 1, max = 128))]
     pub code: String,
@@ -61,7 +60,7 @@ pub struct CreatePermissionRequest {
     pub kind: PermissionKind,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct PermissionResponse {
     pub id: i64,
     pub code: String,
@@ -71,7 +70,7 @@ pub struct PermissionResponse {
     pub kind: PermissionKind,
 }
 
-#[derive(Debug, Deserialize, Validate, ToSchema)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct CreateMenuRequest {
     #[validate(length(min = 1, max = 64))]
     pub name: String,
@@ -80,7 +79,7 @@ pub struct CreateMenuRequest {
     pub permission_code: Option<String>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct MenuResponse {
     pub id: i64,
     pub name: String,
@@ -88,45 +87,44 @@ pub struct MenuResponse {
     pub permission_code: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Validate, ToSchema)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct AssignUserRoleRequest {
     #[validate(length(min = 1, max = 128))]
     pub user_id: String,
     pub role_id: i64,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct UserRoleResponse {
     pub user_id: String,
     pub role_id: i64,
 }
 
-#[derive(Debug, Deserialize, Validate, ToSchema)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct GrantRolePermissionRequest {
     pub role_id: i64,
     #[validate(length(min = 1, max = 128))]
     pub permission_code: String,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct RolePermissionResponse {
     pub role_id: i64,
     pub permission_code: String,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, Serialize)]
 pub struct CurrentUserPermissionsResponse {
     pub user_id: String,
     pub role_codes: Vec<String>,
     pub permission_codes: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize)]
 pub struct MenuTreeNode {
     pub id: i64,
     pub name: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
-    #[schema(no_recursion)]
     pub children: Vec<MenuTreeNode>,
 }
