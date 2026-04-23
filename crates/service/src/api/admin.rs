@@ -110,9 +110,13 @@ impl AdminApi {
 
         Ok(admin_users
             .into_iter()
-            .map(|admin_user| {
+            .filter_map(|admin_user| {
                 let roles = roles_by_user_id.remove(&admin_user.user_id).unwrap_or_default();
-                Self::map_admin_user(admin_user, roles)
+                if roles.iter().any(|role| role.code == ROOT_ROLE_CODE) {
+                    return None;
+                }
+
+                Some(Self::map_admin_user(admin_user, roles))
             })
             .collect())
     }
