@@ -25,7 +25,13 @@ use crate::{
 async fn main() {
     init_tracing_to_file();
     let settings = Settings::load("config/services.toml").unwrap();
+    let internal_base_url = settings
+        .jwt_verify
+        .url
+        .trim_end_matches("/jwt_verify_config")
+        .to_owned();
     init_request_client(
+        internal_base_url,
         settings.jwt_verify.header.clone(),
         settings.jwt_verify.token.clone(),
     )
@@ -34,7 +40,7 @@ async fn main() {
         .await
         .expect("DatabaseManager initialization failed");
     let jwt = Arc::new(
-        fetch_verify_jwt(&settings.jwt_verify)
+        fetch_verify_jwt()
             .await
             .expect("VerifyJwt initialization failed"),
     );

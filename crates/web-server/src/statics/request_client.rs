@@ -6,9 +6,13 @@ use crate::error::{Error, Result};
 
 static REQUEST_CLIENT: OnceLock<Request> = OnceLock::new();
 
-pub fn init_request_client(header: String, token: String) -> Result<()> {
+pub fn init_request_client(base_url: String, header: String, token: String) -> Result<()> {
     let mut client =
         Request::new().map_err(|e| Error::Custom(format!("request client init failed: {e}")))?;
+
+    client
+        .set_base_url(&base_url)
+        .map_err(|e| Error::Custom(format!("invalid request client base url: {e}")))?;
 
     let mut default_headers = HeaderMap::new();
     default_headers

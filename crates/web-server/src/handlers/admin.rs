@@ -1,4 +1,6 @@
 use axum::{Extension, Json, extract::Path};
+use db_core::error::BizError;
+use error_code::admin as admin_error;
 use service::api::admin::AdminApi;
 use toolcraft_axum_kit::{
     CommonResponse, IntoCommonResponse, ResponseResult, middleware::auth_mw::AuthUser,
@@ -6,17 +8,11 @@ use toolcraft_axum_kit::{
 use validator::Validate;
 
 use crate::{
+    clients::auth_client,
     dto::admin::*,
     error::{Error, from_biz_error},
     statics::db_manager::get_default_ctx,
 };
-
-fn map_admin_user_status(status: AdminUserStatus) -> service::dto::admin::AdminUserStatus {
-    match status {
-        AdminUserStatus::Enabled => service::dto::admin::AdminUserStatus::Enabled,
-        AdminUserStatus::Disabled => service::dto::admin::AdminUserStatus::Disabled,
-    }
-}
 
 fn map_permission_kind(kind: PermissionKind) -> service::dto::admin::PermissionKind {
     match kind {
@@ -64,16 +60,28 @@ pub async fn create_admin_user(
     Json(req): Json<CreateAdminUserRequest>,
 ) -> ResponseResult<AdminUserResponse> {
     req.validate().map_err(Error::from)?;
+    let target_user = auth_client::get_user_by_identifier(&req.identifier)
+        .await
+        ?
+        .ok_or_else(|| {
+            from_biz_error(BizError::new(
+                admin_error::ADMIN_AUTH_USER_NOT_FOUND,
+                format!("auth user not found: {}", req.identifier),
+            ))
+        })?;
     let api = AdminApi::new(get_default_ctx());
     let admin_user = api
         .create_admin_user(
             auth_user.user_id,
             service::dto::admin::CreateAdminUserRequest {
-                user_id: req.user_id,
-                display_id: req.display_id,
-                display_name: req.display_name,
+                user_id: target_user.id,
+                display_id: target_user
+                    .display_user_id
+                    .unwrap_or_else(|| target_user.username.clone()),
+                display_name: target_user
+                    .display_name
+                    .unwrap_or_else(|| target_user.username.clone()),
                 remark: req.remark,
-                status: map_admin_user_status(req.status),
             },
         )
         .await

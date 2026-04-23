@@ -43,6 +43,7 @@ pub fn from_biz_error(err: BizError) -> ApiError {
         | admin_error::ADMIN_USER_DISABLED
         | admin_error::ADMIN_PERMISSION_DENIED
         | admin_error::ADMIN_ROLE_RESERVED => StatusCode::FORBIDDEN,
+        admin_error::ADMIN_AUTH_USER_NOT_FOUND => StatusCode::NOT_FOUND,
         _ => StatusCode::BAD_REQUEST,
     };
 

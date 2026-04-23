@@ -8,7 +8,6 @@ pub struct CreateAdminUserRequest {
     pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
-    pub status: AdminUserStatus,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -71,7 +71,7 @@ impl AdminApi {
                 display_id: req.display_id,
                 display_name: req.display_name,
                 remark: req.remark,
-                status: req.status,
+                status: AdminUserStatus::Enabled,
             })
             .await?;
 

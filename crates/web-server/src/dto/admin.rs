@@ -12,14 +12,9 @@ pub enum AdminUserStatus {
 #[derive(Debug, Deserialize, Validate, ToSchema)]
 pub struct CreateAdminUserRequest {
     #[validate(length(min = 1, max = 128))]
-    pub user_id: String,
-    #[validate(length(min = 1, max = 64))]
-    pub display_id: String,
-    #[validate(length(min = 1, max = 64))]
-    pub display_name: String,
+    pub identifier: String,
     #[validate(length(min = 1, max = 255))]
     pub remark: Option<String>,
-    pub status: AdminUserStatus,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
