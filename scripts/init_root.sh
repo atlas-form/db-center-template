@@ -208,12 +208,12 @@ run_psql "$DB_NAME" "
 " >/dev/null
 
 run_psql "$DB_NAME" "
-  INSERT INTO role_permissions (role_id, permission_code)
-  SELECT roles.id, permissions.code
+  INSERT INTO role_permissions (role_id, permission_id)
+  SELECT roles.id, permissions.id
   FROM roles
   CROSS JOIN permissions
   WHERE roles.code = 'root'
-  ON CONFLICT (role_id, permission_code) DO NOTHING;
+  ON CONFLICT (role_id, permission_id) DO NOTHING;
 " >/dev/null
 
 USER_ROLE_COUNT="$(

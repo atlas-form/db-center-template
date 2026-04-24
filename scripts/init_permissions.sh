@@ -69,7 +69,11 @@ echo "初始化基础权限节点..."
 
 run_psql "$DB_NAME" "
   DELETE FROM role_permissions
-  WHERE permission_code IN ('admin:menu:list', 'admin:menu:create');
+  WHERE permission_id IN (
+    SELECT id
+    FROM permissions
+    WHERE code IN ('admin:menu:list', 'admin:menu:create')
+  );
 
   DELETE FROM permissions
   WHERE code IN ('admin:menu:list', 'admin:menu:create');
@@ -86,7 +90,8 @@ upsert_permission "admin:role:list" "查看角色列表" "admin:access" 210 "act
 upsert_permission "admin:role:create" "创建角色" "admin:access" 220 "action"
 upsert_permission "admin:permission:list" "查看权限树" "admin:access" 230 "action"
 upsert_permission "admin:permission:create" "创建权限节点" "admin:access" 240 "action"
-upsert_permission "admin:role_permission:grant" "配置角色权限" "admin:access" 250 "action"
+upsert_permission "admin:role_permission:list" "查看角色权限" "admin:access" 250 "action"
+upsert_permission "admin:role_permission:grant" "配置角色权限" "admin:access" 260 "action"
 
 echo "初始化基础菜单..."
 
@@ -108,6 +113,7 @@ PERMISSION_COUNT="$(
       'admin:role:create',
       'admin:permission:list',
       'admin:permission:create',
+      'admin:role_permission:list',
       'admin:role_permission:grant'
     );
   " | tr -d '[:space:]'

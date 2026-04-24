@@ -27,6 +27,22 @@ fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
     }
 }
 
+fn map_permission_response(
+    permission: service::dto::admin::PermissionResponse,
+) -> PermissionResponse {
+    PermissionResponse {
+        id: permission.id,
+        code: permission.code,
+        name: permission.name,
+        parent_code: permission.parent_code,
+        sort: permission.sort,
+        kind: match permission.kind {
+            service::dto::admin::PermissionKind::Group => PermissionKind::Group,
+            service::dto::admin::PermissionKind::Action => PermissionKind::Action,
+        },
+    }
+}
+
 fn map_admin_user_response(
     admin_user: service::dto::admin::AdminUserResponse,
 ) -> AdminUserResponse {
@@ -380,6 +396,24 @@ pub async fn grant_role_permission(
     }
     .into_common_response()
     .to_json())
+}
+
+pub async fn list_role_permissions(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(role_id): Path<i64>,
+) -> ResponseResult<Vec<PermissionResponse>> {
+    let api = AdminApi::new(get_default_ctx());
+    let permissions = api
+        .list_role_permissions(auth_user.user_id, role_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(permissions
+        .into_iter()
+        .map(map_permission_response)
+        .collect::<Vec<_>>()
+        .into_common_response()
+        .to_json())
 }
 
 pub async fn current_user_permissions(

@@ -26,7 +26,7 @@ impl RolePermissionService {
     pub async fn create(&self, input: CreateRolePermission) -> BizResult<RolePermission> {
         let model = role_permissions::ActiveModel {
             role_id: Set(input.role_id),
-            permission_code: Set(input.permission_code),
+            permission_id: Set(input.permission_id),
         };
 
         Ok(Self::from_model(self.repo.insert(model).await?))
@@ -66,7 +66,7 @@ impl RolePermissionService {
     fn from_model(model: role_permissions::Model) -> RolePermission {
         RolePermission {
             role_id: model.role_id,
-            permission_code: model.permission_code,
+            permission_id: model.permission_id,
         }
     }
 }

@@ -9,7 +9,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub role_id: i64,
     #[sea_orm(primary_key, auto_increment = false)]
-    pub permission_code: String,
+    pub permission_id: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -21,6 +21,7 @@
 | `admin:menu:list` | 查看菜单列表 |
 | `admin:user_role:assign` | 给用户分配角色 |
 | `admin:user_role:list` | 查看用户角色 |
+| `admin:role_permission:list` | 查看角色权限 |
 | `admin:role_permission:grant` | 给角色授予权限 |
 
 `GET /api/admin/me/permissions` 和 `GET /api/admin/me/menus` 不要求单独权限码，但要求当前用户本身是有效后台用户。
@@ -450,8 +451,40 @@ null
 补充说明：
 
 - 非 `root` 用户不能修改 `root` 角色的权限
+- `permission_code` 必须对应已存在的权限节点；服务端会将其解析为 `permissions.id` 并写入 `role_permissions.permission_id`
 
-## 15. 查询当前用户权限
+## 15. 查询角色权限
+
+- 方法：`GET`
+- 路径：`/api/admin/roles/{role_id}/permissions`
+- 权限：`admin:role_permission:list`
+
+路径参数：
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `role_id` | `integer` | 是 | 角色 ID |
+
+成功响应 `data`：
+
+```json
+[
+  {
+    "id": 1,
+    "code": "device:create",
+    "name": "创建设备",
+    "parent_code": "device",
+    "sort": 10,
+    "kind": "action"
+  }
+]
+```
+
+补充说明：
+
+- 返回的是角色已授权的完整权限节点信息，而不是 `role_permissions` 绑定表的内部 ID
+
+## 16. 查询当前用户权限
 
 - 方法：`GET`
 - 路径：`/api/admin/me/permissions`
@@ -476,7 +509,7 @@ null
 
 - 如果当前用户拥有 `root` 角色，返回所有权限码
 
-## 16. 查询当前用户菜单树
+## 17. 查询当前用户菜单树
 
 - 方法：`GET`
 - 路径：`/api/admin/me/menus`

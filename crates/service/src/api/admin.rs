@@ -8,7 +8,7 @@ use error_code::admin as admin_error;
 use repo::table::{
     admin_users::{AdminUser, AdminUserService, AdminUserStatus, CreateAdminUser, UpdateAdminUser},
     menus::{CreateMenu, Menu, MenuService},
-    permissions::{CreatePermission, PermissionService},
+    permissions::{CreatePermission, Permission, PermissionService},
     role_permissions::{CreateRolePermission, RolePermissionService},
     roles::{CreateRole, Role, RoleService},
     user_roles::{CreateUserRole, UserRoleService},
@@ -37,6 +37,7 @@ const PERM_MENU_LIST: &str = "admin:menu:list";
 const PERM_USER_ROLE_ASSIGN: &str = "admin:user_role:assign";
 const PERM_USER_ROLE_LIST: &str = "admin:user_role:list";
 const PERM_ROLE_PERMISSION_GRANT: &str = "admin:role_permission:grant";
+const PERM_ROLE_PERMISSION_LIST: &str = "admin:role_permission:list";
 
 pub struct AdminApi {
     admin_user_svc: AdminUserService,
@@ -267,14 +268,7 @@ impl AdminApi {
             .list_all()
             .await?
             .into_iter()
-            .map(|permission| PermissionResponse {
-                id: permission.id,
-                code: permission.code,
-                name: permission.name,
-                parent_code: permission.parent_code,
-                sort: permission.sort,
-                kind: permission.kind,
-            })
+            .map(Self::map_permission)
             .collect())
     }
 
@@ -365,20 +359,52 @@ impl AdminApi {
         let access = self
             .ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_GRANT)
             .await?;
+        self.ensure_role_exists(req.role_id).await?;
         self.ensure_role_permission_change_allowed(&access, req.role_id)
+            .await?;
+        let permission = self
+            .ensure_permission_exists_by_code(&req.permission_code)
             .await?;
         let role_permission = self
             .role_permission_svc
             .create(CreateRolePermission {
                 role_id: req.role_id,
-                permission_code: req.permission_code,
+                permission_id: permission.id,
             })
             .await?;
 
         Ok(RolePermissionResponse {
             role_id: role_permission.role_id,
-            permission_code: role_permission.permission_code,
+            permission_code: permission.code,
         })
+    }
+
+    pub async fn list_role_permissions(
+        &self,
+        current_user_id: String,
+        role_id: i64,
+    ) -> BizResult<Vec<PermissionResponse>> {
+        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_LIST)
+            .await?;
+        self.ensure_role_exists(role_id).await?;
+        let role_permissions = self
+            .role_permission_svc
+            .list_by_role_ids(vec![role_id])
+            .await?;
+        let permission_ids = role_permissions
+            .into_iter()
+            .map(|item| item.permission_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
+
+        Ok(self
+            .permission_svc
+            .list_by_ids(permission_ids)
+            .await?
+            .into_iter()
+            .map(Self::map_permission)
+            .collect())
     }
 
     pub async fn get_current_user_permissions(
@@ -494,6 +520,21 @@ impl AdminApi {
         })
     }
 
+    async fn ensure_permission_exists_by_code(
+        &self,
+        permission_code: &str,
+    ) -> BizResult<Permission> {
+        self.permission_svc
+            .get_by_code(permission_code)
+            .await?
+            .ok_or_else(|| {
+                BizError::new(
+                    admin_error::ADMIN_PERMISSION_NOT_FOUND,
+                    format!("permission not found: {permission_code}"),
+                )
+            })
+    }
+
     async fn ensure_permission(
         &self,
         user_id: &str,
@@ -587,9 +628,18 @@ impl AdminApi {
 
     async fn collect_permission_codes(&self, role_ids: Vec<i64>) -> BizResult<Vec<String>> {
         let role_permissions = self.role_permission_svc.list_by_role_ids(role_ids).await?;
-        let codes: BTreeSet<String> = role_permissions
+        let permission_ids: Vec<i64> = role_permissions
             .into_iter()
-            .map(|item| item.permission_code)
+            .map(|item| item.permission_id)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
+        let codes: BTreeSet<String> = self
+            .permission_svc
+            .list_by_ids(permission_ids)
+            .await?
+            .into_iter()
+            .map(|permission| permission.code)
             .collect();
         Ok(codes.into_iter().collect())
     }
@@ -671,6 +721,17 @@ impl AdminApi {
             id: role.id,
             name: role.name,
             code: role.code,
+        }
+    }
+
+    fn map_permission(permission: Permission) -> PermissionResponse {
+        PermissionResponse {
+            id: permission.id,
+            code: permission.code,
+            name: permission.name,
+            parent_code: permission.parent_code,
+            sort: permission.sort,
+            kind: permission.kind,
         }
     }
 
