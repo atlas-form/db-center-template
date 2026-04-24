@@ -186,6 +186,18 @@ pub async fn list_roles(
         .to_json())
 }
 
+pub async fn delete_role(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(role_id): Path<i64>,
+) -> ResponseResult<()> {
+    let api = AdminApi::new(get_default_ctx());
+    api.delete_role(auth_user.user_id, role_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(().into_common_response().to_json())
+}
+
 pub async fn create_permission(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreatePermissionRequest>,

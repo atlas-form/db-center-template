@@ -29,6 +29,7 @@ const PERM_ADMIN_USER_UPDATE: &str = "admin:user:update";
 const PERM_ADMIN_USER_DELETE: &str = "admin:user:delete";
 const PERM_ROLE_CREATE: &str = "admin:role:create";
 const PERM_ROLE_LIST: &str = "admin:role:list";
+const PERM_ROLE_DELETE: &str = "admin:role:delete";
 const PERM_PERMISSION_CREATE: &str = "admin:permission:create";
 const PERM_PERMISSION_LIST: &str = "admin:permission:list";
 const PERM_MENU_CREATE: &str = "admin:menu:create";
@@ -205,8 +206,27 @@ impl AdminApi {
             .list_all()
             .await?
             .into_iter()
+            .filter(|role| role.code != ROOT_ROLE_CODE)
             .map(Self::map_role)
             .collect())
+    }
+
+    pub async fn delete_role(&self, current_user_id: String, role_id: i64) -> BizResult<()> {
+        self.ensure_permission(&current_user_id, PERM_ROLE_DELETE)
+            .await?;
+        let role = self.ensure_role_exists(role_id).await?;
+        if role.code == ROOT_ROLE_CODE {
+            return Err(BizError::new(
+                admin_error::ADMIN_ROLE_RESERVED,
+                "role code 'root' is reserved".to_string(),
+            ));
+        }
+
+        self.role_permission_svc.delete_by_role_id(role_id).await?;
+        self.user_role_svc.delete_by_role_id(role_id).await?;
+        self.role_svc.delete_by_id(role_id).await?;
+
+        Ok(())
     }
 
     pub async fn create_permission(
@@ -463,6 +483,15 @@ impl AdminApi {
                     format!("admin user not found: {user_id}"),
                 )
             })
+    }
+
+    async fn ensure_role_exists(&self, role_id: i64) -> BizResult<Role> {
+        self.role_svc.get_by_id(role_id).await?.ok_or_else(|| {
+            BizError::new(
+                admin_error::ADMIN_ROLE_NOT_FOUND,
+                format!("role not found: {role_id}"),
+            )
+        })
     }
 
     async fn ensure_permission(

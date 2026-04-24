@@ -1,5 +1,5 @@
 use db_core::{DbContext, Repository, error::BizResult};
-use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter};
+use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, sea_query::IntoCondition};
 
 use crate::{
     entity::role_permissions,
@@ -49,6 +49,18 @@ impl RolePermissionService {
             .into_iter()
             .map(Self::from_model)
             .collect())
+    }
+
+    pub async fn delete_by_role_id(&self, role_id: i64) -> BizResult<u64> {
+        Ok(self
+            .repo
+            .delete_many(
+                role_permissions::Column::RoleId
+                    .eq(role_id)
+                    .into_condition(),
+            )
+            .await?
+            .rows_affected)
     }
 
     fn from_model(model: role_permissions::Model) -> RolePermission {

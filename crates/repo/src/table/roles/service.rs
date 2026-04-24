@@ -60,6 +60,14 @@ impl RoleService {
             .collect())
     }
 
+    pub async fn get_by_id(&self, id: i64) -> BizResult<Option<Role>> {
+        Ok(self.repo.find_by_id(id).await?.map(Self::from_model))
+    }
+
+    pub async fn delete_by_id(&self, id: i64) -> BizResult<u64> {
+        Ok(self.repo.delete_by_id(id).await?.rows_affected)
+    }
+
     fn from_model(model: roles::Model) -> Role {
         Role {
             id: model.id,

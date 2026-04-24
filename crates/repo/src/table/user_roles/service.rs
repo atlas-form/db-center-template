@@ -71,6 +71,14 @@ impl UserRoleService {
             .rows_affected)
     }
 
+    pub async fn delete_by_role_id(&self, role_id: i64) -> BizResult<u64> {
+        Ok(self
+            .repo
+            .delete_many(user_roles::Column::RoleId.eq(role_id).into_condition())
+            .await?
+            .rows_affected)
+    }
+
     fn from_model(model: user_roles::Model) -> UserRole {
         UserRole {
             user_id: model.user_id,

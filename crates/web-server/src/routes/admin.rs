@@ -8,8 +8,9 @@ use toolcraft_jwt::VerifyJwt;
 
 use crate::handlers::admin::{
     assign_user_role, create_admin_user, create_menu, create_permission, create_role,
-    current_user_menus, current_user_permissions, delete_admin_user, grant_role_permission,
-    list_admin_users, list_menus, list_permissions, list_roles, list_user_roles, update_admin_user,
+    current_user_menus, current_user_permissions, delete_admin_user, delete_role,
+    grant_role_permission, list_admin_users, list_menus, list_permissions, list_roles,
+    list_user_roles, update_admin_user,
 };
 
 pub fn admin_routes() -> Router {
@@ -23,6 +24,7 @@ pub fn admin_routes() -> Router {
             patch(update_admin_user).delete(delete_admin_user),
         )
         .route("/roles", post(create_role).get(list_roles))
+        .route("/roles/{role_id}", axum::routing::delete(delete_role))
         .route(
             "/permissions",
             post(create_permission).get(list_permissions),
