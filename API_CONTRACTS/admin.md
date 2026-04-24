@@ -10,6 +10,8 @@
 | --- | --- |
 | `admin:user:create` | 创建后台用户 |
 | `admin:user:list` | 查看后台用户列表 |
+| `admin:user:update` | 更新后台用户 |
+| `admin:user:delete` | 删除后台用户 |
 | `admin:role:create` | 创建角色 |
 | `admin:role:list` | 查看角色列表 |
 | `admin:permission:create` | 创建权限 |
@@ -104,7 +106,70 @@
 
 - 带有 `root` 角色的用户不会出现在列表中
 
-## 3. 创建角色
+## 3. 更新后台用户
+
+- 方法：`PATCH`
+- 路径：`/api/admin/admin-users/{user_id}`
+- 权限：`admin:user:update`
+
+请求体：
+
+```json
+{
+  "remark": "新的备注",
+  "status": "disabled"
+}
+```
+
+字段说明：
+
+| 字段 | 类型 | 必填 | 约束 |
+| --- | --- | --- | --- |
+| `remark` | `string \| null` | 否 | 有值时长度 `1..=255` |
+| `status` | `enabled \| disabled` | 是 | 后台用户状态 |
+
+成功响应 `data`：
+
+```json
+{
+  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "display_id": "zhangsan",
+  "display_name": "张三",
+  "remark": "新的备注",
+  "status": "disabled",
+  "roles": [
+    {
+      "id": 1,
+      "name": "系统管理员",
+      "code": "system_admin"
+    }
+  ]
+}
+```
+
+补充说明：
+
+- 仅允许修改 `remark` 和 `status`
+- 非 `root` 用户不能更新带有 `root` 角色的后台用户
+
+## 4. 删除后台用户
+
+- 方法：`DELETE`
+- 路径：`/api/admin/admin-users/{user_id}`
+- 权限：`admin:user:delete`
+
+成功响应 `data`：
+
+```json
+null
+```
+
+补充说明：
+
+- 删除后台用户时会同步删除该用户的角色绑定
+- 非 `root` 用户不能删除带有 `root` 角色的后台用户
+
+## 5. 创建角色
 
 - 方法：`POST`
 - 路径：`/api/admin/roles`
@@ -136,7 +201,7 @@
 }
 ```
 
-## 4. 查询角色列表
+## 6. 查询角色列表
 
 - 方法：`GET`
 - 路径：`/api/admin/roles`
@@ -154,7 +219,7 @@
 ]
 ```
 
-## 5. 创建权限
+## 7. 创建权限
 
 - 方法：`POST`
 - 路径：`/api/admin/permissions`
@@ -195,7 +260,7 @@
 }
 ```
 
-## 6. 查询权限列表
+## 8. 查询权限列表
 
 - 方法：`GET`
 - 路径：`/api/admin/permissions`
@@ -216,7 +281,7 @@
 ]
 ```
 
-## 7. 创建菜单
+## 9. 创建菜单
 
 - 方法：`POST`
 - 路径：`/api/admin/menus`
@@ -251,7 +316,7 @@
 }
 ```
 
-## 8. 查询菜单列表
+## 10. 查询菜单列表
 
 - 方法：`GET`
 - 路径：`/api/admin/menus`
@@ -270,7 +335,7 @@
 ]
 ```
 
-## 9. 给用户分配角色
+## 11. 给用户分配角色
 
 - 方法：`POST`
 - 路径：`/api/admin/user-roles`
@@ -305,7 +370,7 @@
 
 - 非 `root` 用户不能给别人分配 `root` 角色
 
-## 10. 查询某个用户的角色列表
+## 12. 查询某个用户的角色列表
 
 - 方法：`GET`
 - 路径：`/api/admin/users/{user_id}/roles`
@@ -329,7 +394,7 @@
 ]
 ```
 
-## 11. 给角色授予权限
+## 13. 给角色授予权限
 
 - 方法：`POST`
 - 路径：`/api/admin/role-permissions`
@@ -364,7 +429,7 @@
 
 - 非 `root` 用户不能修改 `root` 角色的权限
 
-## 12. 查询当前用户权限
+## 14. 查询当前用户权限
 
 - 方法：`GET`
 - 路径：`/api/admin/me/permissions`
@@ -389,7 +454,7 @@
 
 - 如果当前用户拥有 `root` 角色，返回所有权限码
 
-## 13. 查询当前用户菜单树
+## 15. 查询当前用户菜单树
 
 - 方法：`GET`
 - 路径：`/api/admin/me/menus`

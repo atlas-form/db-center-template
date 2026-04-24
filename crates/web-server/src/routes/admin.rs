@@ -1,15 +1,15 @@
 use axum::{
     Router,
     middleware::from_fn,
-    routing::{get, post},
+    routing::{get, patch, post},
 };
 use toolcraft_axum_kit::middleware::auth_mw::auth;
 use toolcraft_jwt::VerifyJwt;
 
 use crate::handlers::admin::{
     assign_user_role, create_admin_user, create_menu, create_permission, create_role,
-    current_user_menus, current_user_permissions, grant_role_permission, list_admin_users,
-    list_menus, list_permissions, list_roles, list_user_roles,
+    current_user_menus, current_user_permissions, delete_admin_user, grant_role_permission,
+    list_admin_users, list_menus, list_permissions, list_roles, list_user_roles, update_admin_user,
 };
 
 pub fn admin_routes() -> Router {
@@ -17,6 +17,10 @@ pub fn admin_routes() -> Router {
         .route(
             "/admin-users",
             post(create_admin_user).get(list_admin_users),
+        )
+        .route(
+            "/admin-users/{user_id}",
+            patch(update_admin_user).delete(delete_admin_user),
         )
         .route("/roles", post(create_role).get(list_roles))
         .route(

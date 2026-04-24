@@ -1,5 +1,5 @@
 use db_core::{DbContext, Repository, error::BizResult};
-use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter};
+use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, sea_query::IntoCondition};
 use uuid::Uuid;
 
 use crate::{
@@ -61,6 +61,14 @@ impl UserRoleService {
             .into_iter()
             .map(Self::from_model)
             .collect())
+    }
+
+    pub async fn delete_by_user_id(&self, user_id: Uuid) -> BizResult<u64> {
+        Ok(self
+            .repo
+            .delete_many(user_roles::Column::UserId.eq(user_id).into_condition())
+            .await?
+            .rows_affected)
     }
 
     fn from_model(model: user_roles::Model) -> UserRole {

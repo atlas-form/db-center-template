@@ -100,6 +100,45 @@ pub async fn list_admin_users(
         .to_json())
 }
 
+pub async fn update_admin_user(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(user_id): Path<String>,
+    Json(req): Json<UpdateAdminUserRequest>,
+) -> ResponseResult<AdminUserResponse> {
+    req.validate().map_err(Error::from)?;
+    let api = AdminApi::new(get_default_ctx());
+    let admin_user = api
+        .update_admin_user(
+            auth_user.user_id,
+            service::dto::admin::UpdateAdminUserRequest {
+                user_id,
+                remark: req.remark,
+                status: match req.status {
+                    AdminUserStatus::Enabled => service::dto::admin::AdminUserStatus::Enabled,
+                    AdminUserStatus::Disabled => service::dto::admin::AdminUserStatus::Disabled,
+                },
+            },
+        )
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(map_admin_user_response(admin_user)
+        .into_common_response()
+        .to_json())
+}
+
+pub async fn delete_admin_user(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(user_id): Path<String>,
+) -> ResponseResult<()> {
+    let api = AdminApi::new(get_default_ctx());
+    api.delete_admin_user(auth_user.user_id, user_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(().into_common_response().to_json())
+}
+
 pub async fn create_role(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreateRoleRequest>,

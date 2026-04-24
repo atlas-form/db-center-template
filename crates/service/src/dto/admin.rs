@@ -9,6 +9,13 @@ pub struct CreateAdminUserRequest {
     pub remark: Option<String>,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateAdminUserRequest {
+    pub user_id: String,
+    pub remark: Option<String>,
+    pub status: AdminUserStatus,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct AdminUserResponse {
     pub user_id: String,

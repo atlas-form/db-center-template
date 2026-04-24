@@ -58,3 +58,10 @@ pub struct CreateAdminUser {
     pub remark: Option<String>,
     pub status: AdminUserStatus,
 }
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateAdminUser {
+    pub user_id: Uuid,
+    pub remark: Option<String>,
+    pub status: AdminUserStatus,
+}

@@ -6,7 +6,7 @@ use db_core::{
 };
 use error_code::admin as admin_error;
 use repo::table::{
-    admin_users::{AdminUser, AdminUserService, AdminUserStatus, CreateAdminUser},
+    admin_users::{AdminUser, AdminUserService, AdminUserStatus, CreateAdminUser, UpdateAdminUser},
     menus::{CreateMenu, Menu, MenuService},
     permissions::{CreatePermission, PermissionService},
     role_permissions::{CreateRolePermission, RolePermissionService},
@@ -19,12 +19,14 @@ use crate::dto::admin::{
     AdminUserResponse, AssignUserRoleRequest, CreateAdminUserRequest, CreateMenuRequest,
     CreatePermissionRequest, CreateRoleRequest, CurrentUserPermissionsResponse,
     GrantRolePermissionRequest, MenuResponse, MenuTreeNode, PermissionResponse,
-    RolePermissionResponse, RoleResponse, UserRoleResponse,
+    RolePermissionResponse, RoleResponse, UpdateAdminUserRequest, UserRoleResponse,
 };
 
 const ROOT_ROLE_CODE: &str = "root";
 const PERM_ADMIN_USER_CREATE: &str = "admin:user:create";
 const PERM_ADMIN_USER_LIST: &str = "admin:user:list";
+const PERM_ADMIN_USER_UPDATE: &str = "admin:user:update";
+const PERM_ADMIN_USER_DELETE: &str = "admin:user:delete";
 const PERM_ROLE_CREATE: &str = "admin:role:create";
 const PERM_ROLE_LIST: &str = "admin:role:list";
 const PERM_PERMISSION_CREATE: &str = "admin:permission:create";
@@ -127,6 +129,49 @@ impl AdminApi {
                 Some(Self::map_admin_user(admin_user, roles))
             })
             .collect())
+    }
+
+    pub async fn update_admin_user(
+        &self,
+        current_user_id: String,
+        req: UpdateAdminUserRequest,
+    ) -> BizResult<AdminUserResponse> {
+        let access = self
+            .ensure_permission(&current_user_id, PERM_ADMIN_USER_UPDATE)
+            .await?;
+        let user_id = parse_user_id(&req.user_id)?;
+        self.ensure_admin_user_change_allowed(&access, user_id, "only root can update root user")
+            .await?;
+        self.ensure_admin_user_exists(user_id).await?;
+        let admin_user = self
+            .admin_user_svc
+            .update(UpdateAdminUser {
+                user_id,
+                remark: req.remark,
+                status: req.status,
+            })
+            .await?;
+        let roles = self.list_roles_by_user_id(user_id).await?;
+
+        Ok(Self::map_admin_user(admin_user, roles))
+    }
+
+    pub async fn delete_admin_user(
+        &self,
+        current_user_id: String,
+        user_id: String,
+    ) -> BizResult<()> {
+        let access = self
+            .ensure_permission(&current_user_id, PERM_ADMIN_USER_DELETE)
+            .await?;
+        let user_id = parse_user_id(&user_id)?;
+        self.ensure_admin_user_change_allowed(&access, user_id, "only root can delete root user")
+            .await?;
+        self.ensure_admin_user_exists(user_id).await?;
+        self.user_role_svc.delete_by_user_id(user_id).await?;
+        self.admin_user_svc.delete_by_user_id(user_id).await?;
+
+        Ok(())
     }
 
     pub async fn create_role(
@@ -276,6 +321,10 @@ impl AdminApi {
         self.ensure_permission(&current_user_id, PERM_USER_ROLE_LIST)
             .await?;
         let user_id = parse_user_id(&user_id)?;
+        self.list_roles_by_user_id(user_id).await
+    }
+
+    async fn list_roles_by_user_id(&self, user_id: Uuid) -> BizResult<Vec<RoleResponse>> {
         let user_roles = self.user_role_svc.list_by_user_id(user_id).await?;
         let role_ids = user_roles.into_iter().map(|item| item.role_id).collect();
 
@@ -379,16 +428,7 @@ impl AdminApi {
 
     async fn ensure_admin_user(&self, user_id: &str) -> BizResult<AdminAccess> {
         let parsed_user_id = parse_user_id(user_id)?;
-        let admin_user = self
-            .admin_user_svc
-            .get_by_user_id(parsed_user_id)
-            .await?
-            .ok_or_else(|| {
-                BizError::new(
-                    admin_error::ADMIN_USER_NOT_FOUND,
-                    format!("admin user not found: {user_id}"),
-                )
-            })?;
+        let admin_user = self.ensure_admin_user_exists(parsed_user_id).await?;
 
         if admin_user.status != AdminUserStatus::Enabled {
             return Err(BizError::new(
@@ -411,6 +451,18 @@ impl AdminApi {
             role_ids,
             role_codes,
         })
+    }
+
+    async fn ensure_admin_user_exists(&self, user_id: Uuid) -> BizResult<AdminUser> {
+        self.admin_user_svc
+            .get_by_user_id(user_id)
+            .await?
+            .ok_or_else(|| {
+                BizError::new(
+                    admin_error::ADMIN_USER_NOT_FOUND,
+                    format!("admin user not found: {user_id}"),
+                )
+            })
     }
 
     async fn ensure_permission(
@@ -468,6 +520,27 @@ impl AdminApi {
             return Err(BizError::new(
                 admin_error::ADMIN_ROLE_RESERVED,
                 "only root can modify root role permissions".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+
+    async fn ensure_admin_user_change_allowed(
+        &self,
+        access: &AdminAccess,
+        user_id: Uuid,
+        message: &str,
+    ) -> BizResult<()> {
+        if access.is_root() {
+            return Ok(());
+        }
+
+        let roles = self.list_roles_by_user_id(user_id).await?;
+        if roles.iter().any(|role| role.code == ROOT_ROLE_CODE) {
+            return Err(BizError::new(
+                admin_error::ADMIN_ROLE_RESERVED,
+                message.to_string(),
             ));
         }
 

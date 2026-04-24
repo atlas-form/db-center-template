@@ -17,14 +17,16 @@
 
 1. `POST /api/admin/admin-users`
 2. `GET /api/admin/admin-users`
-3. `POST /api/admin/roles`
-4. `GET /api/admin/roles`
-5. `POST /api/admin/permissions`
-6. `GET /api/admin/permissions`
-7. `POST /api/admin/menus`
-8. `GET /api/admin/menus`
-9. `POST /api/admin/user-roles`
-10. `GET /api/admin/users/{user_id}/roles`
-11. `POST /api/admin/role-permissions`
-12. `GET /api/admin/me/permissions`
-13. `GET /api/admin/me/menus`
+3. `PATCH /api/admin/admin-users/{user_id}`
+4. `DELETE /api/admin/admin-users/{user_id}`
+5. `POST /api/admin/roles`
+6. `GET /api/admin/roles`
+7. `POST /api/admin/permissions`
+8. `GET /api/admin/permissions`
+9. `POST /api/admin/menus`
+10. `GET /api/admin/menus`
+11. `POST /api/admin/user-roles`
+12. `GET /api/admin/users/{user_id}/roles`
+13. `POST /api/admin/role-permissions`
+14. `GET /api/admin/me/permissions`
+15. `GET /api/admin/me/menus`

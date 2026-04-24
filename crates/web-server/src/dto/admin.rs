@@ -16,6 +16,13 @@ pub struct CreateAdminUserRequest {
     pub remark: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateAdminUserRequest {
+    #[validate(length(min = 1, max = 255))]
+    pub remark: Option<String>,
+    pub status: AdminUserStatus,
+}
+
 #[derive(Debug, Serialize)]
 pub struct AdminUserResponse {
     pub user_id: String,

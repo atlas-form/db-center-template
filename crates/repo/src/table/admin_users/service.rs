@@ -1,10 +1,13 @@
 use db_core::{DbContext, Repository, error::BizResult};
-use sea_orm::{ActiveValue::Set, QueryOrder};
+use sea_orm::{
+    ActiveValue::{Set, Unchanged},
+    QueryOrder,
+};
 use uuid::Uuid;
 
 use crate::{
     entity::admin_users,
-    table::admin_users::dto::{AdminUser, AdminUserStatus, CreateAdminUser},
+    table::admin_users::dto::{AdminUser, AdminUserStatus, CreateAdminUser, UpdateAdminUser},
 };
 
 db_core::impl_repository!(AdminUserRepo, admin_users::Entity, admin_users::Model);
@@ -48,6 +51,21 @@ impl AdminUserService {
             .await?
             .map(Self::from_model)
             .transpose()
+    }
+
+    pub async fn update(&self, input: UpdateAdminUser) -> BizResult<AdminUser> {
+        let model = admin_users::ActiveModel {
+            user_id: Unchanged(input.user_id),
+            remark: Set(input.remark),
+            status: Set(input.status.as_str().to_owned()),
+            ..Default::default()
+        };
+
+        Self::from_model(self.repo.update(model).await?)
+    }
+
+    pub async fn delete_by_user_id(&self, user_id: Uuid) -> BizResult<u64> {
+        Ok(self.repo.delete_by_id(user_id).await?.rows_affected)
     }
 
     fn from_model(model: admin_users::Model) -> BizResult<AdminUser> {
