@@ -1,4 +1,4 @@
-pub use repo::table::{admin_users::AdminUserStatus, permissions::PermissionKind};
+pub use repo::table::admin_users::AdminUserStatus;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -40,29 +40,9 @@ pub struct RoleResponse {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct CreatePermissionRequest {
-    pub code: String,
-    pub name: String,
-    pub parent_code: Option<String>,
-    pub sort: i32,
-    pub kind: PermissionKind,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct PermissionResponse {
-    pub id: i64,
-    pub code: String,
-    pub name: String,
-    pub parent_code: Option<String>,
-    pub sort: i32,
-    pub kind: PermissionKind,
-}
-
-#[derive(Debug, Clone, Deserialize)]
 pub struct CreateMenuRequest {
     pub name: String,
     pub parent_id: Option<i64>,
-    pub permission_code: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -70,7 +50,6 @@ pub struct MenuResponse {
     pub id: i64,
     pub name: String,
     pub parent_id: Option<i64>,
-    pub permission_code: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -85,30 +64,10 @@ pub struct UserRoleResponse {
     pub role_id: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct GrantRolePermissionRequest {
-    pub role_id: i64,
-    pub permission_code: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct RolePermissionResponse {
-    pub role_id: i64,
-    pub permission_code: String,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct CurrentUserPermissionsResponse {
-    pub user_id: String,
-    pub role_codes: Vec<String>,
-    pub permission_codes: Vec<String>,
-}
-
 #[derive(Debug, Clone, Serialize)]
 pub struct MenuTreeNode {
     pub id: i64,
     pub name: String,
     pub parent_id: Option<i64>,
-    pub permission_code: Option<String>,
     pub children: Vec<MenuTreeNode>,
 }

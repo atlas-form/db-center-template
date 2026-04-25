@@ -8,8 +8,8 @@ use error_code::admin as admin_error;
 use repo::table::{
     admin_users::{AdminUser, AdminUserService, AdminUserStatus, CreateAdminUser, UpdateAdminUser},
     menus::{CreateMenu, Menu, MenuService},
-    permissions::{CreatePermission, Permission, PermissionService},
-    role_permissions::{CreateRolePermission, RolePermissionService},
+    permissions::PermissionService,
+    role_permissions::RolePermissionService,
     roles::{CreateRole, Role, RoleService},
     user_roles::{CreateUserRole, UserRoleService},
 };
@@ -17,9 +17,8 @@ use uuid::Uuid;
 
 use crate::dto::admin::{
     AdminUserResponse, AssignUserRoleRequest, CreateAdminUserRequest, CreateMenuRequest,
-    CreatePermissionRequest, CreateRoleRequest, CurrentUserPermissionsResponse,
-    GrantRolePermissionRequest, MenuResponse, MenuTreeNode, PermissionResponse,
-    RolePermissionResponse, RoleResponse, UpdateAdminUserRequest, UserRoleResponse,
+    CreateRoleRequest, MenuResponse, MenuTreeNode, RoleResponse, UpdateAdminUserRequest,
+    UserRoleResponse,
 };
 
 const ROOT_ROLE_CODE: &str = "root";
@@ -30,14 +29,10 @@ const PERM_ADMIN_USER_DELETE: &str = "admin:user:delete";
 const PERM_ROLE_CREATE: &str = "admin:role:create";
 const PERM_ROLE_LIST: &str = "admin:role:list";
 const PERM_ROLE_DELETE: &str = "admin:role:delete";
-const PERM_PERMISSION_CREATE: &str = "admin:permission:create";
-const PERM_PERMISSION_LIST: &str = "admin:permission:list";
 const PERM_MENU_CREATE: &str = "admin:menu:create";
 const PERM_MENU_LIST: &str = "admin:menu:list";
 const PERM_USER_ROLE_ASSIGN: &str = "admin:user_role:assign";
 const PERM_USER_ROLE_LIST: &str = "admin:user_role:list";
-const PERM_ROLE_PERMISSION_GRANT: &str = "admin:role_permission:grant";
-const PERM_ROLE_PERMISSION_LIST: &str = "admin:role_permission:list";
 
 pub struct AdminApi {
     admin_user_svc: AdminUserService,
@@ -230,48 +225,6 @@ impl AdminApi {
         Ok(())
     }
 
-    pub async fn create_permission(
-        &self,
-        current_user_id: String,
-        req: CreatePermissionRequest,
-    ) -> BizResult<PermissionResponse> {
-        self.ensure_permission(&current_user_id, PERM_PERMISSION_CREATE)
-            .await?;
-        let permission = self
-            .permission_svc
-            .create(CreatePermission {
-                code: req.code,
-                name: req.name,
-                parent_code: req.parent_code,
-                sort: req.sort,
-                kind: req.kind,
-            })
-            .await?;
-        Ok(PermissionResponse {
-            id: permission.id,
-            code: permission.code,
-            name: permission.name,
-            parent_code: permission.parent_code,
-            sort: permission.sort,
-            kind: permission.kind,
-        })
-    }
-
-    pub async fn list_permissions(
-        &self,
-        current_user_id: String,
-    ) -> BizResult<Vec<PermissionResponse>> {
-        self.ensure_permission(&current_user_id, PERM_PERMISSION_LIST)
-            .await?;
-        Ok(self
-            .permission_svc
-            .list_all()
-            .await?
-            .into_iter()
-            .map(Self::map_permission)
-            .collect())
-    }
-
     pub async fn create_menu(
         &self,
         current_user_id: String,
@@ -284,7 +237,7 @@ impl AdminApi {
             .create(CreateMenu {
                 name: req.name,
                 parent_id: req.parent_id,
-                permission_code: req.permission_code,
+                permission_code: None,
             })
             .await?;
         Ok(Self::map_menu(menu))
@@ -349,86 +302,6 @@ impl AdminApi {
             .into_iter()
             .map(Self::map_role)
             .collect())
-    }
-
-    pub async fn grant_role_permission(
-        &self,
-        current_user_id: String,
-        req: GrantRolePermissionRequest,
-    ) -> BizResult<RolePermissionResponse> {
-        let access = self
-            .ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_GRANT)
-            .await?;
-        self.ensure_role_exists(req.role_id).await?;
-        self.ensure_role_permission_change_allowed(&access, req.role_id)
-            .await?;
-        let permission = self
-            .ensure_permission_exists_by_code(&req.permission_code)
-            .await?;
-        let role_permission = self
-            .role_permission_svc
-            .create(CreateRolePermission {
-                role_id: req.role_id,
-                permission_id: permission.id,
-            })
-            .await?;
-
-        Ok(RolePermissionResponse {
-            role_id: role_permission.role_id,
-            permission_code: permission.code,
-        })
-    }
-
-    pub async fn list_role_permissions(
-        &self,
-        current_user_id: String,
-        role_id: i64,
-    ) -> BizResult<Vec<PermissionResponse>> {
-        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_LIST)
-            .await?;
-        self.ensure_role_exists(role_id).await?;
-        let role_permissions = self
-            .role_permission_svc
-            .list_by_role_ids(vec![role_id])
-            .await?;
-        let permission_ids = role_permissions
-            .into_iter()
-            .map(|item| item.permission_id)
-            .collect::<BTreeSet<_>>()
-            .into_iter()
-            .collect();
-
-        Ok(self
-            .permission_svc
-            .list_by_ids(permission_ids)
-            .await?
-            .into_iter()
-            .map(Self::map_permission)
-            .collect())
-    }
-
-    pub async fn get_current_user_permissions(
-        &self,
-        user_id: String,
-    ) -> BizResult<CurrentUserPermissionsResponse> {
-        let access = self.ensure_admin_user(&user_id).await?;
-        let permission_codes = if access.is_root() {
-            self.permission_svc
-                .list_all()
-                .await?
-                .into_iter()
-                .map(|permission| permission.code)
-                .collect()
-        } else {
-            self.collect_permission_codes(access.role_ids.clone())
-                .await?
-        };
-
-        Ok(CurrentUserPermissionsResponse {
-            user_id,
-            role_codes: access.role_codes,
-            permission_codes,
-        })
     }
 
     pub async fn get_current_user_menus(&self, user_id: String) -> BizResult<Vec<MenuTreeNode>> {
@@ -520,21 +393,6 @@ impl AdminApi {
         })
     }
 
-    async fn ensure_permission_exists_by_code(
-        &self,
-        permission_code: &str,
-    ) -> BizResult<Permission> {
-        self.permission_svc
-            .get_by_code(permission_code)
-            .await?
-            .ok_or_else(|| {
-                BizError::new(
-                    admin_error::ADMIN_PERMISSION_NOT_FOUND,
-                    format!("permission not found: {permission_code}"),
-                )
-            })
-    }
-
     async fn ensure_permission(
         &self,
         user_id: &str,
@@ -571,25 +429,6 @@ impl AdminApi {
             return Err(BizError::new(
                 admin_error::ADMIN_ROLE_RESERVED,
                 "only root can assign root role".to_string(),
-            ));
-        }
-
-        Ok(())
-    }
-
-    async fn ensure_role_permission_change_allowed(
-        &self,
-        access: &AdminAccess,
-        role_id: i64,
-    ) -> BizResult<()> {
-        if access.is_root() {
-            return Ok(());
-        }
-
-        if self.is_root_role_id(role_id).await? {
-            return Err(BizError::new(
-                admin_error::ADMIN_ROLE_RESERVED,
-                "only root can modify root role permissions".to_string(),
             ));
         }
 
@@ -672,7 +511,6 @@ impl AdminApi {
                         id: menu.id,
                         name: menu.name,
                         parent_id: menu.parent_id,
-                        permission_code: menu.permission_code,
                         children: Vec::new(),
                     },
                 )
@@ -724,17 +562,6 @@ impl AdminApi {
         }
     }
 
-    fn map_permission(permission: Permission) -> PermissionResponse {
-        PermissionResponse {
-            id: permission.id,
-            code: permission.code,
-            name: permission.name,
-            parent_code: permission.parent_code,
-            sort: permission.sort,
-            kind: permission.kind,
-        }
-    }
-
     fn map_admin_user(admin_user: AdminUser, roles: Vec<RoleResponse>) -> AdminUserResponse {
         AdminUserResponse {
             user_id: admin_user.user_id.to_string(),
@@ -751,7 +578,6 @@ impl AdminApi {
             id: menu.id,
             name: menu.name,
             parent_id: menu.parent_id,
-            permission_code: menu.permission_code,
         }
     }
 }

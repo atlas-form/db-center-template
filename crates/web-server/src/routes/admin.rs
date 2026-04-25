@@ -7,10 +7,9 @@ use toolcraft_axum_kit::middleware::auth_mw::auth;
 use toolcraft_jwt::VerifyJwt;
 
 use crate::handlers::admin::{
-    assign_user_role, create_admin_user, create_menu, create_permission, create_role,
-    current_user_menus, current_user_permissions, delete_admin_user, delete_role,
-    grant_role_permission, list_admin_users, list_menus, list_permissions, list_role_permissions,
-    list_roles, list_user_roles, update_admin_user,
+    assign_user_role, create_admin_user, create_menu, create_role, current_user_menus,
+    delete_admin_user, delete_role, list_admin_users, list_menus, list_roles, list_user_roles,
+    update_admin_user,
 };
 
 pub fn admin_routes() -> Router {
@@ -25,16 +24,9 @@ pub fn admin_routes() -> Router {
         )
         .route("/roles", post(create_role).get(list_roles))
         .route("/roles/{role_id}", axum::routing::delete(delete_role))
-        .route("/roles/{role_id}/permissions", get(list_role_permissions))
-        .route(
-            "/permissions",
-            post(create_permission).get(list_permissions),
-        )
         .route("/menus", post(create_menu).get(list_menus))
         .route("/user-roles", post(assign_user_role))
         .route("/users/{user_id}/roles", get(list_user_roles))
-        .route("/role-permissions", post(grant_role_permission))
-        .route("/me/permissions", get(current_user_permissions))
         .route("/me/menus", get(current_user_menus))
         .route_layer(from_fn(auth::<VerifyJwt>))
 }

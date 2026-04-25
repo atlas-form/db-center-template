@@ -12,34 +12,11 @@ use crate::{
     statics::db_manager::get_default_ctx,
 };
 
-fn map_permission_kind(kind: PermissionKind) -> service::dto::admin::PermissionKind {
-    match kind {
-        PermissionKind::Group => service::dto::admin::PermissionKind::Group,
-        PermissionKind::Action => service::dto::admin::PermissionKind::Action,
-    }
-}
-
 fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
     RoleResponse {
         id: role.id,
         name: role.name,
         code: role.code,
-    }
-}
-
-fn map_permission_response(
-    permission: service::dto::admin::PermissionResponse,
-) -> PermissionResponse {
-    PermissionResponse {
-        id: permission.id,
-        code: permission.code,
-        name: permission.name,
-        parent_code: permission.parent_code,
-        sort: permission.sort,
-        kind: match permission.kind {
-            service::dto::admin::PermissionKind::Group => PermissionKind::Group,
-            service::dto::admin::PermissionKind::Action => PermissionKind::Action,
-        },
     }
 }
 
@@ -214,68 +191,6 @@ pub async fn delete_role(
     Ok(().into_common_response().to_json())
 }
 
-pub async fn create_permission(
-    Extension(auth_user): Extension<AuthUser>,
-    Json(req): Json<CreatePermissionRequest>,
-) -> ResponseResult<PermissionResponse> {
-    req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
-    let permission = api
-        .create_permission(
-            auth_user.user_id,
-            service::dto::admin::CreatePermissionRequest {
-                code: req.code,
-                name: req.name,
-                parent_code: req.parent_code,
-                sort: req.sort,
-                kind: map_permission_kind(req.kind),
-            },
-        )
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(PermissionResponse {
-        id: permission.id,
-        code: permission.code,
-        name: permission.name,
-        parent_code: permission.parent_code,
-        sort: permission.sort,
-        kind: match permission.kind {
-            service::dto::admin::PermissionKind::Group => PermissionKind::Group,
-            service::dto::admin::PermissionKind::Action => PermissionKind::Action,
-        },
-    }
-    .into_common_response()
-    .to_json())
-}
-
-pub async fn list_permissions(
-    Extension(auth_user): Extension<AuthUser>,
-) -> ResponseResult<Vec<PermissionResponse>> {
-    let api = AdminApi::new(get_default_ctx());
-    let permissions = api
-        .list_permissions(auth_user.user_id)
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(permissions
-        .into_iter()
-        .map(|permission| PermissionResponse {
-            id: permission.id,
-            code: permission.code,
-            name: permission.name,
-            parent_code: permission.parent_code,
-            sort: permission.sort,
-            kind: match permission.kind {
-                service::dto::admin::PermissionKind::Group => PermissionKind::Group,
-                service::dto::admin::PermissionKind::Action => PermissionKind::Action,
-            },
-        })
-        .collect::<Vec<_>>()
-        .into_common_response()
-        .to_json())
-}
-
 pub async fn create_menu(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreateMenuRequest>,
@@ -288,7 +203,6 @@ pub async fn create_menu(
             service::dto::admin::CreateMenuRequest {
                 name: req.name,
                 parent_id: req.parent_id,
-                permission_code: req.permission_code,
             },
         )
         .await
@@ -298,7 +212,6 @@ pub async fn create_menu(
         id: menu.id,
         name: menu.name,
         parent_id: menu.parent_id,
-        permission_code: menu.permission_code,
     }
     .into_common_response()
     .to_json())
@@ -319,7 +232,6 @@ pub async fn list_menus(
             id: menu.id,
             name: menu.name,
             parent_id: menu.parent_id,
-            permission_code: menu.permission_code,
         })
         .collect::<Vec<_>>()
         .into_common_response()
@@ -373,67 +285,6 @@ pub async fn list_user_roles(
         .to_json())
 }
 
-pub async fn grant_role_permission(
-    Extension(auth_user): Extension<AuthUser>,
-    Json(req): Json<GrantRolePermissionRequest>,
-) -> ResponseResult<RolePermissionResponse> {
-    req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
-    let role_permission = api
-        .grant_role_permission(
-            auth_user.user_id,
-            service::dto::admin::GrantRolePermissionRequest {
-                role_id: req.role_id,
-                permission_code: req.permission_code,
-            },
-        )
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(RolePermissionResponse {
-        role_id: role_permission.role_id,
-        permission_code: role_permission.permission_code,
-    }
-    .into_common_response()
-    .to_json())
-}
-
-pub async fn list_role_permissions(
-    Extension(auth_user): Extension<AuthUser>,
-    Path(role_id): Path<i64>,
-) -> ResponseResult<Vec<PermissionResponse>> {
-    let api = AdminApi::new(get_default_ctx());
-    let permissions = api
-        .list_role_permissions(auth_user.user_id, role_id)
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(permissions
-        .into_iter()
-        .map(map_permission_response)
-        .collect::<Vec<_>>()
-        .into_common_response()
-        .to_json())
-}
-
-pub async fn current_user_permissions(
-    Extension(auth_user): Extension<AuthUser>,
-) -> ResponseResult<CurrentUserPermissionsResponse> {
-    let api = AdminApi::new(get_default_ctx());
-    let resp = api
-        .get_current_user_permissions(auth_user.user_id)
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(CurrentUserPermissionsResponse {
-        user_id: resp.user_id,
-        role_codes: resp.role_codes,
-        permission_codes: resp.permission_codes,
-    }
-    .into_common_response()
-    .to_json())
-}
-
 pub async fn current_user_menus(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<MenuTreeNode>> {
@@ -456,7 +307,6 @@ fn map_menu_tree(node: service::dto::admin::MenuTreeNode) -> MenuTreeNode {
         id: node.id,
         name: node.name,
         parent_id: node.parent_id,
-        permission_code: node.permission_code,
         children: node.children.into_iter().map(map_menu_tree).collect(),
     }
 }
