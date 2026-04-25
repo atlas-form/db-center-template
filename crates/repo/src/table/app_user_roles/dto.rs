@@ -1,0 +1,14 @@
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserRole {
+    pub user_id: Uuid,
+    pub role_id: i64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreateUserRole {
+    pub user_id: Uuid,
+    pub role_id: i64,
+}

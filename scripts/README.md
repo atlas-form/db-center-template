@@ -107,6 +107,10 @@ app
 
 适合在确认要重建数据库后使用。
 
-### `init_permissions.sh` / `init_root.sh`
+### `init_permissions.sh` / `init_app_permissions.sh` / `init_root.sh`
 
-这两个脚本只初始化 `admin_*` 后台管理表，不会写入 `app_*` 普通用户权限表。
+`init_permissions.sh` 初始化 `admin_permissions` 和 `admin_menus`。
+
+`init_app_permissions.sh` 初始化 `app_permissions`。
+
+`init_root.sh` 初始化后台 root 角色和 root 用户绑定。

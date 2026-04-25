@@ -95,10 +95,25 @@ upsert_permission "admin:role_permission:update" "更新角色权限配置" "adm
 upsert_permission "admin:menu:list" "查看菜单列表" "admin:access" 270 "action"
 upsert_permission "admin:menu:create" "创建菜单" "admin:access" 280 "action"
 
+upsert_permission "admin:app" "普通用户权限管理" "" 300 "group"
+upsert_permission "admin:app_user:list" "查看普通用户列表" "admin:app" 310 "action"
+upsert_permission "admin:app_user:create" "创建普通用户" "admin:app" 320 "action"
+upsert_permission "admin:app_user:update" "更新普通用户" "admin:app" 330 "action"
+upsert_permission "admin:app_user:delete" "删除普通用户" "admin:app" 340 "action"
+upsert_permission "admin:app_user_role:list" "查看普通用户角色" "admin:app" 350 "action"
+upsert_permission "admin:app_user_role:update" "更新普通用户角色" "admin:app" 360 "action"
+upsert_permission "admin:app_role:list" "查看普通角色列表" "admin:app" 370 "action"
+upsert_permission "admin:app_role:create" "创建普通角色" "admin:app" 380 "action"
+upsert_permission "admin:app_role:delete" "删除普通角色" "admin:app" 390 "action"
+upsert_permission "admin:app_permission:list" "查看普通权限配置树" "admin:app" 400 "action"
+upsert_permission "admin:app_role_permission:list" "查看普通角色权限配置" "admin:app" 410 "action"
+upsert_permission "admin:app_role_permission:update" "更新普通角色权限配置" "admin:app" 420 "action"
+
 echo "初始化基础菜单..."
 
 upsert_menu "用户管理" "admin:user" "" "admin:user" "100"
 upsert_menu "权限管理" "admin:access" "" "admin:access" "200"
+upsert_menu "普通用户权限管理" "admin:app" "" "admin:app" "300"
 
 PERMISSION_COUNT="$(
   run_psql "$DB_NAME" "
@@ -120,7 +135,20 @@ PERMISSION_COUNT="$(
       'admin:role_permission:list',
       'admin:role_permission:update',
       'admin:menu:list',
-      'admin:menu:create'
+      'admin:menu:create',
+      'admin:app',
+      'admin:app_user:list',
+      'admin:app_user:create',
+      'admin:app_user:update',
+      'admin:app_user:delete',
+      'admin:app_user_role:list',
+      'admin:app_user_role:update',
+      'admin:app_role:list',
+      'admin:app_role:create',
+      'admin:app_role:delete',
+      'admin:app_permission:list',
+      'admin:app_role_permission:list',
+      'admin:app_role_permission:update'
     );
   " | tr -d '[:space:]'
 )"
@@ -129,7 +157,7 @@ MENU_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
     FROM admin_menus
-    WHERE permission_code IN ('admin:user', 'admin:access');
+    WHERE permission_code IN ('admin:user', 'admin:access', 'admin:app');
   " | tr -d '[:space:]'
 )"
 

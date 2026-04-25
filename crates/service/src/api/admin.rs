@@ -59,6 +59,16 @@ impl AdminApi {
         }
     }
 
+    pub async fn ensure_current_user_permission(
+        &self,
+        current_user_id: String,
+        permission_code: &str,
+    ) -> BizResult<()> {
+        self.ensure_permission(&current_user_id, permission_code)
+            .await?;
+        Ok(())
+    }
+
     pub async fn create_admin_user(
         &self,
         current_user_id: String,
