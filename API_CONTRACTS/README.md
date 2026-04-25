@@ -29,4 +29,5 @@
 12. `GET /api/admin/menus`
 13. `POST /api/admin/user-roles`
 14. `GET /api/admin/users/{user_id}/roles`
-15. `GET /api/admin/me/menus`
+15. `GET /api/admin/me/permissions`
+16. `GET /api/admin/me/menus`

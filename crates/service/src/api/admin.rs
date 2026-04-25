@@ -17,8 +17,9 @@ use uuid::Uuid;
 
 use crate::dto::admin::{
     AdminUserResponse, AssignUserRoleRequest, CreateAdminUserRequest, CreateMenuRequest,
-    CreateRoleRequest, MenuResponse, MenuTreeNode, PermissionTreeNode, RolePermissionTreeNode,
-    RoleResponse, UpdateAdminUserRequest, UpdateRolePermissionsRequest, UserRoleResponse,
+    CreateRoleRequest, CurrentUserPermissionsResponse, MenuResponse, MenuTreeNode,
+    PermissionTreeNode, RolePermissionTreeNode, RoleResponse, UpdateAdminUserRequest,
+    UpdateRolePermissionsRequest, UserRoleResponse,
 };
 
 const ROOT_ROLE_CODE: &str = "root";
@@ -371,6 +372,30 @@ impl AdminApi {
         }
 
         self.build_role_permission_tree(req.role_id).await
+    }
+
+    pub async fn get_current_user_permissions(
+        &self,
+        user_id: String,
+    ) -> BizResult<CurrentUserPermissionsResponse> {
+        let access = self.ensure_admin_user(&user_id).await?;
+        let permission_codes = if access.is_root() {
+            self.permission_svc
+                .list_all()
+                .await?
+                .into_iter()
+                .map(|permission| permission.code)
+                .collect()
+        } else {
+            self.collect_permission_codes(access.role_ids.clone())
+                .await?
+        };
+
+        Ok(CurrentUserPermissionsResponse {
+            user_id,
+            role_codes: access.role_codes,
+            permission_codes,
+        })
     }
 
     pub async fn get_current_user_menus(&self, user_id: String) -> BizResult<Vec<MenuTreeNode>> {

@@ -104,6 +104,13 @@ pub enum PermissionKind {
     Action,
 }
 
+#[derive(Debug, Serialize)]
+pub struct CurrentUserPermissionsResponse {
+    pub user_id: String,
+    pub role_codes: Vec<String>,
+    pub permission_codes: Vec<String>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct MenuTreeNode {
     pub id: i64,
