@@ -53,21 +53,23 @@ pub struct MenuResponse {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct AssignUserRoleRequest {
-    pub user_id: String,
-    pub role_id: i64,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct UserRoleResponse {
-    pub user_id: String,
-    pub role_id: i64,
-}
-
-#[derive(Debug, Clone, Deserialize)]
 pub struct UpdateRolePermissionsRequest {
     pub role_id: i64,
     pub permission_ids: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateUserRolesRequest {
+    pub user_id: String,
+    pub role_ids: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct UserRoleOptionResponse {
+    pub id: i64,
+    pub name: String,
+    pub code: String,
+    pub checked: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]

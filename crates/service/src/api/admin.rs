@@ -16,10 +16,10 @@ use repo::table::{
 use uuid::Uuid;
 
 use crate::dto::admin::{
-    AdminUserResponse, AssignUserRoleRequest, CreateAdminUserRequest, CreateMenuRequest,
-    CreateRoleRequest, CurrentUserPermissionsResponse, MenuResponse, MenuTreeNode,
-    PermissionTreeNode, RolePermissionTreeNode, RoleResponse, UpdateAdminUserRequest,
-    UpdateRolePermissionsRequest, UserRoleResponse,
+    AdminUserResponse, CreateAdminUserRequest, CreateMenuRequest, CreateRoleRequest,
+    CurrentUserPermissionsResponse, MenuResponse, MenuTreeNode, PermissionTreeNode,
+    RolePermissionTreeNode, RoleResponse, UpdateAdminUserRequest, UpdateRolePermissionsRequest,
+    UpdateUserRolesRequest, UserRoleOptionResponse,
 };
 
 const ROOT_ROLE_CODE: &str = "root";
@@ -33,8 +33,8 @@ const PERM_ROLE_DELETE: &str = "admin:role:delete";
 const PERM_PERMISSION_LIST: &str = "admin:permission:list";
 const PERM_MENU_CREATE: &str = "admin:menu:create";
 const PERM_MENU_LIST: &str = "admin:menu:list";
-const PERM_USER_ROLE_ASSIGN: &str = "admin:user_role:assign";
 const PERM_USER_ROLE_LIST: &str = "admin:user_role:list";
+const PERM_USER_ROLE_UPDATE: &str = "admin:user_role:update";
 const PERM_ROLE_PERMISSION_LIST: &str = "admin:role_permission:list";
 const PERM_ROLE_PERMISSION_UPDATE: &str = "admin:role_permission:update";
 
@@ -259,40 +259,63 @@ impl AdminApi {
             .collect())
     }
 
-    pub async fn assign_user_role(
-        &self,
-        current_user_id: String,
-        req: AssignUserRoleRequest,
-    ) -> BizResult<UserRoleResponse> {
-        let access = self
-            .ensure_permission(&current_user_id, PERM_USER_ROLE_ASSIGN)
-            .await?;
-        self.ensure_role_assignment_allowed(&access, req.role_id)
-            .await?;
-        let user_id = parse_user_id(&req.user_id)?;
-        let user_role = self
-            .user_role_svc
-            .create(CreateUserRole {
-                user_id,
-                role_id: req.role_id,
-            })
-            .await?;
-
-        Ok(UserRoleResponse {
-            user_id: user_role.user_id.to_string(),
-            role_id: user_role.role_id,
-        })
-    }
-
     pub async fn list_user_roles(
         &self,
         current_user_id: String,
         user_id: String,
-    ) -> BizResult<Vec<RoleResponse>> {
-        self.ensure_permission(&current_user_id, PERM_USER_ROLE_LIST)
+    ) -> BizResult<Vec<UserRoleOptionResponse>> {
+        let access = self
+            .ensure_permission(&current_user_id, PERM_USER_ROLE_LIST)
             .await?;
         let user_id = parse_user_id(&user_id)?;
-        self.list_roles_by_user_id(user_id).await
+        self.ensure_admin_user_exists(user_id).await?;
+        self.build_user_role_options(user_id, &access).await
+    }
+
+    pub async fn update_user_roles(
+        &self,
+        current_user_id: String,
+        req: UpdateUserRolesRequest,
+    ) -> BizResult<Vec<UserRoleOptionResponse>> {
+        let access = self
+            .ensure_permission(&current_user_id, PERM_USER_ROLE_UPDATE)
+            .await?;
+        let user_id = parse_user_id(&req.user_id)?;
+        self.ensure_admin_user_exists(user_id).await?;
+        self.ensure_admin_user_change_allowed(
+            &access,
+            user_id,
+            "only root can update root user roles",
+        )
+        .await?;
+
+        let role_ids = req
+            .role_ids
+            .into_iter()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        for role_id in &role_ids {
+            self.ensure_role_assignment_allowed(&access, *role_id)
+                .await?;
+        }
+
+        let roles = self.role_svc.list_by_ids(role_ids.clone()).await?;
+        if roles.len() != role_ids.len() {
+            return Err(BizError::new(
+                admin_error::ADMIN_ROLE_NOT_FOUND,
+                "one or more roles not found".to_string(),
+            ));
+        }
+
+        self.user_role_svc.delete_by_user_id(user_id).await?;
+        for role_id in role_ids {
+            self.user_role_svc
+                .create(CreateUserRole { user_id, role_id })
+                .await?;
+        }
+
+        self.build_user_role_options(user_id, &access).await
     }
 
     async fn list_roles_by_user_id(&self, user_id: Uuid) -> BizResult<Vec<RoleResponse>> {
@@ -305,6 +328,34 @@ impl AdminApi {
             .await?
             .into_iter()
             .map(Self::map_role)
+            .collect())
+    }
+
+    async fn build_user_role_options(
+        &self,
+        user_id: Uuid,
+        access: &AdminAccess,
+    ) -> BizResult<Vec<UserRoleOptionResponse>> {
+        let checked_role_ids: HashSet<i64> = self
+            .user_role_svc
+            .list_by_user_id(user_id)
+            .await?
+            .into_iter()
+            .map(|item| item.role_id)
+            .collect();
+
+        Ok(self
+            .role_svc
+            .list_all()
+            .await?
+            .into_iter()
+            .filter(|role| access.is_root() || role.code != ROOT_ROLE_CODE)
+            .map(|role| UserRoleOptionResponse {
+                id: role.id,
+                name: role.name,
+                code: role.code,
+                checked: checked_role_ids.contains(&role.id),
+            })
             .collect())
     }
 

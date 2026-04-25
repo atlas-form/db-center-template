@@ -83,7 +83,7 @@ upsert_permission "admin:user:create" "创建后台用户" "admin:user" 120 "act
 upsert_permission "admin:user:update" "更新后台用户" "admin:user" 130 "action"
 upsert_permission "admin:user:delete" "删除后台用户" "admin:user" 140 "action"
 upsert_permission "admin:user_role:list" "查看用户角色" "admin:user" 150 "action"
-upsert_permission "admin:user_role:assign" "分配用户角色" "admin:user" 160 "action"
+upsert_permission "admin:user_role:update" "更新用户角色" "admin:user" 160 "action"
 
 upsert_permission "admin:access" "权限管理" "" 200 "group"
 upsert_permission "admin:role:list" "查看角色列表" "admin:access" 210 "action"
@@ -111,7 +111,7 @@ PERMISSION_COUNT="$(
       'admin:user:update',
       'admin:user:delete',
       'admin:user_role:list',
-      'admin:user_role:assign',
+      'admin:user_role:update',
       'admin:access',
       'admin:role:list',
       'admin:role:create',

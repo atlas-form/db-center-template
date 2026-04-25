@@ -270,35 +270,10 @@ pub async fn list_menus(
         .to_json())
 }
 
-pub async fn assign_user_role(
-    Extension(auth_user): Extension<AuthUser>,
-    Json(req): Json<AssignUserRoleRequest>,
-) -> ResponseResult<UserRoleResponse> {
-    req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
-    let user_role = api
-        .assign_user_role(
-            auth_user.user_id,
-            service::dto::admin::AssignUserRoleRequest {
-                user_id: req.user_id,
-                role_id: req.role_id,
-            },
-        )
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(UserRoleResponse {
-        user_id: user_role.user_id,
-        role_id: user_role.role_id,
-    }
-    .into_common_response()
-    .to_json())
-}
-
 pub async fn list_user_roles(
     Extension(auth_user): Extension<AuthUser>,
     Path(user_id): Path<String>,
-) -> ResponseResult<Vec<RoleResponse>> {
+) -> ResponseResult<Vec<UserRoleOptionResponse>> {
     let api = AdminApi::new(get_default_ctx());
     let roles = api
         .list_user_roles(auth_user.user_id, user_id)
@@ -307,10 +282,42 @@ pub async fn list_user_roles(
 
     Ok(roles
         .into_iter()
-        .map(|role| RoleResponse {
+        .map(|role| UserRoleOptionResponse {
             id: role.id,
             name: role.name,
             code: role.code,
+            checked: role.checked,
+        })
+        .collect::<Vec<_>>()
+        .into_common_response()
+        .to_json())
+}
+
+pub async fn update_user_roles(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(user_id): Path<String>,
+    Json(req): Json<UpdateUserRolesRequest>,
+) -> ResponseResult<Vec<UserRoleOptionResponse>> {
+    req.validate().map_err(Error::from)?;
+    let api = AdminApi::new(get_default_ctx());
+    let roles = api
+        .update_user_roles(
+            auth_user.user_id,
+            service::dto::admin::UpdateUserRolesRequest {
+                user_id,
+                role_ids: req.role_ids,
+            },
+        )
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(roles
+        .into_iter()
+        .map(|role| UserRoleOptionResponse {
+            id: role.id,
+            name: role.name,
+            code: role.code,
+            checked: role.checked,
         })
         .collect::<Vec<_>>()
         .into_common_response()

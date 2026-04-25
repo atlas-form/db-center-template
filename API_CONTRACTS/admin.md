@@ -20,8 +20,8 @@
 | `admin:role_permission:update` | 更新角色权限配置 |
 | `admin:menu:create` | 创建菜单 |
 | `admin:menu:list` | 查看菜单列表 |
-| `admin:user_role:assign` | 给用户分配角色 |
 | `admin:user_role:list` | 查看用户角色 |
+| `admin:user_role:update` | 更新用户角色 |
 
 `GET /api/admin/me/permissions` 和 `GET /api/admin/me/menus` 不要求单独权限码，但要求当前用户本身是有效后台用户。
 
@@ -389,42 +389,7 @@ null
 ]
 ```
 
-## 13. 给用户分配角色
-
-- 方法：`POST`
-- 路径：`/api/admin/user-roles`
-- 权限：`admin:user_role:assign`
-
-请求体：
-
-```json
-{
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "role_id": 1
-}
-```
-
-字段说明：
-
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `user_id` | `string` | 是 | 长度 `1..=128`，业务层会按 UUID 解析 |
-| `role_id` | `integer` | 是 | 角色 ID |
-
-成功响应 `data`：
-
-```json
-{
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "role_id": 1
-}
-```
-
-补充说明：
-
-- 非 `root` 用户不能给别人分配 `root` 角色
-
-## 14. 查询某个用户的角色列表
+## 13. 查询用户角色配置
 
 - 方法：`GET`
 - 路径：`/api/admin/users/{user_id}/roles`
@@ -443,10 +408,51 @@ null
   {
     "id": 1,
     "name": "系统管理员",
-    "code": "system_admin"
+    "code": "system_admin",
+    "checked": true
+  },
+  {
+    "id": 2,
+    "name": "客服",
+    "code": "support",
+    "checked": false
   }
 ]
 ```
+
+补充说明：
+
+- 返回所有可配置角色，并用 `checked` 标识目标用户是否拥有该角色
+- 非 `root` 用户不会看到 `root` 角色
+
+## 14. 更新用户角色配置
+
+- 方法：`PUT`
+- 路径：`/api/admin/users/{user_id}/roles`
+- 权限：`admin:user_role:update`
+
+请求体：
+
+```json
+{
+  "role_ids": [1, 2]
+}
+```
+
+字段说明：
+
+| 字段 | 类型 | 必填 | 约束 |
+| --- | --- | --- | --- |
+| `role_ids` | `integer[]` | 是 | 前端角色配置中勾选的角色 ID |
+
+成功响应 `data`：同“查询用户角色配置”。
+
+补充说明：
+
+- 更新不是增量修改
+- 服务端会先删除该 `user_id` 下所有 `user_roles` 记录，再插入本次提交的 `role_ids`
+- 非 `root` 用户不能给别人分配 `root` 角色
+- 非 `root` 用户不能修改带有 `root` 角色的后台用户
 
 ## 15. 查询当前用户权限
 
