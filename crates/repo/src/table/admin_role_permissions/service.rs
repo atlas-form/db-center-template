@@ -2,14 +2,14 @@ use db_core::{DbContext, Repository, error::BizResult};
 use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, sea_query::IntoCondition};
 
 use crate::{
-    entity::role_permissions,
-    table::role_permissions::dto::{CreateRolePermission, RolePermission},
+    entity::admin_role_permissions,
+    table::admin_role_permissions::dto::{CreateRolePermission, RolePermission},
 };
 
 db_core::impl_repository!(
     RolePermissionRepo,
-    role_permissions::Entity,
-    role_permissions::Model
+    admin_role_permissions::Entity,
+    admin_role_permissions::Model
 );
 
 pub struct RolePermissionService {
@@ -24,7 +24,7 @@ impl RolePermissionService {
     }
 
     pub async fn create(&self, input: CreateRolePermission) -> BizResult<RolePermission> {
-        let model = role_permissions::ActiveModel {
+        let model = admin_role_permissions::ActiveModel {
             role_id: Set(input.role_id),
             permission_id: Set(input.permission_id),
         };
@@ -40,7 +40,7 @@ impl RolePermissionService {
         let query = self
             .repo
             .query()
-            .filter(role_permissions::Column::RoleId.is_in(role_ids));
+            .filter(admin_role_permissions::Column::RoleId.is_in(role_ids));
 
         Ok(self
             .repo
@@ -55,7 +55,7 @@ impl RolePermissionService {
         Ok(self
             .repo
             .delete_many(
-                role_permissions::Column::RoleId
+                admin_role_permissions::Column::RoleId
                     .eq(role_id)
                     .into_condition(),
             )
@@ -63,7 +63,7 @@ impl RolePermissionService {
             .rows_affected)
     }
 
-    fn from_model(model: role_permissions::Model) -> RolePermission {
+    fn from_model(model: admin_role_permissions::Model) -> RolePermission {
         RolePermission {
             role_id: model.role_id,
             permission_id: model.permission_id,

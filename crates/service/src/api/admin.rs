@@ -6,12 +6,12 @@ use db_core::{
 };
 use error_code::admin as admin_error;
 use repo::table::{
+    admin_menus::{CreateMenu, Menu, MenuService},
+    admin_permissions::{Permission, PermissionService},
+    admin_role_permissions::{CreateRolePermission, RolePermissionService},
+    admin_roles::{CreateRole, Role, RoleService},
+    admin_user_roles::{CreateUserRole, UserRoleService},
     admin_users::{AdminUser, AdminUserService, AdminUserStatus, CreateAdminUser, UpdateAdminUser},
-    menus::{CreateMenu, Menu, MenuService},
-    permissions::{Permission, PermissionService},
-    role_permissions::{CreateRolePermission, RolePermissionService},
-    roles::{CreateRole, Role, RoleService},
-    user_roles::{CreateUserRole, UserRoleService},
 };
 use uuid::Uuid;
 

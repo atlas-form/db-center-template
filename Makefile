@@ -14,7 +14,7 @@ help:
 	@echo "  make db-status               - 查看数据库容器状态"
 	@echo "  make db-stop                 - 停止数据库容器"
 	@echo "  make db-rm                   - 删除数据库容器"
-	@echo "  make db-init                 - 初始化 DATABASE_URL 指向的数据库（默认 test）"
+	@echo "  make db-init                 - 初始化 app 数据库"
 	@echo "  make db-clear                - 清空整个数据库中的 public schema"
 	@echo "  make db-truncate TABLE=xxx   - 清空指定表并重置自增"
 	@echo ""

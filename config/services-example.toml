@@ -8,11 +8,10 @@ token = "dev-internal-token-change-me"
 
 
 [[db]]
-name = "default"
-url = "postgres://postgres:123456@localhost:15432/sdk"
+name = "app"
+url = "postgres://postgres:123456@localhost:15432/app"
 max_connections = 10
 min_connections = 1
 connect_timeout = 30
 idle_timeout = 600
 sql_logging = false
-

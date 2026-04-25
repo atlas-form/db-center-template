@@ -168,7 +168,7 @@ fi
 ROLE_ID="$(
   run_psql "$DB_NAME" "
     WITH upserted AS (
-      INSERT INTO roles (name, code)
+      INSERT INTO admin_roles (name, code)
       VALUES ('Root', 'root')
       ON CONFLICT (code) DO UPDATE
       SET name = EXCLUDED.name
@@ -200,22 +200,22 @@ run_psql "$DB_NAME" "
 " >/dev/null
 
 run_psql "$DB_NAME" "
-  INSERT INTO user_roles (user_id, role_id)
+  INSERT INTO admin_user_roles (user_id, role_id)
   SELECT '${USER_ID}'::uuid, id
-  FROM roles
+  FROM admin_roles
   WHERE code = 'root'
   ON CONFLICT (user_id, role_id) DO NOTHING;
 " >/dev/null
 
 run_psql "$DB_NAME" "
-  DELETE FROM role_permissions
+  DELETE FROM admin_role_permissions
   WHERE role_id = ${ROLE_ID};
 " >/dev/null
 
 USER_ROLE_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
-    FROM user_roles
+    FROM admin_user_roles
     WHERE user_id = '${USER_ID}'::uuid
       AND role_id = ${ROLE_ID};
   " | awk 'NF { print $1 }' | tail -n 1 | tr -d '[:space:]'

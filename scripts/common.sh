@@ -6,6 +6,9 @@ MIGRATION_DIR="$PROJECT_ROOT/crates/migration"
 ENTITY_DIR="$PROJECT_ROOT/crates/repo/src/entity"
 
 load_env() {
+  local env_database_url="${DATABASE_URL:-}"
+  local env_app_database_url="${APP_DATABASE_URL:-}"
+
   if [ -f "$PROJECT_ROOT/.env" ]; then
     set -a
     # shellcheck disable=SC1091
@@ -13,10 +16,20 @@ load_env() {
     set +a
   fi
 
-  : "${DATABASE_URL:=postgres://postgres:123456@localhost:15432/test}"
+  if [ -n "$env_database_url" ]; then
+    DATABASE_URL="$env_database_url"
+  fi
+  if [ -n "$env_app_database_url" ]; then
+    APP_DATABASE_URL="$env_app_database_url"
+  fi
+
+  : "${APP_DATABASE_URL:=postgres://postgres:123456@localhost:15432/app}"
+  : "${DATABASE_URL:=$APP_DATABASE_URL}"
   : "${DB_CONTAINER_NAME:=db-center-template-pg}"
   : "${PG_IMAGE:=postgres:16}"
   : "${PG_DATA_DIR:=$HOME/db/db-center-template-postgres}"
+
+  export DATABASE_URL
 }
 
 parse_database_url() {

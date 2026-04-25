@@ -4,7 +4,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(table_name = "admin_users")]
+#[sea_orm(table_name = "app_users")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub user_id: Uuid,
@@ -17,22 +17,22 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::admin_user_roles::Entity")]
-    AdminUserRoles,
+    #[sea_orm(has_many = "super::app_user_roles::Entity")]
+    AppUserRoles,
 }
 
-impl Related<super::admin_user_roles::Entity> for Entity {
+impl Related<super::app_user_roles::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::AdminUserRoles.def()
+        Relation::AppUserRoles.def()
     }
 }
 
-impl Related<super::admin_roles::Entity> for Entity {
+impl Related<super::app_roles::Entity> for Entity {
     fn to() -> RelationDef {
-        super::admin_user_roles::Relation::AdminRoles.def()
+        super::app_user_roles::Relation::AppRoles.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::admin_user_roles::Relation::AdminUsers.def().rev())
+        Some(super::app_user_roles::Relation::AppUsers.def().rev())
     }
 }
 

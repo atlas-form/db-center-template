@@ -40,7 +40,7 @@
 ## 1. 创建后台用户
 
 - 方法：`POST`
-- 路径：`/api/admin/admin-users`
+- 路径：`/api/admin/admin-admin_users`
 - 权限：`admin:user:create`
 
 请求体：
@@ -68,7 +68,7 @@
   "display_name": "张三",
   "remark": "测试环境管理员",
   "status": "enabled",
-  "roles": []
+  "admin_roles": []
 }
 ```
 
@@ -79,7 +79,7 @@
 ## 2. 查询后台用户列表
 
 - 方法：`GET`
-- 路径：`/api/admin/admin-users`
+- 路径：`/api/admin/admin-admin_users`
 - 权限：`admin:user:list`
 
 成功响应 `data`：
@@ -92,7 +92,7 @@
     "display_name": "张三",
     "remark": "测试环境管理员",
     "status": "enabled",
-    "roles": [
+    "admin_roles": [
       {
         "id": 1,
         "name": "系统管理员",
@@ -110,7 +110,7 @@
 ## 3. 更新后台用户
 
 - 方法：`PATCH`
-- 路径：`/api/admin/admin-users/{user_id}`
+- 路径：`/api/admin/admin-admin_users/{user_id}`
 - 权限：`admin:user:update`
 
 请求体：
@@ -138,7 +138,7 @@
   "display_name": "张三",
   "remark": "新的备注",
   "status": "disabled",
-  "roles": [
+  "admin_roles": [
     {
       "id": 1,
       "name": "系统管理员",
@@ -156,7 +156,7 @@
 ## 4. 删除后台用户
 
 - 方法：`DELETE`
-- 路径：`/api/admin/admin-users/{user_id}`
+- 路径：`/api/admin/admin-admin_users/{user_id}`
 - 权限：`admin:user:delete`
 
 成功响应 `data`：
@@ -336,7 +336,7 @@ null
 补充说明：
 
 - 更新不是增量修改
-- 服务端会先删除该 `role_id` 下所有 `role_permissions` 记录，再插入本次提交的 `permission_ids`
+- 服务端会先删除该 `role_id` 下所有 `admin_role_permissions` 记录，再插入本次提交的 `permission_ids`
 - 非 `root` 用户不能修改 `root` 角色的权限
 
 ## 11. 创建菜单
@@ -450,7 +450,7 @@ null
 补充说明：
 
 - 更新不是增量修改
-- 服务端会先删除该 `user_id` 下所有 `user_roles` 记录，再插入本次提交的 `role_ids`
+- 服务端会先删除该 `user_id` 下所有 `admin_user_roles` 记录，再插入本次提交的 `role_ids`
 - 非 `root` 用户不能给别人分配 `root` 角色
 - 非 `root` 用户不能修改带有 `root` 角色的后台用户
 
@@ -478,7 +478,7 @@ null
 补充说明：
 
 - 登录后前端可用此接口判断当前用户能力
-- `root` 角色不受角色权限配置管理，`role_permissions` 不需要保存 `root` 权限
+- `root` 角色不受角色权限配置管理，`admin_role_permissions` 不需要保存 `root` 权限
 - 如果当前用户拥有 `root` 角色，服务端按最高权限处理，并返回全部权限码
 
 ## 16. 查询当前用户菜单树

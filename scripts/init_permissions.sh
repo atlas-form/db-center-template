@@ -21,7 +21,7 @@ upsert_permission() {
   fi
 
   run_psql "$DB_NAME" "
-    INSERT INTO permissions (code, name, parent_code, sort, kind)
+    INSERT INTO admin_permissions (code, name, parent_code, sort, kind)
     VALUES ('${code}', '${name}', ${parent_sql}, ${sort}, '${kind}')
     ON CONFLICT (code) DO UPDATE
     SET
@@ -41,11 +41,11 @@ upsert_menu() {
 
   local parent_id_sql="NULL"
   if [ -n "$parent_code" ]; then
-    parent_id_sql="(SELECT id FROM menus WHERE permission_code = '${parent_code}' LIMIT 1)"
+    parent_id_sql="(SELECT id FROM admin_menus WHERE permission_code = '${parent_code}' LIMIT 1)"
   fi
 
   run_psql "$DB_NAME" "
-    UPDATE menus
+    UPDATE admin_menus
     SET
       name = '${name}',
       parent_id = ${parent_id_sql},
@@ -57,10 +57,10 @@ upsert_menu() {
          AND parent_id IS NOT DISTINCT FROM ${parent_id_sql}
        );
 
-    INSERT INTO menus (name, parent_id, permission_code)
+    INSERT INTO admin_menus (name, parent_id, permission_code)
     SELECT '${name}', ${parent_id_sql}, '${permission_code}'
     WHERE NOT EXISTS (
-      SELECT 1 FROM menus WHERE permission_code = '${code}'
+      SELECT 1 FROM admin_menus WHERE permission_code = '${code}'
     );
   " >/dev/null
 
@@ -73,8 +73,8 @@ upsert_menu() {
 echo "初始化基础权限节点..."
 
 run_psql "$DB_NAME" "
-  DELETE FROM role_permissions;
-  DELETE FROM permissions;
+  DELETE FROM admin_role_permissions;
+  DELETE FROM admin_permissions;
 " >/dev/null
 
 upsert_permission "admin:user" "用户管理" "" 100 "group"
@@ -103,7 +103,7 @@ upsert_menu "权限管理" "admin:access" "" "admin:access" "200"
 PERMISSION_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
-    FROM permissions
+    FROM admin_permissions
     WHERE code IN (
       'admin:user',
       'admin:user:list',
@@ -128,11 +128,11 @@ PERMISSION_COUNT="$(
 MENU_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
-    FROM menus
+    FROM admin_menus
     WHERE permission_code IN ('admin:user', 'admin:access');
   " | tr -d '[:space:]'
 )"
 
 echo "基础权限初始化完成"
-echo "permissions: ${PERMISSION_COUNT}"
-echo "menus: ${MENU_COUNT}"
+echo "admin_permissions: ${PERMISSION_COUNT}"
+echo "admin_menus: ${MENU_COUNT}"

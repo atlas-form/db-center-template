@@ -1,4 +1,4 @@
-pub use repo::table::{admin_users::AdminUserStatus, permissions::PermissionKind};
+pub use repo::table::{admin_permissions::PermissionKind, admin_users::AdminUserStatus};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize)]

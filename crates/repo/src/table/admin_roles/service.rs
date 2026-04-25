@@ -2,11 +2,11 @@ use db_core::{DbContext, Repository, error::BizResult};
 use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, QueryOrder};
 
 use crate::{
-    entity::roles,
-    table::roles::dto::{CreateRole, Role},
+    entity::admin_roles,
+    table::admin_roles::dto::{CreateRole, Role},
 };
 
-db_core::impl_repository!(RoleRepo, roles::Entity, roles::Model);
+db_core::impl_repository!(RoleRepo, admin_roles::Entity, admin_roles::Model);
 
 pub struct RoleService {
     repo: RoleRepo,
@@ -20,7 +20,7 @@ impl RoleService {
     }
 
     pub async fn create(&self, input: CreateRole) -> BizResult<Role> {
-        let model = roles::ActiveModel {
+        let model = admin_roles::ActiveModel {
             name: Set(input.name),
             code: Set(input.code),
             ..Default::default()
@@ -30,7 +30,7 @@ impl RoleService {
     }
 
     pub async fn list_all(&self) -> BizResult<Vec<Role>> {
-        let query = self.repo.query().order_by_asc(roles::Column::Id);
+        let query = self.repo.query().order_by_asc(admin_roles::Column::Id);
         Ok(self
             .repo
             .select_all(query)
@@ -48,8 +48,8 @@ impl RoleService {
         let query = self
             .repo
             .query()
-            .filter(roles::Column::Id.is_in(ids))
-            .order_by_asc(roles::Column::Id);
+            .filter(admin_roles::Column::Id.is_in(ids))
+            .order_by_asc(admin_roles::Column::Id);
 
         Ok(self
             .repo
@@ -68,7 +68,7 @@ impl RoleService {
         Ok(self.repo.delete_by_id(id).await?.rows_affected)
     }
 
-    fn from_model(model: roles::Model) -> Role {
+    fn from_model(model: admin_roles::Model) -> Role {
         Role {
             id: model.id,
             name: model.name,

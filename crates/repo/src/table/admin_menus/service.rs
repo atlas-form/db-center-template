@@ -2,11 +2,11 @@ use db_core::{DbContext, Repository, error::BizResult};
 use sea_orm::{ActiveValue::Set, QueryOrder};
 
 use crate::{
-    entity::menus,
-    table::menus::dto::{CreateMenu, Menu},
+    entity::admin_menus,
+    table::admin_menus::dto::{CreateMenu, Menu},
 };
 
-db_core::impl_repository!(MenuRepo, menus::Entity, menus::Model);
+db_core::impl_repository!(MenuRepo, admin_menus::Entity, admin_menus::Model);
 
 pub struct MenuService {
     repo: MenuRepo,
@@ -20,7 +20,7 @@ impl MenuService {
     }
 
     pub async fn create(&self, input: CreateMenu) -> BizResult<Menu> {
-        let model = menus::ActiveModel {
+        let model = admin_menus::ActiveModel {
             name: Set(input.name),
             parent_id: Set(input.parent_id),
             permission_code: Set(input.permission_code),
@@ -31,7 +31,7 @@ impl MenuService {
     }
 
     pub async fn list_all(&self) -> BizResult<Vec<Menu>> {
-        let query = self.repo.query().order_by_asc(menus::Column::Id);
+        let query = self.repo.query().order_by_asc(admin_menus::Column::Id);
         Ok(self
             .repo
             .select_all(query)
@@ -41,7 +41,7 @@ impl MenuService {
             .collect())
     }
 
-    fn from_model(model: menus::Model) -> Menu {
+    fn from_model(model: admin_menus::Model) -> Menu {
         Menu {
             id: model.id,
             name: model.name,

@@ -9,7 +9,7 @@ use crate::{
     clients::auth_client,
     dto::admin::*,
     error::{Error, from_biz_error},
-    statics::db_manager::get_default_ctx,
+    statics::db_manager::get_admin_ctx,
 };
 
 fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
@@ -85,7 +85,7 @@ pub async fn create_admin_user(
                 format!("auth user not found: {}", req.identifier),
             ))
         })?;
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let admin_user = api
         .create_admin_user(
             auth_user.user_id,
@@ -111,7 +111,7 @@ pub async fn create_admin_user(
 pub async fn list_admin_users(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<AdminUserResponse>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let admin_users = api
         .list_admin_users(auth_user.user_id)
         .await
@@ -131,7 +131,7 @@ pub async fn update_admin_user(
     Json(req): Json<UpdateAdminUserRequest>,
 ) -> ResponseResult<AdminUserResponse> {
     req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let admin_user = api
         .update_admin_user(
             auth_user.user_id,
@@ -156,7 +156,7 @@ pub async fn delete_admin_user(
     Extension(auth_user): Extension<AuthUser>,
     Path(user_id): Path<String>,
 ) -> ResponseResult<()> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     api.delete_admin_user(auth_user.user_id, user_id)
         .await
         .map_err(from_biz_error)?;
@@ -169,7 +169,7 @@ pub async fn create_role(
     Json(req): Json<CreateRoleRequest>,
 ) -> ResponseResult<RoleResponse> {
     req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let role = api
         .create_role(
             auth_user.user_id,
@@ -193,7 +193,7 @@ pub async fn create_role(
 pub async fn list_roles(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<RoleResponse>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let roles = api
         .list_roles(auth_user.user_id)
         .await
@@ -215,7 +215,7 @@ pub async fn delete_role(
     Extension(auth_user): Extension<AuthUser>,
     Path(role_id): Path<i64>,
 ) -> ResponseResult<()> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     api.delete_role(auth_user.user_id, role_id)
         .await
         .map_err(from_biz_error)?;
@@ -228,7 +228,7 @@ pub async fn create_menu(
     Json(req): Json<CreateMenuRequest>,
 ) -> ResponseResult<MenuResponse> {
     req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let menu = api
         .create_menu(
             auth_user.user_id,
@@ -252,7 +252,7 @@ pub async fn create_menu(
 pub async fn list_menus(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<MenuResponse>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let menus = api
         .list_menus(auth_user.user_id)
         .await
@@ -274,7 +274,7 @@ pub async fn list_user_roles(
     Extension(auth_user): Extension<AuthUser>,
     Path(user_id): Path<String>,
 ) -> ResponseResult<Vec<UserRoleOptionResponse>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let roles = api
         .list_user_roles(auth_user.user_id, user_id)
         .await
@@ -299,7 +299,7 @@ pub async fn update_user_roles(
     Json(req): Json<UpdateUserRolesRequest>,
 ) -> ResponseResult<Vec<UserRoleOptionResponse>> {
     req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let roles = api
         .update_user_roles(
             auth_user.user_id,
@@ -327,7 +327,7 @@ pub async fn update_user_roles(
 pub async fn list_permissions(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<PermissionTreeNode>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let tree = api
         .list_permissions(auth_user.user_id)
         .await
@@ -345,7 +345,7 @@ pub async fn list_role_permissions(
     Extension(auth_user): Extension<AuthUser>,
     Path(role_id): Path<i64>,
 ) -> ResponseResult<Vec<RolePermissionTreeNode>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let tree = api
         .list_role_permissions(auth_user.user_id, role_id)
         .await
@@ -365,7 +365,7 @@ pub async fn update_role_permissions(
     Json(req): Json<UpdateRolePermissionsRequest>,
 ) -> ResponseResult<Vec<RolePermissionTreeNode>> {
     req.validate().map_err(Error::from)?;
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let tree = api
         .update_role_permissions(
             auth_user.user_id,
@@ -388,7 +388,7 @@ pub async fn update_role_permissions(
 pub async fn current_user_permissions(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<CurrentUserPermissionsResponse> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let resp = api
         .get_current_user_permissions(auth_user.user_id)
         .await
@@ -406,7 +406,7 @@ pub async fn current_user_permissions(
 pub async fn current_user_menus(
     Extension(auth_user): Extension<AuthUser>,
 ) -> ResponseResult<Vec<MenuTreeNode>> {
-    let api = AdminApi::new(get_default_ctx());
+    let api = AdminApi::new(get_admin_ctx());
     let menus = api
         .get_current_user_menus(auth_user.user_id)
         .await

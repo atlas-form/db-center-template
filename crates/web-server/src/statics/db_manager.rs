@@ -21,13 +21,22 @@ fn get_db_manager() -> &'static DatabaseManager {
     DB_MANAGER.get().expect("DatabaseManager not initialized")
 }
 
+#[allow(dead_code)]
 pub fn get_default_ctx() -> DbContext {
     get_db_manager().default()
 }
 
-// pub fn get_specific_ctx(name: &str) -> Result<DbContext> {
-//     let ctx = get_db_manager()
-//         .get(name)
-//         .map_err(|_| Error::NotFound(format!("database '{name}' not found")))?;
-//     Ok(ctx)
-// }
+pub fn get_admin_ctx() -> DbContext {
+    get_specific_ctx("app")
+}
+
+#[allow(dead_code)]
+pub fn get_app_ctx() -> DbContext {
+    get_specific_ctx("app")
+}
+
+pub fn get_specific_ctx(name: &str) -> DbContext {
+    get_db_manager()
+        .get(name)
+        .unwrap_or_else(|_| panic!("database '{name}' not found"))
+}

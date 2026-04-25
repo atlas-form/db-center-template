@@ -9,7 +9,7 @@
 ## 这套脚本能做什么
 
 1. 用 Docker 启动 PostgreSQL
-2. 初始化 `DATABASE_URL` 指向的数据库，默认是 `test`
+2. 初始化 `app` 数据库
 3. 单独执行 SeaORM 迁移命令
 4. 单独生成 entity，且不修改数据库
 5. 清空整个数据库，或者清空某一张表
@@ -20,6 +20,18 @@
 
 ```bash
 make help
+```
+
+## 数据库连接
+
+脚本会先读取 `.env`，默认连接 `APP_DATABASE_URL`，也可以用 `DATABASE_URL` 临时覆盖。
+
+示例：
+
+```bash
+./scripts/init_db.sh
+./scripts/migrate.sh status
+./scripts/generate_entity.sh
 ```
 
 ## 脚本列表
@@ -46,7 +58,7 @@ make help
 默认数据库名是：
 
 ```text
-test
+app
 ```
 
 ### `migrate.sh`
@@ -94,3 +106,7 @@ test
 2. `generate entity`
 
 适合在确认要重建数据库后使用。
+
+### `init_permissions.sh` / `init_root.sh`
+
+这两个脚本只初始化 `admin_*` 后台管理表，不会写入 `app_*` 普通用户权限表。

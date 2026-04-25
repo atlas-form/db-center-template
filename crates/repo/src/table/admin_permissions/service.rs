@@ -2,11 +2,15 @@ use db_core::{DbContext, Repository, error::BizResult};
 use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, QueryOrder};
 
 use crate::{
-    entity::permissions,
-    table::permissions::dto::{CreatePermission, Permission, PermissionKind},
+    entity::admin_permissions,
+    table::admin_permissions::dto::{CreatePermission, Permission, PermissionKind},
 };
 
-db_core::impl_repository!(PermissionRepo, permissions::Entity, permissions::Model);
+db_core::impl_repository!(
+    PermissionRepo,
+    admin_permissions::Entity,
+    admin_permissions::Model
+);
 
 pub struct PermissionService {
     repo: PermissionRepo,
@@ -20,7 +24,7 @@ impl PermissionService {
     }
 
     pub async fn create(&self, input: CreatePermission) -> BizResult<Permission> {
-        let model = permissions::ActiveModel {
+        let model = admin_permissions::ActiveModel {
             code: Set(input.code),
             name: Set(input.name),
             parent_code: Set(input.parent_code),
@@ -33,7 +37,10 @@ impl PermissionService {
     }
 
     pub async fn list_all(&self) -> BizResult<Vec<Permission>> {
-        let query = self.repo.query().order_by_asc(permissions::Column::Id);
+        let query = self
+            .repo
+            .query()
+            .order_by_asc(admin_permissions::Column::Id);
         self.repo
             .select_all(query)
             .await?
@@ -46,7 +53,7 @@ impl PermissionService {
         let query = self
             .repo
             .query()
-            .filter(permissions::Column::Code.eq(code.to_owned()));
+            .filter(admin_permissions::Column::Code.eq(code.to_owned()));
 
         self.repo
             .select_one(query)
@@ -63,8 +70,8 @@ impl PermissionService {
         let query = self
             .repo
             .query()
-            .filter(permissions::Column::Id.is_in(ids))
-            .order_by_asc(permissions::Column::Id);
+            .filter(admin_permissions::Column::Id.is_in(ids))
+            .order_by_asc(admin_permissions::Column::Id);
 
         self.repo
             .select_all(query)
@@ -74,7 +81,7 @@ impl PermissionService {
             .collect()
     }
 
-    fn from_model(model: permissions::Model) -> BizResult<Permission> {
+    fn from_model(model: admin_permissions::Model) -> BizResult<Permission> {
         Ok(Permission {
             id: model.id,
             code: model.code,
