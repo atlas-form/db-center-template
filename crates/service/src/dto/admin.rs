@@ -1,4 +1,4 @@
-pub use repo::table::admin_users::AdminUserStatus;
+pub use repo::table::{admin_users::AdminUserStatus, permissions::PermissionKind};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -62,6 +62,29 @@ pub struct AssignUserRoleRequest {
 pub struct UserRoleResponse {
     pub user_id: String,
     pub role_id: i64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateRolePermissionsRequest {
+    pub role_id: i64,
+    pub permission_ids: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PermissionTreeNode {
+    pub id: i64,
+    pub name: String,
+    pub kind: PermissionKind,
+    pub children: Vec<PermissionTreeNode>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RolePermissionTreeNode {
+    pub id: i64,
+    pub name: String,
+    pub kind: PermissionKind,
+    pub checked: bool,
+    pub children: Vec<RolePermissionTreeNode>,
 }
 
 #[derive(Debug, Clone, Serialize)]

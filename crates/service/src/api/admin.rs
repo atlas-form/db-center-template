@@ -8,8 +8,8 @@ use error_code::admin as admin_error;
 use repo::table::{
     admin_users::{AdminUser, AdminUserService, AdminUserStatus, CreateAdminUser, UpdateAdminUser},
     menus::{CreateMenu, Menu, MenuService},
-    permissions::PermissionService,
-    role_permissions::RolePermissionService,
+    permissions::{Permission, PermissionService},
+    role_permissions::{CreateRolePermission, RolePermissionService},
     roles::{CreateRole, Role, RoleService},
     user_roles::{CreateUserRole, UserRoleService},
 };
@@ -17,8 +17,8 @@ use uuid::Uuid;
 
 use crate::dto::admin::{
     AdminUserResponse, AssignUserRoleRequest, CreateAdminUserRequest, CreateMenuRequest,
-    CreateRoleRequest, MenuResponse, MenuTreeNode, RoleResponse, UpdateAdminUserRequest,
-    UserRoleResponse,
+    CreateRoleRequest, MenuResponse, MenuTreeNode, PermissionTreeNode, RolePermissionTreeNode,
+    RoleResponse, UpdateAdminUserRequest, UpdateRolePermissionsRequest, UserRoleResponse,
 };
 
 const ROOT_ROLE_CODE: &str = "root";
@@ -29,10 +29,13 @@ const PERM_ADMIN_USER_DELETE: &str = "admin:user:delete";
 const PERM_ROLE_CREATE: &str = "admin:role:create";
 const PERM_ROLE_LIST: &str = "admin:role:list";
 const PERM_ROLE_DELETE: &str = "admin:role:delete";
+const PERM_PERMISSION_LIST: &str = "admin:permission:list";
 const PERM_MENU_CREATE: &str = "admin:menu:create";
 const PERM_MENU_LIST: &str = "admin:menu:list";
 const PERM_USER_ROLE_ASSIGN: &str = "admin:user_role:assign";
 const PERM_USER_ROLE_LIST: &str = "admin:user_role:list";
+const PERM_ROLE_PERMISSION_LIST: &str = "admin:role_permission:list";
+const PERM_ROLE_PERMISSION_UPDATE: &str = "admin:role_permission:update";
 
 pub struct AdminApi {
     admin_user_svc: AdminUserService,
@@ -304,6 +307,72 @@ impl AdminApi {
             .collect())
     }
 
+    pub async fn list_permissions(
+        &self,
+        current_user_id: String,
+    ) -> BizResult<Vec<PermissionTreeNode>> {
+        self.ensure_permission(&current_user_id, PERM_PERMISSION_LIST)
+            .await?;
+        let permissions = self.permission_svc.list_all().await?;
+
+        Ok(Self::build_plain_permission_tree(permissions, None))
+    }
+
+    pub async fn list_role_permissions(
+        &self,
+        current_user_id: String,
+        role_id: i64,
+    ) -> BizResult<Vec<RolePermissionTreeNode>> {
+        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_LIST)
+            .await?;
+        self.ensure_role_exists(role_id).await?;
+        self.build_role_permission_tree(role_id).await
+    }
+
+    pub async fn update_role_permissions(
+        &self,
+        current_user_id: String,
+        req: UpdateRolePermissionsRequest,
+    ) -> BizResult<Vec<RolePermissionTreeNode>> {
+        let access = self
+            .ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_UPDATE)
+            .await?;
+        self.ensure_role_exists(req.role_id).await?;
+        self.ensure_role_permission_change_allowed(&access, req.role_id)
+            .await?;
+
+        let permission_ids = req
+            .permission_ids
+            .into_iter()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let permissions = self
+            .permission_svc
+            .list_by_ids(permission_ids.clone())
+            .await?;
+        if permissions.len() != permission_ids.len() {
+            return Err(BizError::new(
+                admin_error::ADMIN_PERMISSION_NOT_FOUND,
+                "one or more permissions not found".to_string(),
+            ));
+        }
+
+        self.role_permission_svc
+            .delete_by_role_id(req.role_id)
+            .await?;
+        for permission_id in permission_ids {
+            self.role_permission_svc
+                .create(CreateRolePermission {
+                    role_id: req.role_id,
+                    permission_id,
+                })
+                .await?;
+        }
+
+        self.build_role_permission_tree(req.role_id).await
+    }
+
     pub async fn get_current_user_menus(&self, user_id: String) -> BizResult<Vec<MenuTreeNode>> {
         let access = self.ensure_admin_user(&user_id).await?;
         let all_menus = self.menu_svc.list_all().await?;
@@ -435,6 +504,25 @@ impl AdminApi {
         Ok(())
     }
 
+    async fn ensure_role_permission_change_allowed(
+        &self,
+        access: &AdminAccess,
+        role_id: i64,
+    ) -> BizResult<()> {
+        if access.is_root() {
+            return Ok(());
+        }
+
+        if self.is_root_role_id(role_id).await? {
+            return Err(BizError::new(
+                admin_error::ADMIN_ROLE_RESERVED,
+                "only root can modify root role permissions".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+
     async fn ensure_admin_user_change_allowed(
         &self,
         access: &AdminAccess,
@@ -481,6 +569,73 @@ impl AdminApi {
             .map(|permission| permission.code)
             .collect();
         Ok(codes.into_iter().collect())
+    }
+
+    async fn build_role_permission_tree(
+        &self,
+        role_id: i64,
+    ) -> BizResult<Vec<RolePermissionTreeNode>> {
+        let checked_ids: HashSet<i64> = self
+            .role_permission_svc
+            .list_by_role_ids(vec![role_id])
+            .await?
+            .into_iter()
+            .map(|item| item.permission_id)
+            .collect();
+        let permissions = self.permission_svc.list_all().await?;
+
+        Ok(Self::build_permission_tree(permissions, &checked_ids, None))
+    }
+
+    fn build_plain_permission_tree(
+        permissions: Vec<Permission>,
+        parent_code: Option<&str>,
+    ) -> Vec<PermissionTreeNode> {
+        let mut nodes = permissions
+            .iter()
+            .filter(|permission| permission.parent_code.as_deref() == parent_code)
+            .collect::<Vec<_>>();
+        nodes.sort_by(|left, right| left.sort.cmp(&right.sort).then(left.id.cmp(&right.id)));
+
+        nodes
+            .into_iter()
+            .map(|permission| PermissionTreeNode {
+                id: permission.id,
+                name: permission.name.clone(),
+                kind: permission.kind,
+                children: Self::build_plain_permission_tree(
+                    permissions.clone(),
+                    Some(&permission.code),
+                ),
+            })
+            .collect()
+    }
+
+    fn build_permission_tree(
+        permissions: Vec<Permission>,
+        checked_ids: &HashSet<i64>,
+        parent_code: Option<&str>,
+    ) -> Vec<RolePermissionTreeNode> {
+        let mut nodes = permissions
+            .iter()
+            .filter(|permission| permission.parent_code.as_deref() == parent_code)
+            .collect::<Vec<_>>();
+        nodes.sort_by(|left, right| left.sort.cmp(&right.sort).then(left.id.cmp(&right.id)));
+
+        nodes
+            .into_iter()
+            .map(|permission| RolePermissionTreeNode {
+                id: permission.id,
+                name: permission.name.clone(),
+                kind: permission.kind,
+                checked: checked_ids.contains(&permission.id),
+                children: Self::build_permission_tree(
+                    permissions.clone(),
+                    checked_ids,
+                    Some(&permission.code),
+                ),
+            })
+            .collect()
     }
 
     fn collect_ancestors(

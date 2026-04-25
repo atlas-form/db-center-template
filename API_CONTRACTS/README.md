@@ -22,8 +22,11 @@
 5. `POST /api/admin/roles`
 6. `GET /api/admin/roles`
 7. `DELETE /api/admin/roles/{role_id}`
-8. `POST /api/admin/menus`
-9. `GET /api/admin/menus`
-10. `POST /api/admin/user-roles`
-11. `GET /api/admin/users/{user_id}/roles`
-12. `GET /api/admin/me/menus`
+8. `GET /api/admin/permissions`
+9. `GET /api/admin/roles/{role_id}/permissions`
+10. `PUT /api/admin/roles/{role_id}/permissions`
+11. `POST /api/admin/menus`
+12. `GET /api/admin/menus`
+13. `POST /api/admin/user-roles`
+14. `GET /api/admin/users/{user_id}/roles`
+15. `GET /api/admin/me/menus`

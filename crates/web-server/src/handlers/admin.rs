@@ -40,6 +40,38 @@ fn map_admin_user_response(
     }
 }
 
+fn map_permission_kind(kind: service::dto::admin::PermissionKind) -> PermissionKind {
+    match kind {
+        service::dto::admin::PermissionKind::Group => PermissionKind::Group,
+        service::dto::admin::PermissionKind::Action => PermissionKind::Action,
+    }
+}
+
+fn map_permission_tree(node: service::dto::admin::PermissionTreeNode) -> PermissionTreeNode {
+    PermissionTreeNode {
+        id: node.id,
+        name: node.name,
+        kind: map_permission_kind(node.kind),
+        children: node.children.into_iter().map(map_permission_tree).collect(),
+    }
+}
+
+fn map_role_permission_tree(
+    node: service::dto::admin::RolePermissionTreeNode,
+) -> RolePermissionTreeNode {
+    RolePermissionTreeNode {
+        id: node.id,
+        name: node.name,
+        kind: map_permission_kind(node.kind),
+        checked: node.checked,
+        children: node
+            .children
+            .into_iter()
+            .map(map_role_permission_tree)
+            .collect(),
+    }
+}
+
 pub async fn create_admin_user(
     Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<CreateAdminUserRequest>,
@@ -280,6 +312,67 @@ pub async fn list_user_roles(
             name: role.name,
             code: role.code,
         })
+        .collect::<Vec<_>>()
+        .into_common_response()
+        .to_json())
+}
+
+pub async fn list_permissions(
+    Extension(auth_user): Extension<AuthUser>,
+) -> ResponseResult<Vec<PermissionTreeNode>> {
+    let api = AdminApi::new(get_default_ctx());
+    let tree = api
+        .list_permissions(auth_user.user_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(tree
+        .into_iter()
+        .map(map_permission_tree)
+        .collect::<Vec<_>>()
+        .into_common_response()
+        .to_json())
+}
+
+pub async fn list_role_permissions(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(role_id): Path<i64>,
+) -> ResponseResult<Vec<RolePermissionTreeNode>> {
+    let api = AdminApi::new(get_default_ctx());
+    let tree = api
+        .list_role_permissions(auth_user.user_id, role_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(tree
+        .into_iter()
+        .map(map_role_permission_tree)
+        .collect::<Vec<_>>()
+        .into_common_response()
+        .to_json())
+}
+
+pub async fn update_role_permissions(
+    Extension(auth_user): Extension<AuthUser>,
+    Path(role_id): Path<i64>,
+    Json(req): Json<UpdateRolePermissionsRequest>,
+) -> ResponseResult<Vec<RolePermissionTreeNode>> {
+    req.validate().map_err(Error::from)?;
+    let api = AdminApi::new(get_default_ctx());
+    let tree = api
+        .update_role_permissions(
+            auth_user.user_id,
+            service::dto::admin::UpdateRolePermissionsRequest {
+                role_id,
+                permission_ids: req.permission_ids,
+            },
+        )
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(tree
+        .into_iter()
+        .map(map_role_permission_tree)
         .collect::<Vec<_>>()
         .into_common_response()
         .to_json())

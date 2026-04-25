@@ -2,7 +2,7 @@
 
 接口前缀：`/api/admin`
 
-说明：本组接口用于后台用户、角色、菜单、用户角色绑定，以及当前用户可见菜单查询。权限节点由程序员通过代码、迁移或初始化脚本维护，不提供权限表查询、创建或角色权限配置 HTTP API。
+说明：本组接口用于后台用户、角色、角色权限配置、菜单、用户角色绑定，以及当前用户可见菜单查询。权限节点由程序员通过代码、迁移或初始化脚本维护；HTTP API 只提供权限树读取，不提供权限节点创建、修改或删除。
 
 ## 权限码总览
 
@@ -15,6 +15,9 @@
 | `admin:role:create` | 创建角色 |
 | `admin:role:list` | 查看角色列表 |
 | `admin:role:delete` | 删除角色 |
+| `admin:permission:list` | 查看权限配置树 |
+| `admin:role_permission:list` | 查看角色权限配置树 |
+| `admin:role_permission:update` | 更新角色权限配置 |
 | `admin:menu:create` | 创建菜单 |
 | `admin:menu:list` | 查看菜单列表 |
 | `admin:user_role:assign` | 给用户分配角色 |
@@ -238,7 +241,106 @@ null
 - `root` 角色是保留角色，不能删除
 - 删除角色时会同步删除该角色的用户绑定和权限绑定
 
-## 8. 创建菜单
+## 8. 查询总权限配置树
+
+- 方法：`GET`
+- 路径：`/api/admin/permissions`
+- 权限：`admin:permission:list`
+
+成功响应 `data`：
+
+```json
+[
+  {
+    "id": 1,
+    "name": "用户管理",
+    "kind": "group",
+    "children": [
+      {
+        "id": 2,
+        "name": "查看用户列表",
+        "kind": "action",
+        "children": []
+      }
+    ]
+  }
+]
+```
+
+补充说明：
+
+- 返回全部权限节点的树形结构，供前端展示配置树
+- 不返回权限码
+- 权限节点仍由程序员维护，不提供创建、修改或删除接口
+
+## 9. 查询角色权限配置树
+
+- 方法：`GET`
+- 路径：`/api/admin/roles/{role_id}/permissions`
+- 权限：`admin:role_permission:list`
+
+路径参数：
+
+| 参数 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `role_id` | `integer` | 是 | 角色 ID |
+
+成功响应 `data`：
+
+```json
+[
+  {
+    "id": 1,
+    "name": "用户管理",
+    "kind": "group",
+    "checked": false,
+    "children": [
+      {
+        "id": 2,
+        "name": "查看用户列表",
+        "kind": "action",
+        "checked": true,
+        "children": []
+      }
+    ]
+  }
+]
+```
+
+补充说明：
+
+- 返回树形结构给前端配置使用
+- 不返回权限码，避免后台直接感知内部权限命名
+
+## 10. 更新角色权限配置
+
+- 方法：`PUT`
+- 路径：`/api/admin/roles/{role_id}/permissions`
+- 权限：`admin:role_permission:update`
+
+请求体：
+
+```json
+{
+  "permission_ids": [2, 3, 4]
+}
+```
+
+字段说明：
+
+| 字段 | 类型 | 必填 | 约束 |
+| --- | --- | --- | --- |
+| `permission_ids` | `integer[]` | 是 | 前端权限树中勾选的权限节点 ID |
+
+成功响应 `data`：同“查询角色权限配置树”。
+
+补充说明：
+
+- 更新不是增量修改
+- 服务端会先删除该 `role_id` 下所有 `role_permissions` 记录，再插入本次提交的 `permission_ids`
+- 非 `root` 用户不能修改 `root` 角色的权限
+
+## 11. 创建菜单
 
 - 方法：`POST`
 - 路径：`/api/admin/menus`
@@ -270,7 +372,7 @@ null
 }
 ```
 
-## 9. 查询菜单列表
+## 12. 查询菜单列表
 
 - 方法：`GET`
 - 路径：`/api/admin/menus`
@@ -288,7 +390,7 @@ null
 ]
 ```
 
-## 10. 给用户分配角色
+## 13. 给用户分配角色
 
 - 方法：`POST`
 - 路径：`/api/admin/user-roles`
@@ -323,7 +425,7 @@ null
 
 - 非 `root` 用户不能给别人分配 `root` 角色
 
-## 11. 查询某个用户的角色列表
+## 14. 查询某个用户的角色列表
 
 - 方法：`GET`
 - 路径：`/api/admin/users/{user_id}/roles`
@@ -347,7 +449,7 @@ null
 ]
 ```
 
-## 12. 查询当前用户菜单树
+## 15. 查询当前用户菜单树
 
 - 方法：`GET`
 - 路径：`/api/admin/me/menus`

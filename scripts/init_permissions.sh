@@ -89,8 +89,11 @@ upsert_permission "admin:access" "权限管理" "" 200 "group"
 upsert_permission "admin:role:list" "查看角色列表" "admin:access" 210 "action"
 upsert_permission "admin:role:create" "创建角色" "admin:access" 220 "action"
 upsert_permission "admin:role:delete" "删除角色" "admin:access" 230 "action"
-upsert_permission "admin:menu:list" "查看菜单列表" "admin:access" 240 "action"
-upsert_permission "admin:menu:create" "创建菜单" "admin:access" 250 "action"
+upsert_permission "admin:permission:list" "查看权限配置树" "admin:access" 240 "action"
+upsert_permission "admin:role_permission:list" "查看角色权限配置" "admin:access" 250 "action"
+upsert_permission "admin:role_permission:update" "更新角色权限配置" "admin:access" 260 "action"
+upsert_permission "admin:menu:list" "查看菜单列表" "admin:access" 270 "action"
+upsert_permission "admin:menu:create" "创建菜单" "admin:access" 280 "action"
 
 echo "初始化基础菜单..."
 
@@ -113,6 +116,9 @@ PERMISSION_COUNT="$(
       'admin:role:list',
       'admin:role:create',
       'admin:role:delete',
+      'admin:permission:list',
+      'admin:role_permission:list',
+      'admin:role_permission:update',
       'admin:menu:list',
       'admin:menu:create'
     );

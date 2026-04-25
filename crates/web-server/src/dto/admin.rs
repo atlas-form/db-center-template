@@ -75,6 +75,35 @@ pub struct UserRoleResponse {
     pub role_id: i64,
 }
 
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateRolePermissionsRequest {
+    pub permission_ids: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PermissionTreeNode {
+    pub id: i64,
+    pub name: String,
+    pub kind: PermissionKind,
+    pub children: Vec<PermissionTreeNode>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RolePermissionTreeNode {
+    pub id: i64,
+    pub name: String,
+    pub kind: PermissionKind,
+    pub checked: bool,
+    pub children: Vec<RolePermissionTreeNode>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PermissionKind {
+    Group,
+    Action,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct MenuTreeNode {
     pub id: i64,
