@@ -3,6 +3,7 @@ mod dto;
 mod error;
 mod handlers;
 mod logging;
+mod notifications;
 mod routes;
 mod settings;
 mod statics;

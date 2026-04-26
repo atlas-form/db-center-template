@@ -6,10 +6,12 @@
 
 - `common.md`: 通用约定，包括鉴权、统一响应格式、错误码
 - `admin.md`: 后台 RBAC 相关接口
+- `ws.md`: WebSocket 连接与小铃铛通知推送协议
 
 ## 路由前缀
 
 - 后台管理接口前缀：`/api/admin`
+- WebSocket 连接路径：`/api/ws`
 
 ## 当前接口清单
 
@@ -31,3 +33,7 @@
 14. `PUT /api/admin/users/{user_id}/roles`
 15. `GET /api/admin/me/permissions`
 16. `GET /api/admin/me/menus`
+
+### WebSocket
+
+1. `GET /api/ws` WebSocket upgrade
