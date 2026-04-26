@@ -19,6 +19,10 @@ pub fn app_admin_routes() -> Router {
             "/users/{user_id}",
             patch(update_app_user).delete(delete_app_user),
         )
+        .route(
+            "/users/{user_id}/roles",
+            get(list_user_roles).put(update_user_roles),
+        )
         .route("/roles", post(create_role).get(list_roles))
         .route("/roles/{role_id}", delete(delete_role))
         .route(
@@ -26,10 +30,6 @@ pub fn app_admin_routes() -> Router {
             get(list_role_permissions).put(update_role_permissions),
         )
         .route("/permissions", get(list_permissions))
-        .route(
-            "/users/{user_id}/roles",
-            get(list_user_roles).put(update_user_roles),
-        )
         .route_layer(from_fn(auth::<VerifyJwt>))
 }
 

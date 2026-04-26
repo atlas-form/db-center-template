@@ -15,10 +15,10 @@
 
 ### Admin
 
-1. `POST /api/admin/admin-users`
-2. `GET /api/admin/admin-users`
-3. `PATCH /api/admin/admin-users/{user_id}`
-4. `DELETE /api/admin/admin-users/{user_id}`
+1. `POST /api/admin/users`
+2. `GET /api/admin/users`
+3. `PATCH /api/admin/users/{user_id}`
+4. `DELETE /api/admin/users/{user_id}`
 5. `POST /api/admin/roles`
 6. `GET /api/admin/roles`
 7. `DELETE /api/admin/roles/{role_id}`

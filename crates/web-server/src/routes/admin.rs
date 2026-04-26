@@ -15,13 +15,14 @@ use crate::handlers::admin::{
 
 pub fn admin_routes() -> Router {
     Router::new()
+        .route("/users", post(create_admin_user).get(list_admin_users))
         .route(
-            "/admin-users",
-            post(create_admin_user).get(list_admin_users),
+            "/users/{user_id}",
+            patch(update_admin_user).delete(delete_admin_user),
         )
         .route(
-            "/admin-users/{user_id}",
-            patch(update_admin_user).delete(delete_admin_user),
+            "/users/{user_id}/roles",
+            get(list_user_roles).put(update_user_roles),
         )
         .route("/roles", post(create_role).get(list_roles))
         .route("/roles/{role_id}", delete(delete_role))
@@ -31,10 +32,6 @@ pub fn admin_routes() -> Router {
         )
         .route("/permissions", get(list_permissions))
         .route("/menus", post(create_menu).get(list_menus))
-        .route(
-            "/users/{user_id}/roles",
-            get(list_user_roles).put(update_user_roles),
-        )
         .route("/me/permissions", get(current_user_permissions))
         .route("/me/menus", get(current_user_menus))
         .route_layer(from_fn(auth::<VerifyJwt>))

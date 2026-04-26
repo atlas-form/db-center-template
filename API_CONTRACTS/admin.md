@@ -40,7 +40,7 @@
 ## 1. 创建后台用户
 
 - 方法：`POST`
-- 路径：`/api/admin/admin-admin_users`
+- 路径：`/api/admin/users`
 - 权限：`admin:user:create`
 
 请求体：
@@ -79,7 +79,7 @@
 ## 2. 查询后台用户列表
 
 - 方法：`GET`
-- 路径：`/api/admin/admin-admin_users`
+- 路径：`/api/admin/users`
 - 权限：`admin:user:list`
 
 成功响应 `data`：
@@ -110,7 +110,7 @@
 ## 3. 更新后台用户
 
 - 方法：`PATCH`
-- 路径：`/api/admin/admin-admin_users/{user_id}`
+- 路径：`/api/admin/users/{user_id}`
 - 权限：`admin:user:update`
 
 请求体：
@@ -156,7 +156,7 @@
 ## 4. 删除后台用户
 
 - 方法：`DELETE`
-- 路径：`/api/admin/admin-admin_users/{user_id}`
+- 路径：`/api/admin/users/{user_id}`
 - 权限：`admin:user:delete`
 
 成功响应 `data`：
