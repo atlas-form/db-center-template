@@ -23,20 +23,20 @@ use crate::dto::admin::{
 };
 
 const ROOT_ROLE_CODE: &str = "root";
-const PERM_ADMIN_USER_CREATE: &str = "admin:user:create";
-const PERM_ADMIN_USER_LIST: &str = "admin:user:list";
-const PERM_ADMIN_USER_UPDATE: &str = "admin:user:update";
-const PERM_ADMIN_USER_DELETE: &str = "admin:user:delete";
-const PERM_ROLE_CREATE: &str = "admin:role:create";
-const PERM_ROLE_LIST: &str = "admin:role:list";
-const PERM_ROLE_DELETE: &str = "admin:role:delete";
-const PERM_PERMISSION_LIST: &str = "admin:permission:list";
-const PERM_MENU_CREATE: &str = "admin:menu:create";
-const PERM_MENU_LIST: &str = "admin:menu:list";
-const PERM_USER_ROLE_LIST: &str = "admin:user_role:list";
-const PERM_USER_ROLE_UPDATE: &str = "admin:user_role:update";
-const PERM_ROLE_PERMISSION_LIST: &str = "admin:role_permission:list";
-const PERM_ROLE_PERMISSION_UPDATE: &str = "admin:role_permission:update";
+const PERM_ADMIN_USER_CREATE: &str = "user:create";
+const PERM_ADMIN_USER_LIST: &str = "user:list";
+const PERM_ADMIN_USER_UPDATE: &str = "user:update";
+const PERM_ADMIN_USER_DELETE: &str = "user:delete";
+const PERM_ROLE_CREATE: &str = "role:create";
+const PERM_ROLE_LIST: &str = "role:list";
+const PERM_ROLE_DELETE: &str = "role:delete";
+const PERM_PERMISSION_LIST: &str = "permission:list";
+const PERM_MENU_CREATE: &str = "menu:create";
+const PERM_MENU_LIST: &str = "menu:list";
+const PERM_USER_ROLE_LIST: &str = "user_role:list";
+const PERM_USER_ROLE_UPDATE: &str = "user_role:update";
+const PERM_ROLE_PERMISSION_LIST: &str = "role_permission:list";
+const PERM_ROLE_PERMISSION_UPDATE: &str = "role_permission:update";
 
 pub struct AdminApi {
     admin_user_svc: AdminUserService,

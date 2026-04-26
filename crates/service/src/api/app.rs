@@ -23,18 +23,18 @@ use crate::{
     },
 };
 
-const PERM_APP_USER_CREATE: &str = "admin:app_user:create";
-const PERM_APP_USER_LIST: &str = "admin:app_user:list";
-const PERM_APP_USER_UPDATE: &str = "admin:app_user:update";
-const PERM_APP_USER_DELETE: &str = "admin:app_user:delete";
-const PERM_APP_ROLE_CREATE: &str = "admin:app_role:create";
-const PERM_APP_ROLE_LIST: &str = "admin:app_role:list";
-const PERM_APP_ROLE_DELETE: &str = "admin:app_role:delete";
-const PERM_APP_PERMISSION_LIST: &str = "admin:app_permission:list";
-const PERM_APP_USER_ROLE_LIST: &str = "admin:app_user_role:list";
-const PERM_APP_USER_ROLE_UPDATE: &str = "admin:app_user_role:update";
-const PERM_APP_ROLE_PERMISSION_LIST: &str = "admin:app_role_permission:list";
-const PERM_APP_ROLE_PERMISSION_UPDATE: &str = "admin:app_role_permission:update";
+const PERM_APP_USER_CREATE: &str = "app_user:create";
+const PERM_APP_USER_LIST: &str = "app_user:list";
+const PERM_APP_USER_UPDATE: &str = "app_user:update";
+const PERM_APP_USER_DELETE: &str = "app_user:delete";
+const PERM_APP_ROLE_CREATE: &str = "app_role:create";
+const PERM_APP_ROLE_LIST: &str = "app_role:list";
+const PERM_APP_ROLE_DELETE: &str = "app_role:delete";
+const PERM_APP_PERMISSION_LIST: &str = "app_permission:list";
+const PERM_APP_USER_ROLE_LIST: &str = "app_user_role:list";
+const PERM_APP_USER_ROLE_UPDATE: &str = "app_user_role:update";
+const PERM_APP_ROLE_PERMISSION_LIST: &str = "app_role_permission:list";
+const PERM_APP_ROLE_PERMISSION_UPDATE: &str = "app_role_permission:update";
 
 pub struct AppApi {
     admin_api: AdminApi,

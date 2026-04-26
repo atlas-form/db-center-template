@@ -40,7 +40,7 @@ token = "dev-internal-token-change-me"
 ```json
 {
   "code": -11002,
-  "message": "permission denied: admin:role:list"
+  "message": "permission denied: role:list"
 }
 ```
 

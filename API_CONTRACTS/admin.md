@@ -8,20 +8,20 @@
 
 | 权限码 | 用途 |
 | --- | --- |
-| `admin:user:create` | 创建后台用户 |
-| `admin:user:list` | 查看后台用户列表 |
-| `admin:user:update` | 更新后台用户 |
-| `admin:user:delete` | 删除后台用户 |
-| `admin:role:create` | 创建角色 |
-| `admin:role:list` | 查看角色列表 |
-| `admin:role:delete` | 删除角色 |
-| `admin:permission:list` | 查看权限配置树 |
-| `admin:role_permission:list` | 查看角色权限配置树 |
-| `admin:role_permission:update` | 更新角色权限配置 |
-| `admin:menu:create` | 创建菜单 |
-| `admin:menu:list` | 查看菜单列表 |
-| `admin:user_role:list` | 查看用户角色 |
-| `admin:user_role:update` | 更新用户角色 |
+| `user:create` | 创建后台用户 |
+| `user:list` | 查看后台用户列表 |
+| `user:update` | 更新后台用户 |
+| `user:delete` | 删除后台用户 |
+| `role:create` | 创建角色 |
+| `role:list` | 查看角色列表 |
+| `role:delete` | 删除角色 |
+| `permission:list` | 查看权限配置树 |
+| `role_permission:list` | 查看角色权限配置树 |
+| `role_permission:update` | 更新角色权限配置 |
+| `menu:create` | 创建菜单 |
+| `menu:list` | 查看菜单列表 |
+| `user_role:list` | 查看用户角色 |
+| `user_role:update` | 更新用户角色 |
 
 `GET /api/admin/me/permissions` 和 `GET /api/admin/me/menus` 不要求单独权限码，但要求当前用户本身是有效后台用户。
 
@@ -41,7 +41,7 @@
 
 - 方法：`POST`
 - 路径：`/api/admin/users`
-- 权限：`admin:user:create`
+- 权限：`user:create`
 
 请求体：
 
@@ -80,7 +80,7 @@
 
 - 方法：`GET`
 - 路径：`/api/admin/users`
-- 权限：`admin:user:list`
+- 权限：`user:list`
 
 成功响应 `data`：
 
@@ -111,7 +111,7 @@
 
 - 方法：`PATCH`
 - 路径：`/api/admin/users/{user_id}`
-- 权限：`admin:user:update`
+- 权限：`user:update`
 
 请求体：
 
@@ -157,7 +157,7 @@
 
 - 方法：`DELETE`
 - 路径：`/api/admin/users/{user_id}`
-- 权限：`admin:user:delete`
+- 权限：`user:delete`
 
 成功响应 `data`：
 
@@ -174,7 +174,7 @@ null
 
 - 方法：`POST`
 - 路径：`/api/admin/roles`
-- 权限：`admin:role:create`
+- 权限：`role:create`
 
 请求体：
 
@@ -206,7 +206,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/roles`
-- 权限：`admin:role:list`
+- 权限：`role:list`
 
 补充说明：
 
@@ -228,7 +228,7 @@ null
 
 - 方法：`DELETE`
 - 路径：`/api/admin/roles/{role_id}`
-- 权限：`admin:role:delete`
+- 权限：`role:delete`
 
 成功响应 `data`：
 
@@ -245,7 +245,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/permissions`
-- 权限：`admin:permission:list`
+- 权限：`permission:list`
 
 成功响应 `data`：
 
@@ -276,7 +276,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/roles/{role_id}/permissions`
-- 权限：`admin:role_permission:list`
+- 权限：`role_permission:list`
 
 路径参数：
 
@@ -315,7 +315,7 @@ null
 
 - 方法：`PUT`
 - 路径：`/api/admin/roles/{role_id}/permissions`
-- 权限：`admin:role_permission:update`
+- 权限：`role_permission:update`
 
 请求体：
 
@@ -343,7 +343,7 @@ null
 
 - 方法：`POST`
 - 路径：`/api/admin/menus`
-- 权限：`admin:menu:create`
+- 权限：`menu:create`
 
 请求体：
 
@@ -375,7 +375,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/menus`
-- 权限：`admin:menu:list`
+- 权限：`menu:list`
 
 成功响应 `data`：
 
@@ -393,7 +393,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/users/{user_id}/roles`
-- 权限：`admin:user_role:list`
+- 权限：`user_role:list`
 
 路径参数：
 
@@ -429,7 +429,7 @@ null
 
 - 方法：`PUT`
 - 路径：`/api/admin/users/{user_id}/roles`
-- 权限：`admin:user_role:update`
+- 权限：`user_role:update`
 
 请求体：
 
@@ -469,8 +469,8 @@ null
     "system_admin"
   ],
   "permission_codes": [
-    "admin:user:list",
-    "admin:role:list"
+    "user:list",
+    "role:list"
   ]
 }
 ```

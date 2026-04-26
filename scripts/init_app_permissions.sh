@@ -39,18 +39,18 @@ run_psql "$DB_NAME" "
   DELETE FROM app_permissions;
 " >/dev/null
 
-upsert_permission "app:profile" "个人中心" "" 100 "group"
-upsert_permission "app:profile:view" "查看个人资料" "app:profile" 110 "action"
-upsert_permission "app:profile:update" "更新个人资料" "app:profile" 120 "action"
+upsert_permission "profile" "个人中心" "" 100 "group"
+upsert_permission "profile:view" "查看个人资料" "profile" 110 "action"
+upsert_permission "profile:update" "更新个人资料" "profile" 120 "action"
 
 PERMISSION_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
     FROM app_permissions
     WHERE code IN (
-      'app:profile',
-      'app:profile:view',
-      'app:profile:update'
+      'profile',
+      'profile:view',
+      'profile:update'
     );
   " | tr -d '[:space:]'
 )"
