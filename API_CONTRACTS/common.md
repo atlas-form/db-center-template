@@ -10,7 +10,9 @@
 Authorization: Bearer <access_token>
 ```
 
-WebSocket 连接同样需要 JWT 鉴权，支持两种传递方式：
+WebSocket 连接同样必须通过 JWT 鉴权。服务端会在 WebSocket upgrade 前校验 token，没有 token 或 token 校验失败时不会建立连接。
+
+支持两种 token 传递方式：
 
 ```http
 Authorization: Bearer <access_token>
@@ -22,7 +24,7 @@ Authorization: Bearer <access_token>
 ws://<host>/api/ws?token=<access_token>
 ```
 
-前端浏览器通常不能直接为原生 `WebSocket` 设置 `Authorization` 请求头，因此前端测试建议先使用 `token` query 参数。
+前端浏览器通常不能直接为原生 `WebSocket` 设置 `Authorization` 请求头，因此前端测试建议先使用 `token` query 参数。无论使用哪种方式，token 都是必填的。
 
 服务启动时会从远程 `auth` 服务拉取 JWT 验签配置，配置样例见 `config/services-example.toml`：
 

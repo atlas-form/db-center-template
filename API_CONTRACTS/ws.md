@@ -2,9 +2,11 @@
 
 连接路径：`/api/ws`
 
-说明：本 WebSocket 主要用于后台向前端推送小铃铛通知。前端暂时不需要发送业务消息，只需要建立连接并监听服务端消息。当前保留 `ping/pong` 用于连通性测试。
+说明：本 WebSocket 主要用于后台向前端推送小铃铛通知。连接必须通过 JWT 鉴权，没有 token 或 token 校验失败时不会建立 WebSocket 连接。前端暂时不需要发送业务消息，只需要建立连接并监听服务端消息。当前保留 `ping/pong` 用于连通性测试。
 
 ## 1. 连接方式
+
+连接时必须携带有效 JWT access token。服务端会在 WebSocket upgrade 前校验 token，校验通过后才会建立连接。
 
 开发环境示例：
 
@@ -18,17 +20,17 @@ ws://127.0.0.1:<http_port>/api/ws?token=<access_token>
 wss://<host>/api/ws?token=<access_token>
 ```
 
-如果客户端可以设置请求头，也可以使用：
+如果客户端可以设置请求头，也可以通过 `Authorization` 请求头传递同一个 JWT access token：
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
-浏览器原生 `WebSocket` 通常无法设置 `Authorization` 请求头，所以前端页面测试建议使用 query 参数 `token`。
+浏览器原生 `WebSocket` 通常无法设置 `Authorization` 请求头，所以前端页面测试建议使用 query 参数 `token`。不管使用哪种方式，token 都是必填的。
 
 ## 2. 鉴权失败
 
-如果缺少 token 或 token 校验失败，服务端会拒绝 WebSocket upgrade。
+如果缺少 token 或 token 校验失败，服务端会拒绝 WebSocket upgrade，不会进入已连接状态，也不会发送 `connected` 消息。
 
 常见 HTTP 状态：
 
