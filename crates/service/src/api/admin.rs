@@ -23,20 +23,9 @@ use crate::dto::admin::{
 };
 
 const ROOT_ROLE_CODE: &str = "root";
-const PERM_ADMIN_USER_CREATE: &str = "user:create";
-const PERM_ADMIN_USER_LIST: &str = "user:list";
-const PERM_ADMIN_USER_UPDATE: &str = "user:update";
-const PERM_ADMIN_USER_DELETE: &str = "user:delete";
-const PERM_ROLE_CREATE: &str = "role:create";
-const PERM_ROLE_LIST: &str = "role:list";
-const PERM_ROLE_DELETE: &str = "role:delete";
-const PERM_PERMISSION_LIST: &str = "permission:list";
-const PERM_MENU_CREATE: &str = "menu:create";
-const PERM_MENU_LIST: &str = "menu:list";
-const PERM_USER_ROLE_LIST: &str = "user_role:list";
-const PERM_USER_ROLE_UPDATE: &str = "user_role:update";
-const PERM_ROLE_PERMISSION_LIST: &str = "role_permission:list";
-const PERM_ROLE_PERMISSION_UPDATE: &str = "role_permission:update";
+const PERM_ADMIN_USERS: &str = "accounts:admin_users";
+const PERM_ROLES: &str = "access_control:roles";
+const PERM_ROLE_PERMISSIONS: &str = "access_control:role_permissions";
 
 pub struct AdminApi {
     admin_user_svc: AdminUserService,
@@ -74,7 +63,7 @@ impl AdminApi {
         current_user_id: String,
         req: CreateAdminUserRequest,
     ) -> BizResult<AdminUserResponse> {
-        self.ensure_permission(&current_user_id, PERM_ADMIN_USER_CREATE)
+        self.ensure_permission(&current_user_id, PERM_ADMIN_USERS)
             .await?;
         let user_id = parse_user_id(&req.user_id)?;
         let admin_user = self
@@ -95,7 +84,7 @@ impl AdminApi {
         &self,
         current_user_id: String,
     ) -> BizResult<Vec<AdminUserResponse>> {
-        self.ensure_permission(&current_user_id, PERM_ADMIN_USER_LIST)
+        self.ensure_permission(&current_user_id, PERM_ADMIN_USERS)
             .await?;
         let admin_users = self.admin_user_svc.list_all().await?;
         let user_ids = admin_users
@@ -148,7 +137,7 @@ impl AdminApi {
         req: UpdateAdminUserRequest,
     ) -> BizResult<AdminUserResponse> {
         let access = self
-            .ensure_permission(&current_user_id, PERM_ADMIN_USER_UPDATE)
+            .ensure_permission(&current_user_id, PERM_ADMIN_USERS)
             .await?;
         let user_id = parse_user_id(&req.user_id)?;
         self.ensure_admin_user_change_allowed(&access, user_id, "only root can update root user")
@@ -173,7 +162,7 @@ impl AdminApi {
         user_id: String,
     ) -> BizResult<()> {
         let access = self
-            .ensure_permission(&current_user_id, PERM_ADMIN_USER_DELETE)
+            .ensure_permission(&current_user_id, PERM_ADMIN_USERS)
             .await?;
         let user_id = parse_user_id(&user_id)?;
         self.ensure_admin_user_change_allowed(&access, user_id, "only root can delete root user")
@@ -190,8 +179,7 @@ impl AdminApi {
         current_user_id: String,
         req: CreateRoleRequest,
     ) -> BizResult<RoleResponse> {
-        self.ensure_permission(&current_user_id, PERM_ROLE_CREATE)
-            .await?;
+        self.ensure_permission(&current_user_id, PERM_ROLES).await?;
         if req.code == ROOT_ROLE_CODE {
             return Err(BizError::new(
                 admin_error::ADMIN_ROLE_RESERVED,
@@ -209,8 +197,7 @@ impl AdminApi {
     }
 
     pub async fn list_roles(&self, current_user_id: String) -> BizResult<Vec<RoleResponse>> {
-        self.ensure_permission(&current_user_id, PERM_ROLE_LIST)
-            .await?;
+        self.ensure_permission(&current_user_id, PERM_ROLES).await?;
         Ok(self
             .role_svc
             .list_all()
@@ -222,8 +209,7 @@ impl AdminApi {
     }
 
     pub async fn delete_role(&self, current_user_id: String, role_id: i64) -> BizResult<()> {
-        self.ensure_permission(&current_user_id, PERM_ROLE_DELETE)
-            .await?;
+        self.ensure_permission(&current_user_id, PERM_ROLES).await?;
         let role = self.ensure_role_exists(role_id).await?;
         if role.code == ROOT_ROLE_CODE {
             return Err(BizError::new(
@@ -244,7 +230,7 @@ impl AdminApi {
         current_user_id: String,
         req: CreateMenuRequest,
     ) -> BizResult<MenuResponse> {
-        self.ensure_permission(&current_user_id, PERM_MENU_CREATE)
+        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSIONS)
             .await?;
         let menu = self
             .menu_svc
@@ -258,7 +244,7 @@ impl AdminApi {
     }
 
     pub async fn list_menus(&self, current_user_id: String) -> BizResult<Vec<MenuResponse>> {
-        self.ensure_permission(&current_user_id, PERM_MENU_LIST)
+        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSIONS)
             .await?;
         Ok(self
             .menu_svc
@@ -275,7 +261,7 @@ impl AdminApi {
         user_id: String,
     ) -> BizResult<Vec<UserRoleOptionResponse>> {
         let access = self
-            .ensure_permission(&current_user_id, PERM_USER_ROLE_LIST)
+            .ensure_permission(&current_user_id, PERM_ADMIN_USERS)
             .await?;
         let user_id = parse_user_id(&user_id)?;
         self.ensure_admin_user_exists(user_id).await?;
@@ -288,7 +274,7 @@ impl AdminApi {
         req: UpdateUserRolesRequest,
     ) -> BizResult<Vec<UserRoleOptionResponse>> {
         let access = self
-            .ensure_permission(&current_user_id, PERM_USER_ROLE_UPDATE)
+            .ensure_permission(&current_user_id, PERM_ADMIN_USERS)
             .await?;
         let user_id = parse_user_id(&req.user_id)?;
         self.ensure_admin_user_exists(user_id).await?;
@@ -373,7 +359,7 @@ impl AdminApi {
         &self,
         current_user_id: String,
     ) -> BizResult<Vec<PermissionTreeNode>> {
-        self.ensure_permission(&current_user_id, PERM_PERMISSION_LIST)
+        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSIONS)
             .await?;
         let permissions = self.permission_svc.list_all().await?;
 
@@ -385,7 +371,7 @@ impl AdminApi {
         current_user_id: String,
         role_id: i64,
     ) -> BizResult<Vec<RolePermissionTreeNode>> {
-        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_LIST)
+        self.ensure_permission(&current_user_id, PERM_ROLE_PERMISSIONS)
             .await?;
         self.ensure_role_exists(role_id).await?;
         self.build_role_permission_tree(role_id).await
@@ -397,7 +383,7 @@ impl AdminApi {
         req: UpdateRolePermissionsRequest,
     ) -> BizResult<Vec<RolePermissionTreeNode>> {
         let access = self
-            .ensure_permission(&current_user_id, PERM_ROLE_PERMISSION_UPDATE)
+            .ensure_permission(&current_user_id, PERM_ROLE_PERMISSIONS)
             .await?;
         self.ensure_role_exists(req.role_id).await?;
         self.ensure_role_permission_change_allowed(&access, req.role_id)

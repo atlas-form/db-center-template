@@ -73,82 +73,49 @@ upsert_menu() {
 echo "初始化基础权限节点..."
 
 run_psql "$DB_NAME" "
-  DELETE FROM admin_role_permissions;
-  DELETE FROM admin_permissions;
+  TRUNCATE admin_menus, admin_role_permissions, admin_permissions RESTART IDENTITY CASCADE;
 " >/dev/null
 
-upsert_permission "user" "用户管理" "" 100 "group"
-upsert_permission "user:list" "查看用户列表" "user" 110 "action"
-upsert_permission "user:create" "创建后台用户" "user" 120 "action"
-upsert_permission "user:update" "更新后台用户" "user" 130 "action"
-upsert_permission "user:delete" "删除后台用户" "user" 140 "action"
-upsert_permission "user_role:list" "查看用户角色" "user" 150 "action"
-upsert_permission "user_role:update" "更新用户角色" "user" 160 "action"
+upsert_permission "dashboard" "Dashboard" "" 100 "group"
 
-upsert_permission "access" "权限管理" "" 200 "group"
-upsert_permission "role:list" "查看角色列表" "access" 210 "action"
-upsert_permission "role:create" "创建角色" "access" 220 "action"
-upsert_permission "role:delete" "删除角色" "access" 230 "action"
-upsert_permission "permission:list" "查看权限配置树" "access" 240 "action"
-upsert_permission "role_permission:list" "查看角色权限配置" "access" 250 "action"
-upsert_permission "role_permission:update" "更新角色权限配置" "access" 260 "action"
-upsert_permission "menu:list" "查看菜单列表" "access" 270 "action"
-upsert_permission "menu:create" "创建菜单" "access" 280 "action"
+upsert_permission "accounts" "Accounts" "" 200 "group"
+upsert_permission "accounts:admin_users" "Admin Users" "accounts" 210 "group"
+upsert_permission "accounts:app_users" "App Users" "accounts" 220 "group"
 
-upsert_permission "app" "普通用户权限管理" "" 300 "group"
-upsert_permission "app_user:list" "查看普通用户列表" "app" 310 "action"
-upsert_permission "app_user:create" "创建普通用户" "app" 320 "action"
-upsert_permission "app_user:update" "更新普通用户" "app" 330 "action"
-upsert_permission "app_user:delete" "删除普通用户" "app" 340 "action"
-upsert_permission "app_user_role:list" "查看普通用户角色" "app" 350 "action"
-upsert_permission "app_user_role:update" "更新普通用户角色" "app" 360 "action"
-upsert_permission "app_role:list" "查看普通角色列表" "app" 370 "action"
-upsert_permission "app_role:create" "创建普通角色" "app" 380 "action"
-upsert_permission "app_role:delete" "删除普通角色" "app" 390 "action"
-upsert_permission "app_permission:list" "查看普通权限配置树" "app" 400 "action"
-upsert_permission "app_role_permission:list" "查看普通角色权限配置" "app" 410 "action"
-upsert_permission "app_role_permission:update" "更新普通角色权限配置" "app" 420 "action"
+upsert_permission "access_control" "Access Control" "" 300 "group"
+upsert_permission "access_control:roles" "Roles" "access_control" 310 "group"
+upsert_permission "access_control:role_permissions" "Role Permissions" "access_control" 320 "group"
+upsert_permission "access_control:app_roles" "App Roles" "access_control" 330 "group"
+upsert_permission "access_control:app_role_permissions" "App Role Permissions" "access_control" 340 "group"
 
 echo "初始化基础菜单..."
 
-upsert_menu "用户管理" "user" "" "user" "100"
-upsert_menu "权限管理" "access" "" "access" "200"
-upsert_menu "普通用户权限管理" "app" "" "app" "300"
+upsert_menu "Dashboard" "dashboard" "" "dashboard" "100"
+
+upsert_menu "Accounts" "accounts" "" "accounts" "200"
+upsert_menu "Admin Users" "accounts:admin_users" "accounts" "accounts:admin_users" "210"
+upsert_menu "App Users" "accounts:app_users" "accounts" "accounts:app_users" "220"
+
+upsert_menu "Access Control" "access_control" "" "access_control" "300"
+upsert_menu "Roles" "access_control:roles" "access_control" "access_control:roles" "310"
+upsert_menu "Role Permissions" "access_control:role_permissions" "access_control" "access_control:role_permissions" "320"
+upsert_menu "App Roles" "access_control:app_roles" "access_control" "access_control:app_roles" "330"
+upsert_menu "App Role Permissions" "access_control:app_role_permissions" "access_control" "access_control:app_role_permissions" "340"
 
 PERMISSION_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
     FROM admin_permissions
     WHERE code IN (
-      'user',
-      'user:list',
-      'user:create',
-      'user:update',
-      'user:delete',
-      'user_role:list',
-      'user_role:update',
-      'access',
-      'role:list',
-      'role:create',
-      'role:delete',
-      'permission:list',
-      'role_permission:list',
-      'role_permission:update',
-      'menu:list',
-      'menu:create',
-      'app',
-      'app_user:list',
-      'app_user:create',
-      'app_user:update',
-      'app_user:delete',
-      'app_user_role:list',
-      'app_user_role:update',
-      'app_role:list',
-      'app_role:create',
-      'app_role:delete',
-      'app_permission:list',
-      'app_role_permission:list',
-      'app_role_permission:update'
+      'dashboard',
+      'accounts',
+      'accounts:admin_users',
+      'accounts:app_users',
+      'access_control',
+      'access_control:roles',
+      'access_control:role_permissions',
+      'access_control:app_roles',
+      'access_control:app_role_permissions'
     );
   " | tr -d '[:space:]'
 )"
@@ -157,7 +124,17 @@ MENU_COUNT="$(
   run_psql "$DB_NAME" "
     SELECT COUNT(*)
     FROM admin_menus
-    WHERE permission_code IN ('user', 'access', 'app');
+    WHERE permission_code IN (
+      'dashboard',
+      'accounts',
+      'accounts:admin_users',
+      'accounts:app_users',
+      'access_control',
+      'access_control:roles',
+      'access_control:role_permissions',
+      'access_control:app_roles',
+      'access_control:app_role_permissions'
+    );
   " | tr -d '[:space:]'
 )"
 

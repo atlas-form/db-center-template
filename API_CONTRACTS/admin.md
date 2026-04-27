@@ -8,20 +8,15 @@
 
 | 权限码 | 用途 |
 | --- | --- |
-| `user:create` | 创建后台用户 |
-| `user:list` | 查看后台用户列表 |
-| `user:update` | 更新后台用户 |
-| `user:delete` | 删除后台用户 |
-| `role:create` | 创建角色 |
-| `role:list` | 查看角色列表 |
-| `role:delete` | 删除角色 |
-| `permission:list` | 查看权限配置树 |
-| `role_permission:list` | 查看角色权限配置树 |
-| `role_permission:update` | 更新角色权限配置 |
-| `menu:create` | 创建菜单 |
-| `menu:list` | 查看菜单列表 |
-| `user_role:list` | 查看用户角色 |
-| `user_role:update` | 更新用户角色 |
+| `dashboard` | Dashboard 一级菜单 |
+| `accounts` | Accounts 一级菜单 |
+| `accounts:admin_users` | Admin Users 二级菜单；后台用户及后台用户角色配置 |
+| `accounts:app_users` | App Users 二级菜单；普通用户及普通用户角色配置 |
+| `access_control` | Access Control 一级菜单 |
+| `access_control:roles` | Roles 二级菜单；后台角色管理 |
+| `access_control:role_permissions` | Role Permissions 二级菜单；后台权限树、菜单、后台角色权限配置 |
+| `access_control:app_roles` | App Roles 二级菜单；普通用户角色管理 |
+| `access_control:app_role_permissions` | App Role Permissions 二级菜单；普通用户权限树、普通用户角色权限配置 |
 
 `GET /api/admin/me/permissions` 和 `GET /api/admin/me/menus` 不要求单独权限码，但要求当前用户本身是有效后台用户。
 
@@ -41,7 +36,7 @@
 
 - 方法：`POST`
 - 路径：`/api/admin/users`
-- 权限：`user:create`
+- 权限：`accounts:admin_users`
 
 请求体：
 
@@ -80,7 +75,7 @@
 
 - 方法：`GET`
 - 路径：`/api/admin/users`
-- 权限：`user:list`
+- 权限：`accounts:admin_users`
 
 成功响应 `data`：
 
@@ -111,7 +106,7 @@
 
 - 方法：`PATCH`
 - 路径：`/api/admin/users/{user_id}`
-- 权限：`user:update`
+- 权限：`accounts:admin_users`
 
 请求体：
 
@@ -157,7 +152,7 @@
 
 - 方法：`DELETE`
 - 路径：`/api/admin/users/{user_id}`
-- 权限：`user:delete`
+- 权限：`accounts:admin_users`
 
 成功响应 `data`：
 
@@ -174,7 +169,7 @@ null
 
 - 方法：`POST`
 - 路径：`/api/admin/roles`
-- 权限：`role:create`
+- 权限：`access_control:roles`
 
 请求体：
 
@@ -206,7 +201,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/roles`
-- 权限：`role:list`
+- 权限：`access_control:roles`
 
 补充说明：
 
@@ -228,7 +223,7 @@ null
 
 - 方法：`DELETE`
 - 路径：`/api/admin/roles/{role_id}`
-- 权限：`role:delete`
+- 权限：`access_control:roles`
 
 成功响应 `data`：
 
@@ -245,7 +240,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/permissions`
-- 权限：`permission:list`
+- 权限：`access_control:role_permissions`
 
 成功响应 `data`：
 
@@ -276,7 +271,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/roles/{role_id}/permissions`
-- 权限：`role_permission:list`
+- 权限：`access_control:role_permissions`
 
 路径参数：
 
@@ -315,7 +310,7 @@ null
 
 - 方法：`PUT`
 - 路径：`/api/admin/roles/{role_id}/permissions`
-- 权限：`role_permission:update`
+- 权限：`access_control:role_permissions`
 
 请求体：
 
@@ -343,7 +338,7 @@ null
 
 - 方法：`POST`
 - 路径：`/api/admin/menus`
-- 权限：`menu:create`
+- 权限：`access_control:role_permissions`
 
 请求体：
 
@@ -375,7 +370,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/menus`
-- 权限：`menu:list`
+- 权限：`access_control:role_permissions`
 
 成功响应 `data`：
 
@@ -393,7 +388,7 @@ null
 
 - 方法：`GET`
 - 路径：`/api/admin/users/{user_id}/roles`
-- 权限：`user_role:list`
+- 权限：`accounts:admin_users`
 
 路径参数：
 
@@ -429,7 +424,7 @@ null
 
 - 方法：`PUT`
 - 路径：`/api/admin/users/{user_id}/roles`
-- 权限：`user_role:update`
+- 权限：`accounts:admin_users`
 
 请求体：
 
@@ -469,8 +464,8 @@ null
     "system_admin"
   ],
   "permission_codes": [
-    "user:list",
-    "role:list"
+    "accounts:admin_users",
+    "access_control:roles"
   ]
 }
 ```
@@ -493,13 +488,56 @@ null
 [
   {
     "id": 1,
-    "name": "系统设置",
+    "name": "Dashboard",
+    "parent_id": null,
+    "children": []
+  },
+  {
+    "id": 2,
+    "name": "Accounts",
     "parent_id": null,
     "children": [
       {
-        "id": 2,
-        "name": "角色管理",
-        "parent_id": 1,
+        "id": 3,
+        "name": "Admin Users",
+        "parent_id": 2,
+        "children": []
+      },
+      {
+        "id": 4,
+        "name": "App Users",
+        "parent_id": 2,
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Access Control",
+    "parent_id": null,
+    "children": [
+      {
+        "id": 6,
+        "name": "Roles",
+        "parent_id": 5,
+        "children": []
+      },
+      {
+        "id": 7,
+        "name": "Role Permissions",
+        "parent_id": 5,
+        "children": []
+      },
+      {
+        "id": 8,
+        "name": "App Roles",
+        "parent_id": 5,
+        "children": []
+      },
+      {
+        "id": 9,
+        "name": "App Role Permissions",
+        "parent_id": 5,
         "children": []
       }
     ]

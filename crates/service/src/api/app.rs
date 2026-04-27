@@ -23,18 +23,9 @@ use crate::{
     },
 };
 
-const PERM_APP_USER_CREATE: &str = "app_user:create";
-const PERM_APP_USER_LIST: &str = "app_user:list";
-const PERM_APP_USER_UPDATE: &str = "app_user:update";
-const PERM_APP_USER_DELETE: &str = "app_user:delete";
-const PERM_APP_ROLE_CREATE: &str = "app_role:create";
-const PERM_APP_ROLE_LIST: &str = "app_role:list";
-const PERM_APP_ROLE_DELETE: &str = "app_role:delete";
-const PERM_APP_PERMISSION_LIST: &str = "app_permission:list";
-const PERM_APP_USER_ROLE_LIST: &str = "app_user_role:list";
-const PERM_APP_USER_ROLE_UPDATE: &str = "app_user_role:update";
-const PERM_APP_ROLE_PERMISSION_LIST: &str = "app_role_permission:list";
-const PERM_APP_ROLE_PERMISSION_UPDATE: &str = "app_role_permission:update";
+const PERM_APP_USERS: &str = "accounts:app_users";
+const PERM_APP_ROLES: &str = "access_control:app_roles";
+const PERM_APP_ROLE_PERMISSIONS: &str = "access_control:app_role_permissions";
 
 pub struct AppApi {
     admin_api: AdminApi,
@@ -62,7 +53,7 @@ impl AppApi {
         current_admin_user_id: String,
         req: CreateAppUserRequest,
     ) -> BizResult<AppUserResponse> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USER_CREATE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
         let user_id = parse_user_id(&req.user_id)?;
         let app_user = self
@@ -83,7 +74,7 @@ impl AppApi {
         &self,
         current_admin_user_id: String,
     ) -> BizResult<Vec<AppUserResponse>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USER_LIST)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
         let app_users = self.app_user_svc.list_all().await?;
         let user_ids = app_users
@@ -131,7 +122,7 @@ impl AppApi {
         current_admin_user_id: String,
         req: UpdateAppUserRequest,
     ) -> BizResult<AppUserResponse> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USER_UPDATE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
         let user_id = parse_user_id(&req.user_id)?;
         self.ensure_app_user_exists(user_id).await?;
@@ -153,7 +144,7 @@ impl AppApi {
         current_admin_user_id: String,
         user_id: String,
     ) -> BizResult<()> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USER_DELETE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
         let user_id = parse_user_id(&user_id)?;
         self.ensure_app_user_exists(user_id).await?;
@@ -168,7 +159,7 @@ impl AppApi {
         current_admin_user_id: String,
         req: CreateRoleRequest,
     ) -> BizResult<RoleResponse> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_CREATE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLES)
             .await?;
         let role = self
             .role_svc
@@ -181,7 +172,7 @@ impl AppApi {
     }
 
     pub async fn list_roles(&self, current_admin_user_id: String) -> BizResult<Vec<RoleResponse>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_LIST)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLES)
             .await?;
         Ok(self
             .role_svc
@@ -193,7 +184,7 @@ impl AppApi {
     }
 
     pub async fn delete_role(&self, current_admin_user_id: String, role_id: i64) -> BizResult<()> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_DELETE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLES)
             .await?;
         self.ensure_role_exists(role_id).await?;
         self.role_permission_svc.delete_by_role_id(role_id).await?;
@@ -208,7 +199,7 @@ impl AppApi {
         current_admin_user_id: String,
         user_id: String,
     ) -> BizResult<Vec<UserRoleOptionResponse>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USER_ROLE_LIST)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
         let user_id = parse_user_id(&user_id)?;
         self.ensure_app_user_exists(user_id).await?;
@@ -220,7 +211,7 @@ impl AppApi {
         current_admin_user_id: String,
         req: UpdateUserRolesRequest,
     ) -> BizResult<Vec<UserRoleOptionResponse>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USER_ROLE_UPDATE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
         let user_id = parse_user_id(&req.user_id)?;
         self.ensure_app_user_exists(user_id).await?;
@@ -252,7 +243,7 @@ impl AppApi {
         &self,
         current_admin_user_id: String,
     ) -> BizResult<Vec<PermissionTreeNode>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_PERMISSION_LIST)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_PERMISSIONS)
             .await?;
         let permissions = self.permission_svc.list_all().await?;
 
@@ -264,7 +255,7 @@ impl AppApi {
         current_admin_user_id: String,
         role_id: i64,
     ) -> BizResult<Vec<RolePermissionTreeNode>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_PERMISSION_LIST)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_PERMISSIONS)
             .await?;
         self.ensure_role_exists(role_id).await?;
         self.build_role_permission_tree(role_id).await
@@ -275,7 +266,7 @@ impl AppApi {
         current_admin_user_id: String,
         req: UpdateRolePermissionsRequest,
     ) -> BizResult<Vec<RolePermissionTreeNode>> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_PERMISSION_UPDATE)
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLE_PERMISSIONS)
             .await?;
         self.ensure_role_exists(req.role_id).await?;
         let permission_ids = req
