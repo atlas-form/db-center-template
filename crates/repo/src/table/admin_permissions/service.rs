@@ -89,6 +89,8 @@ impl PermissionService {
             parent_code: model.parent_code,
             sort: model.sort,
             kind: PermissionKind::try_from(model.kind)?,
+            created_at: model.created_at,
+            updated_at: model.updated_at,
         })
     }
 }

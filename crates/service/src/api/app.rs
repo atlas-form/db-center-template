@@ -404,6 +404,8 @@ impl AppApi {
                 id: role.id,
                 name: role.name,
                 code: role.code,
+                created_at: role.created_at,
+                updated_at: role.updated_at,
                 checked: checked_role_ids.contains(&role.id),
             })
             .collect())
@@ -459,6 +461,8 @@ impl AppApi {
                 id: permission.id,
                 name: permission.name.clone(),
                 kind: permission.kind,
+                created_at: permission.created_at,
+                updated_at: permission.updated_at,
                 children: Self::build_plain_permission_tree(
                     permissions.clone(),
                     Some(&permission.code),
@@ -484,6 +488,8 @@ impl AppApi {
                 id: permission.id,
                 name: permission.name.clone(),
                 kind: permission.kind,
+                created_at: permission.created_at,
+                updated_at: permission.updated_at,
                 checked: checked_ids.contains(&permission.id),
                 children: Self::build_permission_tree(
                     permissions.clone(),
@@ -499,6 +505,8 @@ impl AppApi {
             id: role.id,
             name: role.name,
             code: role.code,
+            created_at: role.created_at,
+            updated_at: role.updated_at,
         }
     }
 
@@ -509,6 +517,8 @@ impl AppApi {
             display_name: app_user.display_name,
             remark: app_user.remark,
             status: app_user.status,
+            created_at: app_user.created_at,
+            updated_at: app_user.updated_at,
             roles,
         }
     }

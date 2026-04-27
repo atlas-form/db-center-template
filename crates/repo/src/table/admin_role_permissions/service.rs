@@ -68,6 +68,7 @@ impl RolePermissionService {
         RolePermission {
             role_id: model.role_id,
             permission_id: model.permission_id,
+            created_at: model.created_at,
         }
     }
 }

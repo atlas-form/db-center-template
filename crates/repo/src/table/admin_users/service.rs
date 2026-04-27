@@ -76,6 +76,8 @@ impl AdminUserService {
             display_name: model.display_name,
             remark: model.remark,
             status: AdminUserStatus::try_from(model.status)?,
+            created_at: model.created_at,
+            updated_at: model.updated_at,
         })
     }
 }

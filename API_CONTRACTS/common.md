@@ -39,6 +39,8 @@ token = "dev-internal-token-change-me"
 
 项目中的 handler 统一通过 `CommonResponse<T>` 返回成功结果，通过 `CommonError` 返回错误结果。
 
+HTTP JSON 字段统一使用 `camelCase`。枚举值和权限码保持业务定义，例如 `enabled`、`disabled`、`access_control:roles`。
+
 成功响应示例：
 
 ```json
@@ -46,7 +48,7 @@ token = "dev-internal-token-change-me"
   "code": 0,
   "message": "ok",
   "data": {
-    "user_id": "demo-user-id"
+    "userId": "demo-user-id"
   }
 }
 ```

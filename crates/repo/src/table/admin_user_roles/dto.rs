@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserRole {
     pub user_id: Uuid,
     pub role_id: i64,
+    pub created_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Deserialize)]

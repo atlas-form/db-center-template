@@ -2,13 +2,13 @@ use axum::{
     Extension, Json,
     extract::{Path, Query},
 };
-use db_core::{PaginatedResponse, PaginationParams};
+use db_core::PaginationParams;
 use service::api::app::AppApi;
 use toolcraft_axum_kit::{IntoCommonResponse, ResponseResult, middleware::auth_mw::AuthUser};
 use validator::Validate;
 
 use crate::{
-    dto::app::*,
+    dto::{app::*, common::PageResponse},
     error::{Error, from_biz_error},
     statics::db_manager::get_app_ctx,
 };
@@ -18,6 +18,8 @@ fn map_role_response(role: service::dto::app::RoleResponse) -> RoleResponse {
         id: role.id,
         name: role.name,
         code: role.code,
+        created_at: role.created_at,
+        updated_at: role.updated_at,
     }
 }
 
@@ -31,6 +33,8 @@ fn map_app_user_response(app_user: service::dto::app::AppUserResponse) -> AppUse
             service::dto::app::AppUserStatus::Enabled => AppUserStatus::Enabled,
             service::dto::app::AppUserStatus::Disabled => AppUserStatus::Disabled,
         },
+        created_at: app_user.created_at,
+        updated_at: app_user.updated_at,
         roles: app_user.roles.into_iter().map(map_role_response).collect(),
     }
 }
@@ -47,6 +51,8 @@ fn map_permission_tree(node: service::dto::app::PermissionTreeNode) -> Permissio
         id: node.id,
         name: node.name,
         kind: map_permission_kind(node.kind),
+        created_at: node.created_at,
+        updated_at: node.updated_at,
         children: node.children.into_iter().map(map_permission_tree).collect(),
     }
 }
@@ -58,6 +64,8 @@ fn map_role_permission_tree(
         id: node.id,
         name: node.name,
         kind: map_permission_kind(node.kind),
+        created_at: node.created_at,
+        updated_at: node.updated_at,
         checked: node.checked,
         children: node
             .children
@@ -70,7 +78,7 @@ fn map_role_permission_tree(
 pub async fn list_app_users(
     Extension(auth_user): Extension<AuthUser>,
     Query(query): Query<ListAppUsersQuery>,
-) -> ResponseResult<PaginatedResponse<AppUserResponse>> {
+) -> ResponseResult<PageResponse<AppUserResponse>> {
     query.validate().map_err(Error::from)?;
     let api = AppApi::new(get_app_ctx());
     let app_users = api
@@ -92,8 +100,7 @@ pub async fn list_app_users(
         .await
         .map_err(from_biz_error)?;
 
-    Ok(app_users
-        .map(map_app_user_response)
+    Ok(PageResponse::from(app_users.map(map_app_user_response))
         .into_common_response()
         .to_json())
 }
@@ -202,6 +209,8 @@ pub async fn list_user_roles(
             id: role.id,
             name: role.name,
             code: role.code,
+            created_at: role.created_at,
+            updated_at: role.updated_at,
             checked: role.checked,
         })
         .collect::<Vec<_>>()
@@ -233,6 +242,8 @@ pub async fn update_user_roles(
             id: role.id,
             name: role.name,
             code: role.code,
+            created_at: role.created_at,
+            updated_at: role.updated_at,
             checked: role.checked,
         })
         .collect::<Vec<_>>()

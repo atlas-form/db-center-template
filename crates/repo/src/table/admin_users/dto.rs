@@ -1,5 +1,6 @@
 use db_core::error::{BIZ_INTERNAL_ERROR, BizError, BizResult};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,6 +49,8 @@ pub struct AdminUser {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AdminUserStatus,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Deserialize)]

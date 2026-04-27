@@ -58,12 +58,12 @@
 
 ```json
 {
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "display_id": "zhangsan",
-  "display_name": "张三",
+  "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "displayId": "zhangsan",
+  "displayName": "张三",
   "remark": "测试环境管理员",
   "status": "enabled",
-  "admin_roles": []
+  "roles": []
 }
 ```
 
@@ -82,12 +82,12 @@
 ```json
 [
   {
-    "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-    "display_id": "zhangsan",
-    "display_name": "张三",
+    "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+    "displayId": "zhangsan",
+    "displayName": "张三",
     "remark": "测试环境管理员",
     "status": "enabled",
-    "admin_roles": [
+    "roles": [
       {
         "id": 1,
         "name": "系统管理员",
@@ -105,7 +105,7 @@
 ## 3. 更新后台用户
 
 - 方法：`PATCH`
-- 路径：`/api/admin/account/admin-users/{user_id}`
+- 路径：`/api/admin/account/admin-users/{userId}`
 - 权限：`accounts:admin_users`
 
 请求体：
@@ -128,12 +128,12 @@
 
 ```json
 {
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "display_id": "zhangsan",
-  "display_name": "张三",
+  "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "displayId": "zhangsan",
+  "displayName": "张三",
   "remark": "新的备注",
   "status": "disabled",
-  "admin_roles": [
+  "roles": [
     {
       "id": 1,
       "name": "系统管理员",
@@ -151,7 +151,7 @@
 ## 4. 删除后台用户
 
 - 方法：`DELETE`
-- 路径：`/api/admin/account/admin-users/{user_id}`
+- 路径：`/api/admin/account/admin-users/{userId}`
 - 权限：`accounts:admin_users`
 
 成功响应 `data`：
@@ -222,7 +222,7 @@ null
 ## 7. 删除角色
 
 - 方法：`DELETE`
-- 路径：`/api/admin/access/roles/{role_id}`
+- 路径：`/api/admin/access/roles/{roleId}`
 - 权限：`access_control:roles`
 
 成功响应 `data`：
@@ -282,14 +282,14 @@ null
 ## 9. 查询角色权限配置树
 
 - 方法：`GET`
-- 路径：`/api/admin/access/roles/{role_id}/permissions`
+- 路径：`/api/admin/access/roles/{roleId}/permissions`
 - 权限：`access_control:role_permissions`
 
 路径参数：
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `role_id` | `integer` | 是 | 角色 ID |
+| `roleId` | `integer` | 是 | 角色 ID |
 
 成功响应 `data`：
 
@@ -328,14 +328,14 @@ null
 ## 10. 更新角色权限配置
 
 - 方法：`PUT`
-- 路径：`/api/admin/access/roles/{role_id}/permissions`
+- 路径：`/api/admin/access/roles/{roleId}/permissions`
 - 权限：`access_control:role_permissions`
 
 请求体：
 
 ```json
 {
-  "permission_ids": [2, 3, 4]
+  "permissionIds": [2, 3, 4]
 }
 ```
 
@@ -343,14 +343,14 @@ null
 
 | 字段 | 类型 | 必填 | 约束 |
 | --- | --- | --- | --- |
-| `permission_ids` | `integer[]` | 是 | 前端权限树中勾选的权限节点 ID |
+| `permissionIds` | `integer[]` | 是 | 前端权限树中勾选的权限节点 ID |
 
 成功响应 `data`：同“查询角色权限配置树”。
 
 补充说明：
 
 - 更新不是增量修改
-- 服务端会先删除该 `role_id` 下所有 `admin_role_permissions` 记录，再插入本次提交的 `permission_ids`
+- 服务端会先删除该 `roleId` 下所有 `admin_role_permissions` 记录，再插入本次提交的 `permissionIds`
 - 非 `root` 用户不能修改 `root` 角色的权限
 
 ## 11. 创建菜单
@@ -364,7 +364,7 @@ null
 ```json
 {
   "name": "设备管理",
-  "parent_id": null
+  "parentId": null
 }
 ```
 
@@ -373,7 +373,7 @@ null
 | 字段 | 类型 | 必填 | 约束 |
 | --- | --- | --- | --- |
 | `name` | `string` | 是 | 长度 `1..=64` |
-| `parent_id` | `integer \| null` | 否 | 父菜单 ID |
+| `parentId` | `integer \| null` | 否 | 父菜单 ID |
 
 成功响应 `data`：
 
@@ -381,7 +381,7 @@ null
 {
   "id": 1,
   "name": "设备管理",
-  "parent_id": null
+  "parentId": null
 }
 ```
 
@@ -398,7 +398,7 @@ null
   {
     "id": 1,
     "name": "设备管理",
-    "parent_id": null
+    "parentId": null
   }
 ]
 ```
@@ -406,14 +406,14 @@ null
 ## 13. 查询用户角色配置
 
 - 方法：`GET`
-- 路径：`/api/admin/account/admin-users/{user_id}/roles`
+- 路径：`/api/admin/account/admin-users/{userId}/roles`
 - 权限：`accounts:admin_users`
 
 路径参数：
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `user_id` | `string` | 是 | 目标用户 ID，业务层会按 UUID 解析 |
+| `userId` | `string` | 是 | 目标用户 ID，业务层会按 UUID 解析 |
 
 成功响应 `data`：
 
@@ -442,14 +442,14 @@ null
 ## 14. 更新用户角色配置
 
 - 方法：`PUT`
-- 路径：`/api/admin/account/admin-users/{user_id}/roles`
+- 路径：`/api/admin/account/admin-users/{userId}/roles`
 - 权限：`accounts:admin_users`
 
 请求体：
 
 ```json
 {
-  "role_ids": [1, 2]
+  "roleIds": [1, 2]
 }
 ```
 
@@ -457,14 +457,14 @@ null
 
 | 字段 | 类型 | 必填 | 约束 |
 | --- | --- | --- | --- |
-| `role_ids` | `integer[]` | 是 | 前端角色配置中勾选的角色 ID |
+| `roleIds` | `integer[]` | 是 | 前端角色配置中勾选的角色 ID |
 
 成功响应 `data`：同“查询用户角色配置”。
 
 补充说明：
 
 - 更新不是增量修改
-- 服务端会先删除该 `user_id` 下所有 `admin_user_roles` 记录，再插入本次提交的 `role_ids`
+- 服务端会先删除该 `userId` 下所有 `admin_user_roles` 记录，再插入本次提交的 `roleIds`
 - 非 `root` 用户不能给别人分配 `root` 角色
 - 非 `root` 用户不能修改带有 `root` 角色的后台用户
 
@@ -478,11 +478,11 @@ null
 
 ```json
 {
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "role_codes": [
+  "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "roleCodes": [
     "system_admin"
   ],
-  "permission_codes": [
+  "permissionCodes": [
     "accounts:admin_users",
     "access_control:roles"
   ]
@@ -508,24 +508,24 @@ null
   {
     "id": 1,
     "name": "Dashboard",
-    "parent_id": null,
+    "parentId": null,
     "children": []
   },
   {
     "id": 2,
     "name": "Accounts",
-    "parent_id": null,
+    "parentId": null,
     "children": [
       {
         "id": 3,
         "name": "Admin Users",
-        "parent_id": 2,
+        "parentId": 2,
         "children": []
       },
       {
         "id": 4,
         "name": "App Users",
-        "parent_id": 2,
+        "parentId": 2,
         "children": []
       }
     ]
@@ -533,30 +533,30 @@ null
   {
     "id": 5,
     "name": "Access Control",
-    "parent_id": null,
+    "parentId": null,
     "children": [
       {
         "id": 6,
         "name": "Roles",
-        "parent_id": 5,
+        "parentId": 5,
         "children": []
       },
       {
         "id": 7,
         "name": "Role Permissions",
-        "parent_id": 5,
+        "parentId": 5,
         "children": []
       },
       {
         "id": 8,
         "name": "App Roles",
-        "parent_id": 5,
+        "parentId": 5,
         "children": []
       },
       {
         "id": 9,
         "name": "App Role Permissions",
-        "parent_id": 5,
+        "parentId": 5,
         "children": []
       }
     ]
@@ -580,18 +580,18 @@ null
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | --- | --- | --- |
 | `page` | `integer` | 否 | `1` | 页码，从 1 开始 |
-| `page_size` | `integer` | 否 | `20` | 每页数量，最大 `100` |
-| `keyword` | `string` | 否 | - | 关键字；匹配 `display_id` / `display_name` / `remark`，如果是合法 UUID 也会匹配 `user_id` |
+| `pageSize` | `integer` | 否 | `20` | 每页数量，最大 `100` |
+| `keyword` | `string` | 否 | - | 关键字；匹配 `displayId` / `displayName` / `remark`，如果是合法 UUID 也会匹配 `userId` |
 | `status` | `string` | 否 | - | 用户状态：`enabled` / `disabled`，精确匹配 |
-| `created_at_from` | `string(datetime)` | 否 | - | 创建时间起点，RFC3339，例如 `2026-04-27T00:00:00Z` |
-| `created_at_to` | `string(datetime)` | 否 | - | 创建时间终点，RFC3339 |
-| `updated_at_from` | `string(datetime)` | 否 | - | 更新时间起点，RFC3339 |
-| `updated_at_to` | `string(datetime)` | 否 | - | 更新时间终点，RFC3339 |
+| `createdAtFrom` | `string(datetime)` | 否 | - | 创建时间起点，RFC3339，例如 `2026-04-27T00:00:00Z` |
+| `createdAtTo` | `string(datetime)` | 否 | - | 创建时间终点，RFC3339 |
+| `updatedAtFrom` | `string(datetime)` | 否 | - | 更新时间起点，RFC3339 |
+| `updatedAtTo` | `string(datetime)` | 否 | - | 更新时间终点，RFC3339 |
 
 示例：
 
 ```http
-GET /api/admin/account/app-users?page=1&page_size=20&keyword=App%20User&status=enabled&created_at_from=2026-04-27T00:00:00Z
+GET /api/admin/account/app-users?page=1&pageSize=20&keyword=App%20User&status=enabled&createdAtFrom=2026-04-27T00:00:00Z
 ```
 
 服务端查询语义：
@@ -617,31 +617,35 @@ WHERE
 {
   "items": [
     {
-      "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-      "display_id": "zhangsan",
-      "display_name": "张三",
+      "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+      "displayId": "zhangsan",
+      "displayName": "张三",
       "remark": "测试 App 用户",
       "status": "enabled",
+      "createdAt": "2026-04-27T00:00:00Z",
+      "updatedAt": "2026-04-27T00:00:00Z",
       "roles": []
     }
   ],
   "page": 1,
-  "page_size": 20,
+  "pageSize": 20,
   "total": 1,
-  "total_pages": 1,
-  "has_next": false,
-  "has_prev": false
+  "totalPages": 1,
+  "hasNext": false,
+  "hasPrev": false
 }
 ```
 
 补充说明：
 
 - App 用户只能通过普通客户端注册流程产生，后台不提供新增 App 用户接口
+- HTTP JSON 字段统一使用 `camelCase`
+- 返回对象会包含数据库时间字段：主数据对象返回 `createdAt`、`updatedAt`；授权关系表如果后续直接返回行数据，只返回 `createdAt`
 
 ## 18. 更新 App 用户
 
 - 方法：`PATCH`
-- 路径：`/api/admin/account/app-users/{user_id}`
+- 路径：`/api/admin/account/app-users/{userId}`
 - 权限：`accounts:app_users`
 
 请求体：
@@ -658,7 +662,7 @@ WHERE
 ## 19. 删除 App 用户
 
 - 方法：`DELETE`
-- 路径：`/api/admin/account/app-users/{user_id}`
+- 路径：`/api/admin/account/app-users/{userId}`
 - 权限：`accounts:app_users`
 
 成功响应 `data`：
@@ -670,7 +674,7 @@ null
 ## 20. 查询 App 用户角色配置
 
 - 方法：`GET`
-- 路径：`/api/admin/account/app-users/{user_id}/roles`
+- 路径：`/api/admin/account/app-users/{userId}/roles`
 - 权限：`accounts:app_users`
 
 成功响应 `data`：
@@ -689,14 +693,14 @@ null
 ## 21. 更新 App 用户角色配置
 
 - 方法：`PUT`
-- 路径：`/api/admin/account/app-users/{user_id}/roles`
+- 路径：`/api/admin/account/app-users/{userId}/roles`
 - 权限：`accounts:app_users`
 
 请求体：
 
 ```json
 {
-  "role_ids": [1, 2]
+  "roleIds": [1, 2]
 }
 ```
 
@@ -738,7 +742,7 @@ null
 ## 24. 删除 App 角色
 
 - 方法：`DELETE`
-- 路径：`/api/admin/access/app-roles/{role_id}`
+- 路径：`/api/admin/access/app-roles/{roleId}`
 - 权限：`access_control:app_roles`
 
 成功响应 `data`：
@@ -776,7 +780,7 @@ null
 ## 26. 查询 App 角色权限配置
 
 - 方法：`GET`
-- 路径：`/api/admin/access/app-roles/{role_id}/permissions`
+- 路径：`/api/admin/access/app-roles/{roleId}/permissions`
 - 权限：`access_control:app_role_permissions`
 
 成功响应 `data`：带 `checked` 字段的 App 权限树。
@@ -784,14 +788,14 @@ null
 ## 27. 更新 App 角色权限配置
 
 - 方法：`PUT`
-- 路径：`/api/admin/access/app-roles/{role_id}/permissions`
+- 路径：`/api/admin/access/app-roles/{roleId}/permissions`
 - 权限：`access_control:app_role_permissions`
 
 请求体：
 
 ```json
 {
-  "permission_ids": [1, 2, 3]
+  "permissionIds": [1, 2, 3]
 }
 ```
 

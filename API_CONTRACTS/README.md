@@ -23,31 +23,31 @@
 
 1. `POST /api/admin/account/admin-users`
 2. `GET /api/admin/account/admin-users`
-3. `PATCH /api/admin/account/admin-users/{user_id}`
-4. `DELETE /api/admin/account/admin-users/{user_id}`
+3. `PATCH /api/admin/account/admin-users/{userId}`
+4. `DELETE /api/admin/account/admin-users/{userId}`
 5. `POST /api/admin/access/roles`
 6. `GET /api/admin/access/roles`
-7. `DELETE /api/admin/access/roles/{role_id}`
+7. `DELETE /api/admin/access/roles/{roleId}`
 8. `GET /api/admin/access/permissions`
-9. `GET /api/admin/access/roles/{role_id}/permissions`
-10. `PUT /api/admin/access/roles/{role_id}/permissions`
+9. `GET /api/admin/access/roles/{roleId}/permissions`
+10. `PUT /api/admin/access/roles/{roleId}/permissions`
 11. `POST /api/admin/access/menus`
 12. `GET /api/admin/access/menus`
-13. `GET /api/admin/account/admin-users/{user_id}/roles`
-14. `PUT /api/admin/account/admin-users/{user_id}/roles`
+13. `GET /api/admin/account/admin-users/{userId}/roles`
+14. `PUT /api/admin/account/admin-users/{userId}/roles`
 15. `GET /api/admin/me/permissions`
 16. `GET /api/admin/me/menus`
 17. `GET /api/admin/account/app-users`
-18. `PATCH /api/admin/account/app-users/{user_id}`
-19. `DELETE /api/admin/account/app-users/{user_id}`
-20. `GET /api/admin/account/app-users/{user_id}/roles`
-21. `PUT /api/admin/account/app-users/{user_id}/roles`
+18. `PATCH /api/admin/account/app-users/{userId}`
+19. `DELETE /api/admin/account/app-users/{userId}`
+20. `GET /api/admin/account/app-users/{userId}/roles`
+21. `PUT /api/admin/account/app-users/{userId}/roles`
 22. `POST /api/admin/access/app-roles`
 23. `GET /api/admin/access/app-roles`
-24. `DELETE /api/admin/access/app-roles/{role_id}`
+24. `DELETE /api/admin/access/app-roles/{roleId}`
 25. `GET /api/admin/access/app-permissions`
-26. `GET /api/admin/access/app-roles/{role_id}/permissions`
-27. `PUT /api/admin/access/app-roles/{role_id}/permissions`
+26. `GET /api/admin/access/app-roles/{roleId}/permissions`
+27. `PUT /api/admin/access/app-roles/{roleId}/permissions`
 
 ### App
 

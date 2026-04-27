@@ -24,11 +24,11 @@
 
 ```json
 {
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "role_codes": [
+  "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "roleCodes": [
     "user"
   ],
-  "permission_codes": [
+  "permissionCodes": [
     "profile",
     "profile:view",
     "profile:update"

@@ -47,6 +47,8 @@ impl MenuService {
             name: model.name,
             parent_id: model.parent_id,
             permission_code: model.permission_code,
+            created_at: model.created_at,
+            updated_at: model.updated_at,
         }
     }
 }

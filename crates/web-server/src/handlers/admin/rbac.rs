@@ -17,6 +17,8 @@ fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
         id: role.id,
         name: role.name,
         code: role.code,
+        created_at: role.created_at,
+        updated_at: role.updated_at,
     }
 }
 
@@ -32,6 +34,8 @@ fn map_admin_user_response(
             service::dto::admin::AdminUserStatus::Enabled => AdminUserStatus::Enabled,
             service::dto::admin::AdminUserStatus::Disabled => AdminUserStatus::Disabled,
         },
+        created_at: admin_user.created_at,
+        updated_at: admin_user.updated_at,
         roles: admin_user
             .roles
             .into_iter()
@@ -52,6 +56,8 @@ fn map_permission_tree(node: service::dto::admin::PermissionTreeNode) -> Permiss
         id: node.id,
         name: node.name,
         kind: map_permission_kind(node.kind),
+        created_at: node.created_at,
+        updated_at: node.updated_at,
         children: node.children.into_iter().map(map_permission_tree).collect(),
     }
 }
@@ -63,6 +69,8 @@ fn map_role_permission_tree(
         id: node.id,
         name: node.name,
         kind: map_permission_kind(node.kind),
+        created_at: node.created_at,
+        updated_at: node.updated_at,
         checked: node.checked,
         children: node
             .children
@@ -185,6 +193,8 @@ pub async fn create_role(
         id: role.id,
         name: role.name,
         code: role.code,
+        created_at: role.created_at,
+        updated_at: role.updated_at,
     }
     .into_common_response()
     .to_json())
@@ -205,6 +215,8 @@ pub async fn list_roles(
             id: role.id,
             name: role.name,
             code: role.code,
+            created_at: role.created_at,
+            updated_at: role.updated_at,
         })
         .collect::<Vec<_>>()
         .into_common_response()
@@ -244,6 +256,8 @@ pub async fn create_menu(
         id: menu.id,
         name: menu.name,
         parent_id: menu.parent_id,
+        created_at: menu.created_at,
+        updated_at: menu.updated_at,
     }
     .into_common_response()
     .to_json())
@@ -264,6 +278,8 @@ pub async fn list_menus(
             id: menu.id,
             name: menu.name,
             parent_id: menu.parent_id,
+            created_at: menu.created_at,
+            updated_at: menu.updated_at,
         })
         .collect::<Vec<_>>()
         .into_common_response()
@@ -286,6 +302,8 @@ pub async fn list_user_roles(
             id: role.id,
             name: role.name,
             code: role.code,
+            created_at: role.created_at,
+            updated_at: role.updated_at,
             checked: role.checked,
         })
         .collect::<Vec<_>>()
@@ -317,6 +335,8 @@ pub async fn update_user_roles(
             id: role.id,
             name: role.name,
             code: role.code,
+            created_at: role.created_at,
+            updated_at: role.updated_at,
             checked: role.checked,
         })
         .collect::<Vec<_>>()
@@ -425,6 +445,8 @@ fn map_menu_tree(node: service::dto::admin::MenuTreeNode) -> MenuTreeNode {
         id: node.id,
         name: node.name,
         parent_id: node.parent_id,
+        created_at: node.created_at,
+        updated_at: node.updated_at,
         children: node.children.into_iter().map(map_menu_tree).collect(),
     }
 }

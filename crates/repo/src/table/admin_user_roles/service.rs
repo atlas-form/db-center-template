@@ -96,6 +96,7 @@ impl UserRoleService {
         UserRole {
             user_id: model.user_id,
             role_id: model.role_id,
+            created_at: model.created_at,
         }
     }
 }

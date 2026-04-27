@@ -73,6 +73,8 @@ impl RoleService {
             id: model.id,
             name: model.name,
             code: model.code,
+            created_at: model.created_at,
+            updated_at: model.updated_at,
         }
     }
 }

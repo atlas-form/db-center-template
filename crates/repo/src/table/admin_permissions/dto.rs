@@ -1,5 +1,6 @@
 use db_core::error::{BIZ_INTERNAL_ERROR, BizError, BizResult};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -48,6 +49,8 @@ pub struct Permission {
     pub parent_code: Option<String>,
     pub sort: i32,
     pub kind: PermissionKind,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Deserialize)]

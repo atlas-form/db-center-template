@@ -47,7 +47,7 @@ Authorization: Bearer <access_token>
 ```json
 {
   "type": "connected",
-  "user_id": "user-id-from-jwt",
+  "userId": "user-id-from-jwt",
   "payload": {}
 }
 ```
@@ -57,7 +57,7 @@ Authorization: Bearer <access_token>
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `type` | `string` | 固定为 `connected` |
-| `user_id` | `string` | 当前连接对应的用户 ID，来自 JWT subject |
+| `userId` | `string` | 当前连接对应的用户 ID，来自 JWT subject |
 | `payload` | `object \| null` | JWT 扩展信息；没有扩展信息时可能不存在 |
 
 ## 4. Ping/Pong 测试

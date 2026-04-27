@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use validator::Validate;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
@@ -9,6 +10,7 @@ pub enum AppUserStatus {
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct ListAppUsersQuery {
     #[serde(default = "default_page")]
     pub page: u64,
@@ -36,6 +38,7 @@ fn default_page_size() -> u64 {
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateAppUserRequest {
     #[validate(length(min = 1, max = 255))]
     pub remark: Option<String>,
@@ -43,16 +46,20 @@ pub struct UpdateAppUserRequest {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AppUserResponse {
     pub user_id: String,
     pub display_id: String,
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AppUserStatus,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
     pub roles: Vec<RoleResponse>,
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateRoleRequest {
     #[validate(length(min = 1, max = 64))]
     pub name: String,
@@ -61,43 +68,57 @@ pub struct CreateRoleRequest {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RoleResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateRolePermissionsRequest {
     pub permission_ids: Vec<i64>,
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateUserRolesRequest {
     pub role_ids: Vec<i64>,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserRoleOptionResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
     pub checked: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PermissionTreeNode {
     pub id: i64,
     pub name: String,
     pub kind: PermissionKind,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
     pub children: Vec<PermissionTreeNode>,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RolePermissionTreeNode {
     pub id: i64,
     pub name: String,
     pub kind: PermissionKind,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
     pub checked: bool,
     pub children: Vec<RolePermissionTreeNode>,
 }
@@ -110,6 +131,7 @@ pub enum PermissionKind {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CurrentUserPermissionsResponse {
     pub user_id: String,
     pub role_codes: Vec<String>,

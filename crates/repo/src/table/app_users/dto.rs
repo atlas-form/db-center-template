@@ -49,6 +49,8 @@ pub struct AppUser {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AppUserStatus,
+    pub created_at: OffsetDateTime,
+    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Default)]
