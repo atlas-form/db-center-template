@@ -64,6 +64,16 @@ impl UserRoleService {
             .collect())
     }
 
+    pub async fn exists(&self, user_id: Uuid, role_id: i64) -> BizResult<bool> {
+        let query = self
+            .repo
+            .query()
+            .filter(app_user_roles::Column::UserId.eq(user_id))
+            .filter(app_user_roles::Column::RoleId.eq(role_id));
+
+        Ok(self.repo.select_one(query).await?.is_some())
+    }
+
     pub async fn delete_by_user_id(&self, user_id: Uuid) -> BizResult<u64> {
         Ok(self
             .repo

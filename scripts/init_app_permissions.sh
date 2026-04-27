@@ -35,6 +35,11 @@ upsert_permission() {
 echo "初始化普通用户基础权限节点..."
 
 run_psql "$DB_NAME" "
+  INSERT INTO app_roles (code, name)
+  VALUES ('free', 'Free')
+  ON CONFLICT (code) DO UPDATE
+  SET name = EXCLUDED.name;
+
   DELETE FROM app_role_permissions;
   DELETE FROM app_permissions;
 " >/dev/null
@@ -56,4 +61,5 @@ PERMISSION_COUNT="$(
 )"
 
 echo "普通用户基础权限初始化完成"
+echo "app_roles: free"
 echo "app_permissions: ${PERMISSION_COUNT}"

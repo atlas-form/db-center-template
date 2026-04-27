@@ -10,7 +10,9 @@ use repo::table::{
     app_role_permissions::{CreateRolePermission, RolePermissionService},
     app_roles::{CreateRole, Role, RoleService},
     app_user_roles::{CreateUserRole, UserRoleService},
-    app_users::{AppUser, AppUserFilter, AppUserService, AppUserStatus, UpdateAppUser},
+    app_users::{
+        AppUser, AppUserFilter, AppUserService, AppUserStatus, CreateAppUser, UpdateAppUser,
+    },
 };
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 use uuid::Uuid;
@@ -19,11 +21,14 @@ use crate::{
     api::admin::AdminApi,
     dto::app::{
         AppUserResponse, CreateRoleRequest, CurrentUserPermissionsResponse, ListAppUsersRequest,
-        PermissionTreeNode, RolePermissionTreeNode, RoleResponse, UpdateAppUserRequest,
-        UpdateRolePermissionsRequest, UpdateUserRolesRequest, UserRoleOptionResponse,
+        PermissionTreeNode, RegisterAppUserRequest, RolePermissionTreeNode, RoleResponse,
+        UpdateAppUserRequest, UpdateRolePermissionsRequest, UpdateUserRolesRequest,
+        UserRoleOptionResponse,
     },
 };
 
+const DEFAULT_APP_ROLE_NAME: &str = "Free";
+const DEFAULT_APP_ROLE_CODE: &str = "free";
 const PERM_APP_USERS: &str = "accounts:app_users";
 const PERM_APP_ROLES: &str = "access_control:app_roles";
 const PERM_APP_ROLE_PERMISSIONS: &str = "access_control:app_role_permissions";
@@ -47,6 +52,43 @@ impl AppApi {
             user_role_svc: UserRoleService::new(db.clone()),
             role_permission_svc: RolePermissionService::new(db),
         }
+    }
+
+    pub async fn register_app_user(
+        &self,
+        req: RegisterAppUserRequest,
+    ) -> BizResult<AppUserResponse> {
+        let user_id = parse_user_id(&req.user_id)?;
+        let existing_user = self.app_user_svc.get_by_user_id(user_id).await?;
+        let app_user = if let Some(app_user) = existing_user {
+            app_user
+        } else {
+            match self
+                .app_user_svc
+                .create(CreateAppUser {
+                    user_id,
+                    display_id: req.display_id,
+                    display_name: req.display_name,
+                    remark: req.remark,
+                    status: AppUserStatus::Enabled,
+                })
+                .await
+            {
+                Ok(app_user) => app_user,
+                Err(err) => self
+                    .app_user_svc
+                    .get_by_user_id(user_id)
+                    .await?
+                    .ok_or(err)?,
+            }
+        };
+
+        if app_user.status == AppUserStatus::Enabled {
+            self.ensure_default_role_assigned(user_id).await?;
+        }
+
+        let roles = self.list_roles_by_user_id(user_id).await?;
+        Ok(Self::map_app_user(app_user, roles))
     }
 
     pub async fn list_app_users(
@@ -347,6 +389,53 @@ impl AppApi {
             role_ids,
             role_codes,
         })
+    }
+
+    async fn ensure_default_role_assigned(&self, user_id: Uuid) -> BizResult<()> {
+        let default_role = self.ensure_default_role().await?;
+        if self.user_role_svc.exists(user_id, default_role.id).await? {
+            return Ok(());
+        }
+
+        match self
+            .user_role_svc
+            .create(CreateUserRole {
+                user_id,
+                role_id: default_role.id,
+            })
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                if self.user_role_svc.exists(user_id, default_role.id).await? {
+                    Ok(())
+                } else {
+                    Err(err)
+                }
+            }
+        }
+    }
+
+    async fn ensure_default_role(&self) -> BizResult<Role> {
+        if let Some(role) = self.role_svc.get_by_code(DEFAULT_APP_ROLE_CODE).await? {
+            return Ok(role);
+        }
+
+        match self
+            .role_svc
+            .create(CreateRole {
+                name: DEFAULT_APP_ROLE_NAME.to_owned(),
+                code: DEFAULT_APP_ROLE_CODE.to_owned(),
+            })
+            .await
+        {
+            Ok(role) => Ok(role),
+            Err(err) => self
+                .role_svc
+                .get_by_code(DEFAULT_APP_ROLE_CODE)
+                .await?
+                .ok_or(err),
+        }
     }
 
     async fn ensure_app_user_exists(&self, user_id: Uuid) -> BizResult<AppUser> {

@@ -14,7 +14,34 @@
 | `profile:view` | `action` | 查看个人资料 |
 | `profile:update` | `action` | 更新个人资料 |
 
-## 1. 查询当前 App 用户权限
+## 1. 注册 App 用户
+
+- 方法：`POST`
+- 路径：`/api/app/register`
+- 鉴权：无
+
+请求体：
+
+```json
+{
+  "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "displayId": "u_10001",
+  "displayName": "App User",
+  "remark": "optional note"
+}
+```
+
+成功响应 `data`：`AppUserResponse`。
+
+补充说明：
+
+- `userId` 必须是 UUID 字符串，由前端传入
+- 首次注册会创建 `enabled` 状态 App 用户
+- 首次注册会自动绑定默认 App 角色 `free`
+- 如果默认 App 角色 `free` 不存在，服务端会自动创建；初始化脚本 `scripts/init_app_permissions.sh` 也会写入该角色
+- 同一个 `userId` 重复注册时返回已有用户信息
+
+## 2. 查询当前 App 用户权限
 
 - 方法：`GET`
 - 路径：`/api/app/me/permissions`

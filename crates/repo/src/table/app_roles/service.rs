@@ -64,6 +64,15 @@ impl RoleService {
         Ok(self.repo.find_by_id(id).await?.map(Self::from_model))
     }
 
+    pub async fn get_by_code(&self, code: &str) -> BizResult<Option<Role>> {
+        let query = self
+            .repo
+            .query()
+            .filter(app_roles::Column::Code.eq(code.to_owned()));
+
+        Ok(self.repo.select_one(query).await?.map(Self::from_model))
+    }
+
     pub async fn delete_by_id(&self, id: i64) -> BizResult<u64> {
         Ok(self.repo.delete_by_id(id).await?.rows_affected)
     }

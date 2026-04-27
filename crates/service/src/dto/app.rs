@@ -17,6 +17,15 @@ pub struct ListAppUsersRequest {
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RegisterAppUserRequest {
+    pub user_id: String,
+    pub display_id: String,
+    pub display_name: String,
+    pub remark: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateAppUserRequest {
     pub user_id: String,
     pub remark: Option<String>,

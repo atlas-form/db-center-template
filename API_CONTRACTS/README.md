@@ -51,7 +51,8 @@
 
 ### App
 
-1. `GET /api/app/me/permissions`
+1. `POST /api/app/register`
+2. `GET /api/app/me/permissions`
 
 ### WebSocket
 
