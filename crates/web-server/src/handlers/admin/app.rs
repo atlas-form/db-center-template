@@ -321,21 +321,3 @@ pub async fn update_role_permissions(
         .into_common_response()
         .to_json())
 }
-
-pub async fn current_user_permissions(
-    Extension(auth_user): Extension<AuthUser>,
-) -> ResponseResult<CurrentUserPermissionsResponse> {
-    let api = AppApi::new(get_app_ctx());
-    let resp = api
-        .get_current_user_permissions(auth_user.user_id)
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(CurrentUserPermissionsResponse {
-        user_id: resp.user_id,
-        role_codes: resp.role_codes,
-        permission_codes: resp.permission_codes,
-    }
-    .into_common_response()
-    .to_json())
-}

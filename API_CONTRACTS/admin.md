@@ -35,7 +35,7 @@
 ## 1. 创建后台用户
 
 - 方法：`POST`
-- 路径：`/api/admin/users`
+- 路径：`/api/admin/account/admin-users`
 - 权限：`accounts:admin_users`
 
 请求体：
@@ -74,7 +74,7 @@
 ## 2. 查询后台用户列表
 
 - 方法：`GET`
-- 路径：`/api/admin/users`
+- 路径：`/api/admin/account/admin-users`
 - 权限：`accounts:admin_users`
 
 成功响应 `data`：
@@ -105,7 +105,7 @@
 ## 3. 更新后台用户
 
 - 方法：`PATCH`
-- 路径：`/api/admin/users/{user_id}`
+- 路径：`/api/admin/account/admin-users/{user_id}`
 - 权限：`accounts:admin_users`
 
 请求体：
@@ -151,7 +151,7 @@
 ## 4. 删除后台用户
 
 - 方法：`DELETE`
-- 路径：`/api/admin/users/{user_id}`
+- 路径：`/api/admin/account/admin-users/{user_id}`
 - 权限：`accounts:admin_users`
 
 成功响应 `data`：
@@ -168,7 +168,7 @@ null
 ## 5. 创建角色
 
 - 方法：`POST`
-- 路径：`/api/admin/roles`
+- 路径：`/api/admin/access/roles`
 - 权限：`access_control:roles`
 
 请求体：
@@ -200,7 +200,7 @@ null
 ## 6. 查询角色列表
 
 - 方法：`GET`
-- 路径：`/api/admin/roles`
+- 路径：`/api/admin/access/roles`
 - 权限：`access_control:roles`
 
 补充说明：
@@ -222,7 +222,7 @@ null
 ## 7. 删除角色
 
 - 方法：`DELETE`
-- 路径：`/api/admin/roles/{role_id}`
+- 路径：`/api/admin/access/roles/{role_id}`
 - 权限：`access_control:roles`
 
 成功响应 `data`：
@@ -239,7 +239,7 @@ null
 ## 8. 查询总权限配置树
 
 - 方法：`GET`
-- 路径：`/api/admin/permissions`
+- 路径：`/api/admin/access/permissions`
 - 权限：`access_control:role_permissions`
 
 成功响应 `data`：
@@ -248,13 +248,25 @@ null
 [
   {
     "id": 1,
-    "name": "用户管理",
+    "name": "Dashboard",
+    "kind": "group",
+    "children": []
+  },
+  {
+    "id": 2,
+    "name": "Accounts",
     "kind": "group",
     "children": [
       {
-        "id": 2,
-        "name": "查看用户列表",
-        "kind": "action",
+        "id": 3,
+        "name": "Admin Users",
+        "kind": "group",
+        "children": []
+      },
+      {
+        "id": 4,
+        "name": "App Users",
+        "kind": "group",
         "children": []
       }
     ]
@@ -270,7 +282,7 @@ null
 ## 9. 查询角色权限配置树
 
 - 方法：`GET`
-- 路径：`/api/admin/roles/{role_id}/permissions`
+- 路径：`/api/admin/access/roles/{role_id}/permissions`
 - 权限：`access_control:role_permissions`
 
 路径参数：
@@ -285,14 +297,21 @@ null
 [
   {
     "id": 1,
-    "name": "用户管理",
+    "name": "Dashboard",
+    "kind": "group",
+    "checked": false,
+    "children": []
+  },
+  {
+    "id": 2,
+    "name": "Accounts",
     "kind": "group",
     "checked": false,
     "children": [
       {
-        "id": 2,
-        "name": "查看用户列表",
-        "kind": "action",
+        "id": 3,
+        "name": "Admin Users",
+        "kind": "group",
         "checked": true,
         "children": []
       }
@@ -309,7 +328,7 @@ null
 ## 10. 更新角色权限配置
 
 - 方法：`PUT`
-- 路径：`/api/admin/roles/{role_id}/permissions`
+- 路径：`/api/admin/access/roles/{role_id}/permissions`
 - 权限：`access_control:role_permissions`
 
 请求体：
@@ -337,7 +356,7 @@ null
 ## 11. 创建菜单
 
 - 方法：`POST`
-- 路径：`/api/admin/menus`
+- 路径：`/api/admin/access/menus`
 - 权限：`access_control:role_permissions`
 
 请求体：
@@ -369,7 +388,7 @@ null
 ## 12. 查询菜单列表
 
 - 方法：`GET`
-- 路径：`/api/admin/menus`
+- 路径：`/api/admin/access/menus`
 - 权限：`access_control:role_permissions`
 
 成功响应 `data`：
@@ -387,7 +406,7 @@ null
 ## 13. 查询用户角色配置
 
 - 方法：`GET`
-- 路径：`/api/admin/users/{user_id}/roles`
+- 路径：`/api/admin/account/admin-users/{user_id}/roles`
 - 权限：`accounts:admin_users`
 
 路径参数：
@@ -423,7 +442,7 @@ null
 ## 14. 更新用户角色配置
 
 - 方法：`PUT`
-- 路径：`/api/admin/users/{user_id}/roles`
+- 路径：`/api/admin/account/admin-users/{user_id}/roles`
 - 权限：`accounts:admin_users`
 
 请求体：
@@ -549,3 +568,198 @@ null
 
 - 如果当前用户拥有 `root` 角色，返回全部菜单树
 - 非 `root` 用户只返回有权限命中的菜单，以及这些菜单的祖先节点
+
+## 17. 创建 App 用户
+
+- 方法：`POST`
+- 路径：`/api/admin/account/app-users`
+- 权限：`accounts:app_users`
+
+请求体：
+
+```json
+{
+  "identifier": "zhangsan",
+  "remark": "测试 App 用户"
+}
+```
+
+成功响应 `data`：
+
+```json
+{
+  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+  "display_id": "zhangsan",
+  "display_name": "张三",
+  "remark": "测试 App 用户",
+  "status": "enabled",
+  "roles": []
+}
+```
+
+## 18. 查询 App 用户列表
+
+- 方法：`GET`
+- 路径：`/api/admin/account/app-users`
+- 权限：`accounts:app_users`
+
+成功响应 `data`：`AppUserResponse[]`。
+
+## 19. 更新 App 用户
+
+- 方法：`PATCH`
+- 路径：`/api/admin/account/app-users/{user_id}`
+- 权限：`accounts:app_users`
+
+请求体：
+
+```json
+{
+  "remark": "新的备注",
+  "status": "disabled"
+}
+```
+
+成功响应 `data`：`AppUserResponse`。
+
+## 20. 删除 App 用户
+
+- 方法：`DELETE`
+- 路径：`/api/admin/account/app-users/{user_id}`
+- 权限：`accounts:app_users`
+
+成功响应 `data`：
+
+```json
+null
+```
+
+## 21. 查询 App 用户角色配置
+
+- 方法：`GET`
+- 路径：`/api/admin/account/app-users/{user_id}/roles`
+- 权限：`accounts:app_users`
+
+成功响应 `data`：
+
+```json
+[
+  {
+    "id": 1,
+    "name": "普通用户",
+    "code": "user",
+    "checked": true
+  }
+]
+```
+
+## 22. 更新 App 用户角色配置
+
+- 方法：`PUT`
+- 路径：`/api/admin/account/app-users/{user_id}/roles`
+- 权限：`accounts:app_users`
+
+请求体：
+
+```json
+{
+  "role_ids": [1, 2]
+}
+```
+
+成功响应 `data`：同“查询 App 用户角色配置”。
+
+## 23. 创建 App 角色
+
+- 方法：`POST`
+- 路径：`/api/admin/access/app-roles`
+- 权限：`access_control:app_roles`
+
+请求体：
+
+```json
+{
+  "name": "普通用户",
+  "code": "user"
+}
+```
+
+成功响应 `data`：
+
+```json
+{
+  "id": 1,
+  "name": "普通用户",
+  "code": "user"
+}
+```
+
+## 24. 查询 App 角色列表
+
+- 方法：`GET`
+- 路径：`/api/admin/access/app-roles`
+- 权限：`access_control:app_roles`
+
+成功响应 `data`：`RoleResponse[]`。
+
+## 25. 删除 App 角色
+
+- 方法：`DELETE`
+- 路径：`/api/admin/access/app-roles/{role_id}`
+- 权限：`access_control:app_roles`
+
+成功响应 `data`：
+
+```json
+null
+```
+
+## 26. 查询 App 权限树
+
+- 方法：`GET`
+- 路径：`/api/admin/access/app-permissions`
+- 权限：`access_control:app_role_permissions`
+
+成功响应 `data`：
+
+```json
+[
+  {
+    "id": 1,
+    "name": "个人中心",
+    "kind": "group",
+    "children": [
+      {
+        "id": 2,
+        "name": "查看个人资料",
+        "kind": "action",
+        "children": []
+      }
+    ]
+  }
+]
+```
+
+## 27. 查询 App 角色权限配置
+
+- 方法：`GET`
+- 路径：`/api/admin/access/app-roles/{role_id}/permissions`
+- 权限：`access_control:app_role_permissions`
+
+成功响应 `data`：带 `checked` 字段的 App 权限树。
+
+## 28. 更新 App 角色权限配置
+
+- 方法：`PUT`
+- 路径：`/api/admin/access/app-roles/{role_id}/permissions`
+- 权限：`access_control:app_role_permissions`
+
+请求体：
+
+```json
+{
+  "permission_ids": [1, 2, 3]
+}
+```
+
+成功响应 `data`：同“查询 App 角色权限配置”。
