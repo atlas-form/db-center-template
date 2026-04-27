@@ -69,11 +69,29 @@ fn map_role_permission_tree(
 
 pub async fn list_app_users(
     Extension(auth_user): Extension<AuthUser>,
-    Query(pagination): Query<PaginationParams>,
+    Query(query): Query<ListAppUsersQuery>,
 ) -> ResponseResult<PaginatedResponse<AppUserResponse>> {
+    query.validate().map_err(Error::from)?;
     let api = AppApi::new(get_app_ctx());
     let app_users = api
-        .list_app_users(auth_user.user_id, pagination)
+        .list_app_users(
+            auth_user.user_id,
+            service::dto::app::ListAppUsersRequest {
+                pagination: PaginationParams::new(query.page, query.page_size),
+                user_id: query.user_id,
+                display_id: query.display_id,
+                display_name: query.display_name,
+                status: query.status.map(|status| match status {
+                    AppUserStatus::Enabled => service::dto::app::AppUserStatus::Enabled,
+                    AppUserStatus::Disabled => service::dto::app::AppUserStatus::Disabled,
+                }),
+                remark: query.remark,
+                created_at_from: query.created_at_from,
+                created_at_to: query.created_at_to,
+                updated_at_from: query.updated_at_from,
+                updated_at_to: query.updated_at_to,
+            },
+        )
         .await
         .map_err(from_biz_error)?;
 

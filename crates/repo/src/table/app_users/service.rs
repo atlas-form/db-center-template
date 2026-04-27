@@ -1,13 +1,13 @@
 use db_core::{DbContext, PaginatedResponse, PaginationParams, Repository, error::BizResult};
 use sea_orm::{
     ActiveValue::{Set, Unchanged},
-    QueryOrder,
+    ColumnTrait, Condition, QueryOrder,
 };
 use uuid::Uuid;
 
 use crate::{
     entity::app_users,
-    table::app_users::dto::{AppUser, AppUserStatus, CreateAppUser, UpdateAppUser},
+    table::app_users::dto::{AppUser, AppUserFilter, AppUserStatus, CreateAppUser, UpdateAppUser},
 };
 
 db_core::impl_repository!(AppUserRepo, app_users::Entity, app_users::Model);
@@ -48,13 +48,15 @@ impl AppUserService {
 
     pub async fn list_paginated(
         &self,
+        filter: AppUserFilter,
         pagination: PaginationParams,
     ) -> BizResult<PaginatedResponse<AppUser>> {
         let page = pagination.validate();
+        let filter = Self::build_filter(filter);
         let response = self
             .repo
             .find_paginated(
-                None,
+                filter,
                 &page,
                 Some(&db_core::OrderBy::asc(app_users::Column::UserId)),
             )
@@ -108,5 +110,57 @@ impl AppUserService {
             remark: model.remark,
             status: AppUserStatus::try_from(model.status)?,
         })
+    }
+
+    fn build_filter(filter: AppUserFilter) -> Option<Condition> {
+        let mut condition = Condition::all();
+        let mut has_filter = false;
+
+        if let Some(user_id) = filter.user_id {
+            condition = condition.add(app_users::Column::UserId.eq(user_id));
+            has_filter = true;
+        }
+
+        if let Some(display_id) = filter.display_id {
+            condition = condition.add(app_users::Column::DisplayId.contains(display_id));
+            has_filter = true;
+        }
+
+        if let Some(display_name) = filter.display_name {
+            condition = condition.add(app_users::Column::DisplayName.contains(display_name));
+            has_filter = true;
+        }
+
+        if let Some(remark) = filter.remark {
+            condition = condition.add(app_users::Column::Remark.contains(remark));
+            has_filter = true;
+        }
+
+        if let Some(status) = filter.status {
+            condition = condition.add(app_users::Column::Status.eq(status.as_str()));
+            has_filter = true;
+        }
+
+        if let Some(created_at_from) = filter.created_at_from {
+            condition = condition.add(app_users::Column::CreatedAt.gte(created_at_from));
+            has_filter = true;
+        }
+
+        if let Some(created_at_to) = filter.created_at_to {
+            condition = condition.add(app_users::Column::CreatedAt.lte(created_at_to));
+            has_filter = true;
+        }
+
+        if let Some(updated_at_from) = filter.updated_at_from {
+            condition = condition.add(app_users::Column::UpdatedAt.gte(updated_at_from));
+            has_filter = true;
+        }
+
+        if let Some(updated_at_to) = filter.updated_at_to {
+            condition = condition.add(app_users::Column::UpdatedAt.lte(updated_at_to));
+            has_filter = true;
+        }
+
+        has_filter.then_some(condition)
     }
 }

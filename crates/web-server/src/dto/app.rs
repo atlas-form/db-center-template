@@ -9,6 +9,38 @@ pub enum AppUserStatus {
 }
 
 #[derive(Debug, Deserialize, Validate)]
+pub struct ListAppUsersQuery {
+    #[serde(default = "default_page")]
+    pub page: u64,
+    #[serde(default = "default_page_size")]
+    pub page_size: u64,
+    pub user_id: Option<String>,
+    #[validate(length(max = 64))]
+    pub display_id: Option<String>,
+    #[validate(length(max = 64))]
+    pub display_name: Option<String>,
+    pub status: Option<AppUserStatus>,
+    #[validate(length(max = 255))]
+    pub remark: Option<String>,
+    #[validate(length(max = 64))]
+    pub created_at_from: Option<String>,
+    #[validate(length(max = 64))]
+    pub created_at_to: Option<String>,
+    #[validate(length(max = 64))]
+    pub updated_at_from: Option<String>,
+    #[validate(length(max = 64))]
+    pub updated_at_to: Option<String>,
+}
+
+fn default_page() -> u64 {
+    1
+}
+
+fn default_page_size() -> u64 {
+    20
+}
+
+#[derive(Debug, Deserialize, Validate)]
 pub struct UpdateAppUserRequest {
     #[validate(length(min = 1, max = 255))]
     pub remark: Option<String>,

@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use db_core::{
-    DbContext, PaginatedResponse, PaginationParams,
+    DbContext, PaginatedResponse,
     error::{BIZ_INTERNAL_ERROR, BizError, BizResult},
 };
 use error_code::admin as admin_error;
@@ -10,16 +10,17 @@ use repo::table::{
     app_role_permissions::{CreateRolePermission, RolePermissionService},
     app_roles::{CreateRole, Role, RoleService},
     app_user_roles::{CreateUserRole, UserRoleService},
-    app_users::{AppUser, AppUserService, AppUserStatus, UpdateAppUser},
+    app_users::{AppUser, AppUserFilter, AppUserService, AppUserStatus, UpdateAppUser},
 };
+use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 use uuid::Uuid;
 
 use crate::{
     api::admin::AdminApi,
     dto::app::{
-        AppUserResponse, CreateRoleRequest, CurrentUserPermissionsResponse, PermissionTreeNode,
-        RolePermissionTreeNode, RoleResponse, UpdateAppUserRequest, UpdateRolePermissionsRequest,
-        UpdateUserRolesRequest, UserRoleOptionResponse,
+        AppUserResponse, CreateRoleRequest, CurrentUserPermissionsResponse, ListAppUsersRequest,
+        PermissionTreeNode, RolePermissionTreeNode, RoleResponse, UpdateAppUserRequest,
+        UpdateRolePermissionsRequest, UpdateUserRolesRequest, UserRoleOptionResponse,
     },
 };
 
@@ -51,11 +52,34 @@ impl AppApi {
     pub async fn list_app_users(
         &self,
         current_admin_user_id: String,
-        pagination: PaginationParams,
+        req: ListAppUsersRequest,
     ) -> BizResult<PaginatedResponse<AppUserResponse>> {
         self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
-        let app_users = self.app_user_svc.list_paginated(pagination).await?;
+        let user_id = req
+            .user_id
+            .as_deref()
+            .map(str::trim)
+            .filter(|user_id| !user_id.is_empty())
+            .map(parse_user_id)
+            .transpose()?;
+        let app_users = self
+            .app_user_svc
+            .list_paginated(
+                AppUserFilter {
+                    user_id,
+                    display_id: normalize_optional_string(req.display_id),
+                    display_name: normalize_optional_string(req.display_name),
+                    status: req.status,
+                    remark: normalize_optional_string(req.remark),
+                    created_at_from: parse_optional_rfc3339(req.created_at_from)?,
+                    created_at_to: parse_optional_rfc3339(req.created_at_to)?,
+                    updated_at_from: parse_optional_rfc3339(req.updated_at_from)?,
+                    updated_at_to: parse_optional_rfc3339(req.updated_at_to)?,
+                },
+                req.pagination,
+            )
+            .await?;
         let user_ids = app_users
             .items
             .iter()
@@ -498,6 +522,25 @@ impl AppApi {
 fn parse_user_id(user_id: &str) -> BizResult<Uuid> {
     Uuid::parse_str(user_id)
         .map_err(|err| BizError::new(BIZ_INTERNAL_ERROR, format!("invalid user_id uuid: {err}")))
+}
+
+fn normalize_optional_string(value: Option<String>) -> Option<String> {
+    value
+        .map(|value| value.trim().to_owned())
+        .filter(|value| !value.is_empty())
+}
+
+fn parse_optional_rfc3339(value: Option<String>) -> BizResult<Option<OffsetDateTime>> {
+    normalize_optional_string(value)
+        .map(|value| {
+            OffsetDateTime::parse(&value, &Rfc3339).map_err(|err| {
+                BizError::new(
+                    BIZ_INTERNAL_ERROR,
+                    format!("invalid RFC3339 datetime: {err}"),
+                )
+            })
+        })
+        .transpose()
 }
 
 struct AppAccess {

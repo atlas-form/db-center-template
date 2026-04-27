@@ -1,5 +1,6 @@
 use db_core::error::{BIZ_INTERNAL_ERROR, BizError, BizResult};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,6 +49,19 @@ pub struct AppUser {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AppUserStatus,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct AppUserFilter {
+    pub user_id: Option<Uuid>,
+    pub display_id: Option<String>,
+    pub display_name: Option<String>,
+    pub remark: Option<String>,
+    pub status: Option<AppUserStatus>,
+    pub created_at_from: Option<OffsetDateTime>,
+    pub created_at_to: Option<OffsetDateTime>,
+    pub updated_at_from: Option<OffsetDateTime>,
+    pub updated_at_to: Option<OffsetDateTime>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

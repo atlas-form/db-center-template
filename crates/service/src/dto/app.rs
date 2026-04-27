@@ -1,5 +1,20 @@
+use db_core::PaginationParams;
 pub use repo::table::{app_permissions::PermissionKind, app_users::AppUserStatus};
 use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ListAppUsersRequest {
+    pub pagination: PaginationParams,
+    pub user_id: Option<String>,
+    pub display_id: Option<String>,
+    pub display_name: Option<String>,
+    pub status: Option<AppUserStatus>,
+    pub remark: Option<String>,
+    pub created_at_from: Option<String>,
+    pub created_at_to: Option<String>,
+    pub updated_at_from: Option<String>,
+    pub updated_at_to: Option<String>,
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateAppUserRequest {
