@@ -101,4 +101,5 @@ token = "dev-internal-token-change-me"
 
 - `API_CONTRACTS/common.md`
 - `API_CONTRACTS/admin.md`
+- `API_CONTRACTS/app.md`
 - `API_CONTRACTS/ws.md`

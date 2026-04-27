@@ -6,11 +6,14 @@
 
 - `common.md`: 通用约定，包括鉴权、统一响应格式、错误码
 - `admin.md`: 后台 RBAC 相关接口
+- `app.md`: App 用户、App 角色、App 权限配置接口
 - `ws.md`: WebSocket 连接与小铃铛通知推送协议
 
 ## 路由前缀
 
 - 后台管理接口前缀：`/api/admin`
+- App 管理接口前缀：`/api/admin/app`
+- App 用户接口前缀：`/api/app`
 - WebSocket 连接路径：`/api/ws`
 
 ## 当前接口清单
@@ -33,6 +36,22 @@
 14. `PUT /api/admin/users/{user_id}/roles`
 15. `GET /api/admin/me/permissions`
 16. `GET /api/admin/me/menus`
+
+### App
+
+1. `POST /api/admin/app/users`
+2. `GET /api/admin/app/users`
+3. `PATCH /api/admin/app/users/{user_id}`
+4. `DELETE /api/admin/app/users/{user_id}`
+5. `GET /api/admin/app/users/{user_id}/roles`
+6. `PUT /api/admin/app/users/{user_id}/roles`
+7. `POST /api/admin/app/roles`
+8. `GET /api/admin/app/roles`
+9. `DELETE /api/admin/app/roles/{role_id}`
+10. `GET /api/admin/app/permissions`
+11. `GET /api/admin/app/roles/{role_id}/permissions`
+12. `PUT /api/admin/app/roles/{role_id}/permissions`
+13. `GET /api/app/me/permissions`
 
 ### WebSocket
 
