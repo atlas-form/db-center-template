@@ -6,16 +6,16 @@
 
 ## 权限码总览
 
-| 权限码 | 用途 |
-| --- | --- |
-| `dashboard` | Dashboard 一级菜单 |
-| `accounts` | Accounts 一级菜单 |
-| `accounts:admin_users` | Admin Users 二级菜单；后台用户及后台用户角色配置 |
-| `accounts:app_users` | App Users 二级菜单；普通用户及普通用户角色配置 |
-| `access_control` | Access Control 一级菜单 |
-| `access_control:roles` | Roles 二级菜单；后台角色管理 |
-| `access_control:role_permissions` | Role Permissions 二级菜单；后台权限树、菜单、后台角色权限配置 |
-| `access_control:app_roles` | App Roles 二级菜单；普通用户角色管理 |
+| 权限码                                | 用途                                                                |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `dashboard`                           | Dashboard 一级菜单                                                  |
+| `accounts`                            | Accounts 一级菜单                                                   |
+| `accounts:admin_users`                | Admin Users 二级菜单；后台用户及后台用户角色配置                    |
+| `accounts:app_users`                  | App Users 二级菜单；普通用户及普通用户角色配置                      |
+| `access_control`                      | Access Control 一级菜单                                             |
+| `access_control:roles`                | Roles 二级菜单；后台角色管理                                        |
+| `access_control:role_permissions`     | Role Permissions 二级菜单；后台权限树、菜单、后台角色权限配置       |
+| `access_control:app_roles`            | App Roles 二级菜单；普通用户角色管理                                |
 | `access_control:app_role_permissions` | App Role Permissions 二级菜单；普通用户权限树、普通用户角色权限配置 |
 
 `GET /api/admin/me/permissions` 和 `GET /api/admin/me/menus` 不要求单独权限码，但要求当前用户本身是有效后台用户。
@@ -49,10 +49,10 @@
 
 字段说明：
 
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `identifier` | `string` | 是 | 长度 `1..=128`，用于调用 auth 服务定位用户 |
-| `remark` | `string \| null` | 否 | 有值时长度 `1..=255` |
+| 字段         | 类型             | 必填 | 约束                                       |
+| ------------ | ---------------- | ---- | ------------------------------------------ |
+| `identifier` | `string`         | 是   | 长度 `1..=128`，用于调用 auth 服务定位用户 |
+| `remark`     | `string \| null` | 否   | 有值时长度 `1..=255`                       |
 
 成功响应 `data`：
 
@@ -119,10 +119,10 @@
 
 字段说明：
 
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `remark` | `string \| null` | 否 | 有值时长度 `1..=255` |
-| `status` | `enabled \| disabled` | 是 | 后台用户状态 |
+| 字段     | 类型                  | 必填 | 约束                 |
+| -------- | --------------------- | ---- | -------------------- |
+| `remark` | `string \| null`      | 否   | 有值时长度 `1..=255` |
+| `status` | `enabled \| disabled` | 是   | 后台用户状态         |
 
 成功响应 `data`：
 
@@ -182,10 +182,10 @@ null
 
 字段说明：
 
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `name` | `string` | 是 | 长度 `1..=64` |
-| `code` | `string` | 是 | 长度 `1..=64`，且不能为保留值 `root` |
+| 字段   | 类型     | 必填 | 约束                                 |
+| ------ | -------- | ---- | ------------------------------------ |
+| `name` | `string` | 是   | 长度 `1..=64`                        |
+| `code` | `string` | 是   | 长度 `1..=64`，且不能为保留值 `root` |
 
 成功响应 `data`：
 
@@ -287,9 +287,9 @@ null
 
 路径参数：
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `roleId` | `integer` | 是 | 角色 ID |
+| 参数     | 类型      | 必填 | 说明    |
+| -------- | --------- | ---- | ------- |
+| `roleId` | `integer` | 是   | 角色 ID |
 
 成功响应 `data`：
 
@@ -341,9 +341,9 @@ null
 
 字段说明：
 
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `permissionIds` | `integer[]` | 是 | 前端权限树中勾选的权限节点 ID |
+| 字段            | 类型        | 必填 | 约束                          |
+| --------------- | ----------- | ---- | ----------------------------- |
+| `permissionIds` | `integer[]` | 是   | 前端权限树中勾选的权限节点 ID |
 
 成功响应 `data`：同“查询角色权限配置树”。
 
@@ -370,10 +370,10 @@ null
 
 字段说明：
 
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `name` | `string` | 是 | 长度 `1..=64` |
-| `parentId` | `integer \| null` | 否 | 父菜单 ID |
+| 字段       | 类型              | 必填 | 约束          |
+| ---------- | ----------------- | ---- | ------------- |
+| `name`     | `string`          | 是   | 长度 `1..=64` |
+| `parentId` | `integer \| null` | 否   | 父菜单 ID     |
 
 成功响应 `data`：
 
@@ -411,9 +411,9 @@ null
 
 路径参数：
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| `userId` | `string` | 是 | 目标用户 ID，业务层会按 UUID 解析 |
+| 参数     | 类型     | 必填 | 说明                              |
+| -------- | -------- | ---- | --------------------------------- |
+| `userId` | `string` | 是   | 目标用户 ID，业务层会按 UUID 解析 |
 
 成功响应 `data`：
 
@@ -455,9 +455,9 @@ null
 
 字段说明：
 
-| 字段 | 类型 | 必填 | 约束 |
-| --- | --- | --- | --- |
-| `roleIds` | `integer[]` | 是 | 前端角色配置中勾选的角色 ID |
+| 字段      | 类型        | 必填 | 约束                        |
+| --------- | ----------- | ---- | --------------------------- |
+| `roleIds` | `integer[]` | 是   | 前端角色配置中勾选的角色 ID |
 
 成功响应 `data`：同“查询用户角色配置”。
 
@@ -479,13 +479,8 @@ null
 ```json
 {
   "userId": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "roleCodes": [
-    "system_admin"
-  ],
-  "permissionCodes": [
-    "accounts:admin_users",
-    "access_control:roles"
-  ]
+  "roleCodes": ["system_admin"],
+  "permissionCodes": ["accounts:admin_users", "access_control:roles"]
 }
 ```
 
@@ -577,16 +572,16 @@ null
 
 查询参数：
 
-| 参数 | 类型 | 必填 | 默认值 | 说明 |
-| --- | --- | --- | --- | --- |
-| `page` | `integer` | 否 | `1` | 页码，从 1 开始 |
-| `pageSize` | `integer` | 否 | `20` | 每页数量，最大 `100` |
-| `keyword` | `string` | 否 | - | 关键字；匹配 `displayId` / `displayName` / `remark`，如果是合法 UUID 也会匹配 `userId` |
-| `status` | `string` | 否 | - | 用户状态：`enabled` / `disabled`，精确匹配 |
-| `createdAtFrom` | `string(datetime)` | 否 | - | 创建时间起点，RFC3339，例如 `2026-04-27T00:00:00Z` |
-| `createdAtTo` | `string(datetime)` | 否 | - | 创建时间终点，RFC3339 |
-| `updatedAtFrom` | `string(datetime)` | 否 | - | 更新时间起点，RFC3339 |
-| `updatedAtTo` | `string(datetime)` | 否 | - | 更新时间终点，RFC3339 |
+| 参数            | 类型               | 必填 | 默认值 | 说明                                                                                   |
+| --------------- | ------------------ | ---- | ------ | -------------------------------------------------------------------------------------- |
+| `page`          | `integer`          | 否   | `1`    | 页码，从 1 开始                                                                        |
+| `pageSize`      | `integer`          | 否   | `20`   | 每页数量，最大 `100`                                                                   |
+| `keyword`       | `string`           | 否   | -      | 关键字；匹配 `displayId` / `displayName` / `remark`，如果是合法 UUID 也会匹配 `userId` |
+| `status`        | `string`           | 否   | -      | 用户状态：`enabled` / `disabled`，精确匹配                                             |
+| `createdAtFrom` | `string(datetime)` | 否   | -      | 创建时间起点，RFC3339，例如 `2026-04-27T00:00:00Z`                                     |
+| `createdAtTo`   | `string(datetime)` | 否   | -      | 创建时间终点，RFC3339                                                                  |
+| `updatedAtFrom` | `string(datetime)` | 否   | -      | 更新时间起点，RFC3339                                                                  |
+| `updatedAtTo`   | `string(datetime)` | 否   | -      | 更新时间终点，RFC3339                                                                  |
 
 示例：
 
