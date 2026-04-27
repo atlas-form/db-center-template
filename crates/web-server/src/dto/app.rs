@@ -14,14 +14,9 @@ pub struct ListAppUsersQuery {
     pub page: u64,
     #[serde(default = "default_page_size")]
     pub page_size: u64,
-    pub user_id: Option<String>,
-    #[validate(length(max = 64))]
-    pub display_id: Option<String>,
-    #[validate(length(max = 64))]
-    pub display_name: Option<String>,
-    pub status: Option<AppUserStatus>,
     #[validate(length(max = 255))]
-    pub remark: Option<String>,
+    pub keyword: Option<String>,
+    pub status: Option<AppUserStatus>,
     #[validate(length(max = 64))]
     pub created_at_from: Option<String>,
     #[validate(length(max = 64))]

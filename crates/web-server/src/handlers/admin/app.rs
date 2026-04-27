@@ -78,14 +78,11 @@ pub async fn list_app_users(
             auth_user.user_id,
             service::dto::app::ListAppUsersRequest {
                 pagination: PaginationParams::new(query.page, query.page_size),
-                user_id: query.user_id,
-                display_id: query.display_id,
-                display_name: query.display_name,
+                keyword: query.keyword,
                 status: query.status.map(|status| match status {
                     AppUserStatus::Enabled => service::dto::app::AppUserStatus::Enabled,
                     AppUserStatus::Disabled => service::dto::app::AppUserStatus::Disabled,
                 }),
-                remark: query.remark,
                 created_at_from: query.created_at_from,
                 created_at_to: query.created_at_to,
                 updated_at_from: query.updated_at_from,

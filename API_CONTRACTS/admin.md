@@ -581,11 +581,8 @@ null
 | --- | --- | --- | --- | --- |
 | `page` | `integer` | 否 | `1` | 页码，从 1 开始 |
 | `page_size` | `integer` | 否 | `20` | 每页数量，最大 `100` |
-| `user_id` | `string(uuid)` | 否 | - | App 用户主键，精确匹配 |
-| `display_id` | `string` | 否 | - | App 用户展示 ID，模糊匹配 |
-| `display_name` | `string` | 否 | - | App 用户昵称/名称，模糊匹配 |
+| `keyword` | `string` | 否 | - | 关键字；匹配 `display_id` / `display_name` / `remark`，如果是合法 UUID 也会匹配 `user_id` |
 | `status` | `string` | 否 | - | 用户状态：`enabled` / `disabled`，精确匹配 |
-| `remark` | `string` | 否 | - | 备注，模糊匹配 |
 | `created_at_from` | `string(datetime)` | 否 | - | 创建时间起点，RFC3339，例如 `2026-04-27T00:00:00Z` |
 | `created_at_to` | `string(datetime)` | 否 | - | 创建时间终点，RFC3339 |
 | `updated_at_from` | `string(datetime)` | 否 | - | 更新时间起点，RFC3339 |
@@ -594,7 +591,24 @@ null
 示例：
 
 ```http
-GET /api/admin/account/app-users?page=1&page_size=20&display_name=App%20User&status=enabled&created_at_from=2026-04-27T00:00:00Z
+GET /api/admin/account/app-users?page=1&page_size=20&keyword=App%20User&status=enabled&created_at_from=2026-04-27T00:00:00Z
+```
+
+服务端查询语义：
+
+```sql
+WHERE
+  (
+    display_id LIKE :keyword
+    OR display_name LIKE :keyword
+    OR remark LIKE :keyword
+    OR user_id = :keyword
+  )
+  AND status = :status
+  AND created_at >= :created_at_from
+  AND created_at <= :created_at_to
+  AND updated_at >= :updated_at_from
+  AND updated_at <= :updated_at_to
 ```
 
 成功响应 `data`：

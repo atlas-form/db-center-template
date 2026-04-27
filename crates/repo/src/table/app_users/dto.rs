@@ -53,10 +53,8 @@ pub struct AppUser {
 
 #[derive(Debug, Clone, Default)]
 pub struct AppUserFilter {
-    pub user_id: Option<Uuid>,
-    pub display_id: Option<String>,
-    pub display_name: Option<String>,
-    pub remark: Option<String>,
+    pub keyword: Option<String>,
+    pub keyword_user_id: Option<Uuid>,
     pub status: Option<AppUserStatus>,
     pub created_at_from: Option<OffsetDateTime>,
     pub created_at_to: Option<OffsetDateTime>,

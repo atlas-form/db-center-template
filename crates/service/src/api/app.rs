@@ -56,22 +56,17 @@ impl AppApi {
     ) -> BizResult<PaginatedResponse<AppUserResponse>> {
         self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
-        let user_id = req
-            .user_id
+        let keyword = normalize_optional_string(req.keyword);
+        let keyword_user_id = keyword
             .as_deref()
-            .map(str::trim)
-            .filter(|user_id| !user_id.is_empty())
-            .map(parse_user_id)
-            .transpose()?;
+            .and_then(|keyword| Uuid::parse_str(keyword).ok());
         let app_users = self
             .app_user_svc
             .list_paginated(
                 AppUserFilter {
-                    user_id,
-                    display_id: normalize_optional_string(req.display_id),
-                    display_name: normalize_optional_string(req.display_name),
+                    keyword,
+                    keyword_user_id,
                     status: req.status,
-                    remark: normalize_optional_string(req.remark),
                     created_at_from: parse_optional_rfc3339(req.created_at_from)?,
                     created_at_to: parse_optional_rfc3339(req.created_at_to)?,
                     updated_at_from: parse_optional_rfc3339(req.updated_at_from)?,

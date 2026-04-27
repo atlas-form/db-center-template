@@ -116,23 +116,17 @@ impl AppUserService {
         let mut condition = Condition::all();
         let mut has_filter = false;
 
-        if let Some(user_id) = filter.user_id {
-            condition = condition.add(app_users::Column::UserId.eq(user_id));
-            has_filter = true;
-        }
+        if let Some(keyword) = filter.keyword {
+            let mut keyword_condition = Condition::any()
+                .add(app_users::Column::DisplayId.contains(keyword.clone()))
+                .add(app_users::Column::DisplayName.contains(keyword.clone()))
+                .add(app_users::Column::Remark.contains(keyword));
 
-        if let Some(display_id) = filter.display_id {
-            condition = condition.add(app_users::Column::DisplayId.contains(display_id));
-            has_filter = true;
-        }
+            if let Some(user_id) = filter.keyword_user_id {
+                keyword_condition = keyword_condition.add(app_users::Column::UserId.eq(user_id));
+            }
 
-        if let Some(display_name) = filter.display_name {
-            condition = condition.add(app_users::Column::DisplayName.contains(display_name));
-            has_filter = true;
-        }
-
-        if let Some(remark) = filter.remark {
-            condition = condition.add(app_users::Column::Remark.contains(remark));
+            condition = condition.add(keyword_condition);
             has_filter = true;
         }
 
