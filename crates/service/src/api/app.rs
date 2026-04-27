@@ -20,10 +20,11 @@ use uuid::Uuid;
 use crate::{
     api::admin::AdminApi,
     dto::app::{
-        AppUserResponse, AppUserSortBy, CreateRoleRequest, CurrentUserPermissionsResponse,
-        ListAppUsersRequest, PermissionTreeNode, RegisterAppUserRequest, RolePermissionTreeNode,
-        RoleResponse, SortOrder, UpdateAppUserRequest, UpdateRolePermissionsRequest,
-        UpdateUserRolesRequest, UserRoleOptionResponse,
+        AppUserMetricsResponse, AppUserResponse, AppUserSortBy, CreateRoleRequest,
+        CurrentUserPermissionsResponse, ListAppUsersRequest, PermissionTreeNode,
+        RegisterAppUserRequest, RolePermissionTreeNode, RoleResponse, SortOrder,
+        UpdateAppUserRequest, UpdateRolePermissionsRequest, UpdateUserRolesRequest,
+        UserRoleOptionResponse,
     },
 };
 
@@ -165,6 +166,23 @@ impl AppApi {
                 .unwrap_or_default();
             Self::map_app_user(app_user, roles)
         }))
+    }
+
+    pub async fn app_user_metrics(
+        &self,
+        current_admin_user_id: String,
+    ) -> BizResult<AppUserMetricsResponse> {
+        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
+            .await?;
+        let metrics = self.app_user_svc.metrics().await?;
+        let multi_role = self.user_role_svc.count_multi_role_users().await?;
+
+        Ok(AppUserMetricsResponse {
+            total: metrics.total,
+            enabled: metrics.enabled,
+            disabled: metrics.disabled,
+            multi_role,
+        })
     }
 
     pub async fn update_app_user(

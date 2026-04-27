@@ -55,6 +55,13 @@ pub struct AppUser {
     pub updated_at: OffsetDateTime,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppUserMetrics {
+    pub total: u64,
+    pub enabled: u64,
+    pub disabled: u64,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct AppUserFilter {
     pub keyword: Option<String>,

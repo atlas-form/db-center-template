@@ -641,7 +641,33 @@ ORDER BY updated_at DESC
 - HTTP JSON 字段统一使用 `camelCase`
 - 返回对象会包含数据库时间字段：主数据对象返回 `createdAt`、`updatedAt`；授权关系表如果后续直接返回行数据，只返回 `createdAt`
 
-## 18. 更新 App 用户
+## 18. 查询 App 用户统计
+
+- 方法：`GET`
+- 路径：`/api/admin/account/app-users/metrics`
+- 权限：`accounts:app_users`
+
+成功响应 `data`：
+
+```json
+{
+  "total": 100,
+  "enabled": 10,
+  "disabled": 0,
+  "multiRole": 0
+}
+```
+
+字段说明：
+
+| 字段        | 类型      | 说明                          |
+| ----------- | --------- | ----------------------------- |
+| `total`     | `integer` | App 用户总数                  |
+| `enabled`   | `integer` | 启用账号数                    |
+| `disabled`  | `integer` | 停用账号数                    |
+| `multiRole` | `integer` | 同时挂载 2 个及以上角色账号数 |
+
+## 19. 更新 App 用户
 
 - 方法：`PATCH`
 - 路径：`/api/admin/account/app-users/{userId}`
@@ -658,7 +684,7 @@ ORDER BY updated_at DESC
 
 成功响应 `data`：`AppUserResponse`。
 
-## 19. 删除 App 用户
+## 20. 删除 App 用户
 
 - 方法：`DELETE`
 - 路径：`/api/admin/account/app-users/{userId}`
@@ -670,7 +696,7 @@ ORDER BY updated_at DESC
 null
 ```
 
-## 20. 查询 App 用户角色配置
+## 21. 查询 App 用户角色配置
 
 - 方法：`GET`
 - 路径：`/api/admin/account/app-users/{userId}/roles`
@@ -689,7 +715,7 @@ null
 ]
 ```
 
-## 21. 更新 App 用户角色配置
+## 22. 更新 App 用户角色配置
 
 - 方法：`PUT`
 - 路径：`/api/admin/account/app-users/{userId}/roles`
@@ -705,7 +731,7 @@ null
 
 成功响应 `data`：同“查询 App 用户角色配置”。
 
-## 22. 创建 App 角色
+## 23. 创建 App 角色
 
 - 方法：`POST`
 - 路径：`/api/admin/access/app-roles`
@@ -730,7 +756,7 @@ null
 }
 ```
 
-## 23. 查询 App 角色列表
+## 24. 查询 App 角色列表
 
 - 方法：`GET`
 - 路径：`/api/admin/access/app-roles`
@@ -738,7 +764,7 @@ null
 
 成功响应 `data`：`RoleResponse[]`。
 
-## 24. 删除 App 角色
+## 25. 删除 App 角色
 
 - 方法：`DELETE`
 - 路径：`/api/admin/access/app-roles/{roleId}`
@@ -750,7 +776,7 @@ null
 null
 ```
 
-## 25. 查询 App 权限树
+## 26. 查询 App 权限树
 
 - 方法：`GET`
 - 路径：`/api/admin/access/app-permissions`
@@ -776,7 +802,7 @@ null
 ]
 ```
 
-## 26. 查询 App 角色权限配置
+## 27. 查询 App 角色权限配置
 
 - 方法：`GET`
 - 路径：`/api/admin/access/app-roles/{roleId}/permissions`
@@ -784,7 +810,7 @@ null
 
 成功响应 `data`：带 `checked` 字段的 App 权限树。
 
-## 27. 更新 App 角色权限配置
+## 28. 更新 App 角色权限配置
 
 - 方法：`PUT`
 - 路径：`/api/admin/access/app-roles/{roleId}/permissions`

@@ -1,17 +1,18 @@
 use db_core::{
-    DbContext, OrderBy, PaginatedResponse, PaginationParams, Repository, error::BizResult,
+    DbContext, OrderBy, PaginatedResponse, PaginationParams, Repository,
+    error::{BizResult, Error},
 };
 use sea_orm::{
     ActiveValue::{Set, Unchanged},
-    ColumnTrait, Condition, QueryOrder,
+    ColumnTrait, Condition, PaginatorTrait, QueryFilter, QueryOrder,
 };
 use uuid::Uuid;
 
 use crate::{
     entity::app_users,
     table::app_users::dto::{
-        AppUser, AppUserFilter, AppUserSortBy, AppUserStatus, CreateAppUser, SortOrder,
-        UpdateAppUser,
+        AppUser, AppUserFilter, AppUserMetrics, AppUserSortBy, AppUserStatus, CreateAppUser,
+        SortOrder, UpdateAppUser,
     },
 };
 
@@ -49,6 +50,35 @@ impl AppUserService {
             .into_iter()
             .map(Self::from_model)
             .collect()
+    }
+
+    pub async fn metrics(&self) -> BizResult<AppUserMetrics> {
+        let total = self
+            .repo
+            .query()
+            .count(self.repo.db())
+            .await
+            .map_err(Error::from)?;
+        let enabled = self
+            .repo
+            .query()
+            .filter(app_users::Column::Status.eq(AppUserStatus::Enabled.as_str()))
+            .count(self.repo.db())
+            .await
+            .map_err(Error::from)?;
+        let disabled = self
+            .repo
+            .query()
+            .filter(app_users::Column::Status.eq(AppUserStatus::Disabled.as_str()))
+            .count(self.repo.db())
+            .await
+            .map_err(Error::from)?;
+
+        Ok(AppUserMetrics {
+            total,
+            enabled,
+            disabled,
+        })
     }
 
     pub async fn list_paginated(

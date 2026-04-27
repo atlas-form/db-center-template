@@ -89,6 +89,15 @@ pub struct AppUserResponse {
     pub roles: Vec<RoleResponse>,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppUserMetricsResponse {
+    pub total: u64,
+    pub enabled: u64,
+    pub disabled: u64,
+    pub multi_role: u64,
+}
+
 #[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateRoleRequest {

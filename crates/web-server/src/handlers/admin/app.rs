@@ -113,6 +113,25 @@ pub async fn list_app_users(
         .to_json())
 }
 
+pub async fn app_user_metrics(
+    Extension(auth_user): Extension<AuthUser>,
+) -> ResponseResult<AppUserMetricsResponse> {
+    let api = AppApi::new(get_app_ctx());
+    let metrics = api
+        .app_user_metrics(auth_user.user_id)
+        .await
+        .map_err(from_biz_error)?;
+
+    Ok(AppUserMetricsResponse {
+        total: metrics.total,
+        enabled: metrics.enabled,
+        disabled: metrics.disabled,
+        multi_role: metrics.multi_role,
+    }
+    .into_common_response()
+    .to_json())
+}
+
 pub async fn update_app_user(
     Extension(auth_user): Extension<AuthUser>,
     Path(user_id): Path<String>,

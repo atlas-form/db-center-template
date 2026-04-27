@@ -5,8 +5,8 @@ use axum::{
 
 use crate::handlers::admin::{
     app::{
-        delete_app_user, list_app_users, list_user_roles as list_app_user_roles, update_app_user,
-        update_user_roles as update_app_user_roles,
+        app_user_metrics, delete_app_user, list_app_users, list_user_roles as list_app_user_roles,
+        update_app_user, update_user_roles as update_app_user_roles,
     },
     create_admin_user, delete_admin_user, list_admin_users,
     list_user_roles as list_admin_user_roles, update_admin_user,
@@ -28,6 +28,7 @@ pub fn account_routes() -> Router {
             get(list_admin_user_roles).put(update_admin_user_roles),
         )
         .route("/app-users", get(list_app_users))
+        .route("/app-users/metrics", get(app_user_metrics))
         .route(
             "/app-users/{user_id}",
             patch(update_app_user).delete(delete_app_user),

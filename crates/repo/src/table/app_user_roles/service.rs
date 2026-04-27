@@ -1,5 +1,12 @@
-use db_core::{DbContext, Repository, error::BizResult};
-use sea_orm::{ActiveValue::Set, ColumnTrait, QueryFilter, sea_query::IntoCondition};
+use db_core::{
+    DbContext, Repository,
+    error::{BizResult, Error},
+};
+use sea_orm::{
+    ActiveValue::Set,
+    ColumnTrait, QueryFilter, QuerySelect,
+    sea_query::{ExprTrait, IntoCondition},
+};
 use uuid::Uuid;
 
 use crate::{
@@ -62,6 +69,22 @@ impl UserRoleService {
             .into_iter()
             .map(Self::from_model)
             .collect())
+    }
+
+    pub async fn count_multi_role_users(&self) -> BizResult<u64> {
+        let user_ids = self
+            .repo
+            .query()
+            .select_only()
+            .column(app_user_roles::Column::UserId)
+            .group_by(app_user_roles::Column::UserId)
+            .having(app_user_roles::Column::RoleId.count().gt(1))
+            .into_tuple::<Uuid>()
+            .all(self.repo.db())
+            .await
+            .map_err(Error::from)?;
+
+        Ok(user_ids.len() as u64)
     }
 
     pub async fn exists(&self, user_id: Uuid, role_id: i64) -> BizResult<bool> {

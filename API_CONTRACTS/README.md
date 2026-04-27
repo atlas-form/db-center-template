@@ -38,16 +38,17 @@
 15. `GET /api/admin/me/permissions`
 16. `GET /api/admin/me/menus`
 17. `GET /api/admin/account/app-users`
-18. `PATCH /api/admin/account/app-users/{userId}`
-19. `DELETE /api/admin/account/app-users/{userId}`
-20. `GET /api/admin/account/app-users/{userId}/roles`
-21. `PUT /api/admin/account/app-users/{userId}/roles`
-22. `POST /api/admin/access/app-roles`
-23. `GET /api/admin/access/app-roles`
-24. `DELETE /api/admin/access/app-roles/{roleId}`
-25. `GET /api/admin/access/app-permissions`
-26. `GET /api/admin/access/app-roles/{roleId}/permissions`
-27. `PUT /api/admin/access/app-roles/{roleId}/permissions`
+18. `GET /api/admin/account/app-users/metrics`
+19. `PATCH /api/admin/account/app-users/{userId}`
+20. `DELETE /api/admin/account/app-users/{userId}`
+21. `GET /api/admin/account/app-users/{userId}/roles`
+22. `PUT /api/admin/account/app-users/{userId}/roles`
+23. `POST /api/admin/access/app-roles`
+24. `GET /api/admin/access/app-roles`
+25. `DELETE /api/admin/access/app-roles/{roleId}`
+26. `GET /api/admin/access/app-permissions`
+27. `GET /api/admin/access/app-roles/{roleId}/permissions`
+28. `PUT /api/admin/access/app-roles/{roleId}/permissions`
 
 ### App
 
