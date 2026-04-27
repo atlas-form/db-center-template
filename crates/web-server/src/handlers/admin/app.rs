@@ -1,12 +1,13 @@
-use axum::{Extension, Json, extract::Path};
-use db_core::error::BizError;
-use error_code::admin as admin_error;
+use axum::{
+    Extension, Json,
+    extract::{Path, Query},
+};
+use db_core::{PaginatedResponse, PaginationParams};
 use service::api::app::AppApi;
 use toolcraft_axum_kit::{IntoCommonResponse, ResponseResult, middleware::auth_mw::AuthUser};
 use validator::Validate;
 
 use crate::{
-    clients::auth_client,
     dto::app::*,
     error::{Error, from_biz_error},
     statics::db_manager::get_app_ctx,
@@ -66,55 +67,18 @@ fn map_role_permission_tree(
     }
 }
 
-pub async fn create_app_user(
-    Extension(auth_user): Extension<AuthUser>,
-    Json(req): Json<CreateAppUserRequest>,
-) -> ResponseResult<AppUserResponse> {
-    req.validate().map_err(Error::from)?;
-    let target_user = auth_client::get_user_by_identifier(&req.identifier)
-        .await?
-        .ok_or_else(|| {
-            from_biz_error(BizError::new(
-                admin_error::ADMIN_AUTH_USER_NOT_FOUND,
-                format!("auth user not found: {}", req.identifier),
-            ))
-        })?;
-    let api = AppApi::new(get_app_ctx());
-    let app_user = api
-        .create_app_user(
-            auth_user.user_id,
-            service::dto::app::CreateAppUserRequest {
-                user_id: target_user.id,
-                display_id: target_user
-                    .display_user_id
-                    .unwrap_or_else(|| target_user.username.clone()),
-                display_name: target_user
-                    .display_name
-                    .unwrap_or_else(|| target_user.username.clone()),
-                remark: req.remark,
-            },
-        )
-        .await
-        .map_err(from_biz_error)?;
-
-    Ok(map_app_user_response(app_user)
-        .into_common_response()
-        .to_json())
-}
-
 pub async fn list_app_users(
     Extension(auth_user): Extension<AuthUser>,
-) -> ResponseResult<Vec<AppUserResponse>> {
+    Query(pagination): Query<PaginationParams>,
+) -> ResponseResult<PaginatedResponse<AppUserResponse>> {
     let api = AppApi::new(get_app_ctx());
     let app_users = api
-        .list_app_users(auth_user.user_id)
+        .list_app_users(auth_user.user_id, pagination)
         .await
         .map_err(from_biz_error)?;
 
     Ok(app_users
-        .into_iter()
         .map(map_app_user_response)
-        .collect::<Vec<_>>()
         .into_common_response()
         .to_json())
 }

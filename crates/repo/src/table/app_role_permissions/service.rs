@@ -27,6 +27,7 @@ impl RolePermissionService {
         let model = app_role_permissions::ActiveModel {
             role_id: Set(input.role_id),
             permission_id: Set(input.permission_id),
+            ..Default::default()
         };
 
         Ok(Self::from_model(self.repo.insert(model).await?))

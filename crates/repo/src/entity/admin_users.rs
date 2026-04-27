@@ -13,6 +13,8 @@ pub struct Model {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: String,
+    pub created_at: TimeDateTimeWithTimeZone,
+    pub updated_at: TimeDateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

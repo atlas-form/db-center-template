@@ -28,6 +28,7 @@ impl UserRoleService {
         let model = admin_user_roles::ActiveModel {
             user_id: Set(input.user_id),
             role_id: Set(input.role_id),
+            ..Default::default()
         };
 
         Ok(Self::from_model(self.repo.insert(model).await?))

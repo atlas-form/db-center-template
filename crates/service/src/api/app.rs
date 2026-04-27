@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use db_core::{
-    DbContext,
+    DbContext, PaginatedResponse, PaginationParams,
     error::{BIZ_INTERNAL_ERROR, BizError, BizResult},
 };
 use error_code::admin as admin_error;
@@ -10,16 +10,16 @@ use repo::table::{
     app_role_permissions::{CreateRolePermission, RolePermissionService},
     app_roles::{CreateRole, Role, RoleService},
     app_user_roles::{CreateUserRole, UserRoleService},
-    app_users::{AppUser, AppUserService, AppUserStatus, CreateAppUser, UpdateAppUser},
+    app_users::{AppUser, AppUserService, AppUserStatus, UpdateAppUser},
 };
 use uuid::Uuid;
 
 use crate::{
     api::admin::AdminApi,
     dto::app::{
-        AppUserResponse, CreateAppUserRequest, CreateRoleRequest, CurrentUserPermissionsResponse,
-        PermissionTreeNode, RolePermissionTreeNode, RoleResponse, UpdateAppUserRequest,
-        UpdateRolePermissionsRequest, UpdateUserRolesRequest, UserRoleOptionResponse,
+        AppUserResponse, CreateRoleRequest, CurrentUserPermissionsResponse, PermissionTreeNode,
+        RolePermissionTreeNode, RoleResponse, UpdateAppUserRequest, UpdateRolePermissionsRequest,
+        UpdateUserRolesRequest, UserRoleOptionResponse,
     },
 };
 
@@ -48,36 +48,16 @@ impl AppApi {
         }
     }
 
-    pub async fn create_app_user(
-        &self,
-        current_admin_user_id: String,
-        req: CreateAppUserRequest,
-    ) -> BizResult<AppUserResponse> {
-        self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
-            .await?;
-        let user_id = parse_user_id(&req.user_id)?;
-        let app_user = self
-            .app_user_svc
-            .create(CreateAppUser {
-                user_id,
-                display_id: req.display_id,
-                display_name: req.display_name,
-                remark: req.remark,
-                status: AppUserStatus::Enabled,
-            })
-            .await?;
-
-        Ok(Self::map_app_user(app_user, Vec::new()))
-    }
-
     pub async fn list_app_users(
         &self,
         current_admin_user_id: String,
-    ) -> BizResult<Vec<AppUserResponse>> {
+        pagination: PaginationParams,
+    ) -> BizResult<PaginatedResponse<AppUserResponse>> {
         self.ensure_admin_permission(current_admin_user_id, PERM_APP_USERS)
             .await?;
-        let app_users = self.app_user_svc.list_all().await?;
+        let app_users = self.app_user_svc.list_paginated(pagination).await?;
         let user_ids = app_users
+            .items
             .iter()
             .map(|user| user.user_id)
             .collect::<Vec<_>>();
@@ -106,15 +86,12 @@ impl AppApi {
             }
         }
 
-        Ok(app_users
-            .into_iter()
-            .map(|app_user| {
-                let roles = roles_by_user_id
-                    .remove(&app_user.user_id)
-                    .unwrap_or_default();
-                Self::map_app_user(app_user, roles)
-            })
-            .collect())
+        Ok(app_users.map(|app_user| {
+            let roles = roles_by_user_id
+                .remove(&app_user.user_id)
+                .unwrap_or_default();
+            Self::map_app_user(app_user, roles)
+        }))
     }
 
     pub async fn update_app_user(

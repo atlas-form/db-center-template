@@ -1,4 +1,4 @@
-use db_core::{DbContext, Repository, error::BizResult};
+use db_core::{DbContext, PaginatedResponse, PaginationParams, Repository, error::BizResult};
 use sea_orm::{
     ActiveValue::{Set, Unchanged},
     QueryOrder,
@@ -30,6 +30,7 @@ impl AppUserService {
             display_name: Set(input.display_name),
             remark: Set(input.remark),
             status: Set(input.status.as_str().to_owned()),
+            ..Default::default()
         };
 
         Self::from_model(self.repo.insert(model).await?)
@@ -43,6 +44,37 @@ impl AppUserService {
             .into_iter()
             .map(Self::from_model)
             .collect()
+    }
+
+    pub async fn list_paginated(
+        &self,
+        pagination: PaginationParams,
+    ) -> BizResult<PaginatedResponse<AppUser>> {
+        let page = pagination.validate();
+        let response = self
+            .repo
+            .find_paginated(
+                None,
+                &page,
+                Some(&db_core::OrderBy::asc(app_users::Column::UserId)),
+            )
+            .await?;
+
+        let items = response
+            .items
+            .into_iter()
+            .map(Self::from_model)
+            .collect::<BizResult<Vec<_>>>()?;
+
+        Ok(PaginatedResponse {
+            items,
+            page: response.page,
+            page_size: response.page_size,
+            total: response.total,
+            total_pages: response.total_pages,
+            has_next: response.has_next,
+            has_prev: response.has_prev,
+        })
     }
 
     pub async fn get_by_user_id(&self, user_id: Uuid) -> BizResult<Option<AppUser>> {

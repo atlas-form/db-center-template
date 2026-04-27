@@ -37,18 +37,17 @@
 14. `PUT /api/admin/account/admin-users/{user_id}/roles`
 15. `GET /api/admin/me/permissions`
 16. `GET /api/admin/me/menus`
-17. `POST /api/admin/account/app-users`
-18. `GET /api/admin/account/app-users`
-19. `PATCH /api/admin/account/app-users/{user_id}`
-20. `DELETE /api/admin/account/app-users/{user_id}`
-21. `GET /api/admin/account/app-users/{user_id}/roles`
-22. `PUT /api/admin/account/app-users/{user_id}/roles`
-23. `POST /api/admin/access/app-roles`
-24. `GET /api/admin/access/app-roles`
-25. `DELETE /api/admin/access/app-roles/{role_id}`
-26. `GET /api/admin/access/app-permissions`
-27. `GET /api/admin/access/app-roles/{role_id}/permissions`
-28. `PUT /api/admin/access/app-roles/{role_id}/permissions`
+17. `GET /api/admin/account/app-users`
+18. `PATCH /api/admin/account/app-users/{user_id}`
+19. `DELETE /api/admin/account/app-users/{user_id}`
+20. `GET /api/admin/account/app-users/{user_id}/roles`
+21. `PUT /api/admin/account/app-users/{user_id}/roles`
+22. `POST /api/admin/access/app-roles`
+23. `GET /api/admin/access/app-roles`
+24. `DELETE /api/admin/access/app-roles/{role_id}`
+25. `GET /api/admin/access/app-permissions`
+26. `GET /api/admin/access/app-roles/{role_id}/permissions`
+27. `PUT /api/admin/access/app-roles/{role_id}/permissions`
 
 ### App
 

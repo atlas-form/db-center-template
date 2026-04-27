@@ -11,6 +11,8 @@ pub struct Model {
     pub name: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
+    pub created_at: TimeDateTimeWithTimeZone,
+    pub updated_at: TimeDateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -569,43 +569,47 @@ null
 - 如果当前用户拥有 `root` 角色，返回全部菜单树
 - 非 `root` 用户只返回有权限命中的菜单，以及这些菜单的祖先节点
 
-## 17. 创建 App 用户
-
-- 方法：`POST`
-- 路径：`/api/admin/account/app-users`
-- 权限：`accounts:app_users`
-
-请求体：
-
-```json
-{
-  "identifier": "zhangsan",
-  "remark": "测试 App 用户"
-}
-```
-
-成功响应 `data`：
-
-```json
-{
-  "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
-  "display_id": "zhangsan",
-  "display_name": "张三",
-  "remark": "测试 App 用户",
-  "status": "enabled",
-  "roles": []
-}
-```
-
-## 18. 查询 App 用户列表
+## 17. 查询 App 用户列表
 
 - 方法：`GET`
 - 路径：`/api/admin/account/app-users`
 - 权限：`accounts:app_users`
 
-成功响应 `data`：`AppUserResponse[]`。
+查询参数：
 
-## 19. 更新 App 用户
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `page` | `integer` | 否 | `1` | 页码，从 1 开始 |
+| `page_size` | `integer` | 否 | `20` | 每页数量，最大 `100` |
+
+成功响应 `data`：
+
+```json
+{
+  "items": [
+    {
+      "user_id": "1b1f4e1d-5b4f-4d25-ae07-520f587f8d13",
+      "display_id": "zhangsan",
+      "display_name": "张三",
+      "remark": "测试 App 用户",
+      "status": "enabled",
+      "roles": []
+    }
+  ],
+  "page": 1,
+  "page_size": 20,
+  "total": 1,
+  "total_pages": 1,
+  "has_next": false,
+  "has_prev": false
+}
+```
+
+补充说明：
+
+- App 用户只能通过普通客户端注册流程产生，后台不提供新增 App 用户接口
+
+## 18. 更新 App 用户
 
 - 方法：`PATCH`
 - 路径：`/api/admin/account/app-users/{user_id}`
@@ -622,7 +626,7 @@ null
 
 成功响应 `data`：`AppUserResponse`。
 
-## 20. 删除 App 用户
+## 19. 删除 App 用户
 
 - 方法：`DELETE`
 - 路径：`/api/admin/account/app-users/{user_id}`
@@ -634,7 +638,7 @@ null
 null
 ```
 
-## 21. 查询 App 用户角色配置
+## 20. 查询 App 用户角色配置
 
 - 方法：`GET`
 - 路径：`/api/admin/account/app-users/{user_id}/roles`
@@ -653,7 +657,7 @@ null
 ]
 ```
 
-## 22. 更新 App 用户角色配置
+## 21. 更新 App 用户角色配置
 
 - 方法：`PUT`
 - 路径：`/api/admin/account/app-users/{user_id}/roles`
@@ -669,7 +673,7 @@ null
 
 成功响应 `data`：同“查询 App 用户角色配置”。
 
-## 23. 创建 App 角色
+## 22. 创建 App 角色
 
 - 方法：`POST`
 - 路径：`/api/admin/access/app-roles`
@@ -694,7 +698,7 @@ null
 }
 ```
 
-## 24. 查询 App 角色列表
+## 23. 查询 App 角色列表
 
 - 方法：`GET`
 - 路径：`/api/admin/access/app-roles`
@@ -702,7 +706,7 @@ null
 
 成功响应 `data`：`RoleResponse[]`。
 
-## 25. 删除 App 角色
+## 24. 删除 App 角色
 
 - 方法：`DELETE`
 - 路径：`/api/admin/access/app-roles/{role_id}`
@@ -714,7 +718,7 @@ null
 null
 ```
 
-## 26. 查询 App 权限树
+## 25. 查询 App 权限树
 
 - 方法：`GET`
 - 路径：`/api/admin/access/app-permissions`
@@ -740,7 +744,7 @@ null
 ]
 ```
 
-## 27. 查询 App 角色权限配置
+## 26. 查询 App 角色权限配置
 
 - 方法：`GET`
 - 路径：`/api/admin/access/app-roles/{role_id}/permissions`
@@ -748,7 +752,7 @@ null
 
 成功响应 `data`：带 `checked` 字段的 App 权限树。
 
-## 28. 更新 App 角色权限配置
+## 27. 更新 App 角色权限配置
 
 - 方法：`PUT`
 - 路径：`/api/admin/access/app-roles/{role_id}/permissions`

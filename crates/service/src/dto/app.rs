@@ -2,14 +2,6 @@ pub use repo::table::{app_permissions::PermissionKind, app_users::AppUserStatus}
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct CreateAppUserRequest {
-    pub user_id: String,
-    pub display_id: String,
-    pub display_name: String,
-    pub remark: Option<String>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
 pub struct UpdateAppUserRequest {
     pub user_id: String,
     pub remark: Option<String>,

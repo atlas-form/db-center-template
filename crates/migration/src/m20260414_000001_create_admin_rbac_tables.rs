@@ -20,6 +20,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(AdminRoles::Name).string().not_null())
                     .col(ColumnDef::new(AdminRoles::Code).string().not_null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_admin_roles_code")
@@ -52,6 +54,8 @@ impl MigrationTrait for Migration {
                             .default(0),
                     )
                     .col(ColumnDef::new(AdminPermissions::Kind).string().not_null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_admin_permissions_code")
@@ -92,6 +96,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(AdminUsers::Remark).string_len(255).null())
                     .col(ColumnDef::new(AdminUsers::Status).string().not_null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_admin_users_display_id")
@@ -113,6 +119,7 @@ impl MigrationTrait for Migration {
                             .big_integer()
                             .not_null(),
                     )
+                    .col(created_at_col())
                     .primary_key(
                         Index::create()
                             .name("pk_admin_user_roles")
@@ -152,6 +159,7 @@ impl MigrationTrait for Migration {
                             .big_integer()
                             .not_null(),
                     )
+                    .col(created_at_col())
                     .primary_key(
                         Index::create()
                             .name("pk_admin_role_permissions")
@@ -194,6 +202,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(AdminMenus::Name).string().not_null())
                     .col(ColumnDef::new(AdminMenus::ParentId).big_integer().null())
                     .col(ColumnDef::new(AdminMenus::PermissionCode).string().null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_admin_menus_parent_id")
@@ -211,6 +221,17 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        create_updated_at_triggers(
+            manager,
+            &[
+                "admin_roles",
+                "admin_permissions",
+                "admin_users",
+                "admin_menus",
+            ],
+        )
+        .await?;
 
         Ok(())
     }
@@ -255,8 +276,72 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(AdminRoles::Table).cascade().to_owned())
             .await?;
 
+        manager
+            .get_connection()
+            .execute_unprepared("DROP FUNCTION IF EXISTS set_updated_at();")
+            .await?;
+
         Ok(())
     }
+}
+
+fn created_at_col() -> ColumnDef {
+    let mut col = ColumnDef::new(AuditColumns::CreatedAt);
+    col.timestamp_with_time_zone()
+        .not_null()
+        .default(Expr::current_timestamp());
+    col
+}
+
+fn updated_at_col() -> ColumnDef {
+    let mut col = ColumnDef::new(AuditColumns::UpdatedAt);
+    col.timestamp_with_time_zone()
+        .not_null()
+        .default(Expr::current_timestamp());
+    col
+}
+
+async fn create_updated_at_triggers(
+    manager: &SchemaManager<'_>,
+    table_names: &[&str],
+) -> Result<(), DbErr> {
+    manager
+        .get_connection()
+        .execute_unprepared(
+            r#"
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+"#,
+        )
+        .await?;
+
+    for table_name in table_names {
+        manager
+            .get_connection()
+            .execute_unprepared(&format!(
+                r#"
+DROP TRIGGER IF EXISTS trg_{table_name}_updated_at ON {table_name};
+CREATE TRIGGER trg_{table_name}_updated_at
+BEFORE UPDATE ON {table_name}
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+"#
+            ))
+            .await?;
+    }
+
+    Ok(())
+}
+
+#[derive(DeriveIden)]
+enum AuditColumns {
+    CreatedAt,
+    UpdatedAt,
 }
 
 #[derive(DeriveIden)]

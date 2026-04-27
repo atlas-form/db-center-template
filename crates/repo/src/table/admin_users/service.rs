@@ -30,6 +30,7 @@ impl AdminUserService {
             display_name: Set(input.display_name),
             remark: Set(input.remark),
             status: Set(input.status.as_str().to_owned()),
+            ..Default::default()
         };
 
         Self::from_model(self.repo.insert(model).await?)

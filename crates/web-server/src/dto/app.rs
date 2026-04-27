@@ -9,14 +9,6 @@ pub enum AppUserStatus {
 }
 
 #[derive(Debug, Deserialize, Validate)]
-pub struct CreateAppUserRequest {
-    #[validate(length(min = 1, max = 128))]
-    pub identifier: String,
-    #[validate(length(min = 1, max = 255))]
-    pub remark: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
 pub struct UpdateAppUserRequest {
     #[validate(length(min = 1, max = 255))]
     pub remark: Option<String>,

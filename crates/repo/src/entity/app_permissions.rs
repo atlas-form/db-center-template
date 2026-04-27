@@ -14,6 +14,8 @@ pub struct Model {
     pub parent_code: Option<String>,
     pub sort: i32,
     pub kind: String,
+    pub created_at: TimeDateTimeWithTimeZone,
+    pub updated_at: TimeDateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

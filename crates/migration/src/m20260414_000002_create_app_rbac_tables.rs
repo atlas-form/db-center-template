@@ -20,6 +20,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(AppRoles::Name).string().not_null())
                     .col(ColumnDef::new(AppRoles::Code).string().not_null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_app_roles_code")
@@ -52,6 +54,8 @@ impl MigrationTrait for Migration {
                             .default(0),
                     )
                     .col(ColumnDef::new(AppPermissions::Kind).string().not_null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_app_permissions_code")
@@ -92,6 +96,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(AppUsers::Remark).string_len(255).null())
                     .col(ColumnDef::new(AppUsers::Status).string().not_null())
+                    .col(created_at_col())
+                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_app_users_display_id")
@@ -113,6 +119,7 @@ impl MigrationTrait for Migration {
                             .big_integer()
                             .not_null(),
                     )
+                    .col(created_at_col())
                     .primary_key(
                         Index::create()
                             .name("pk_app_user_roles")
@@ -152,6 +159,7 @@ impl MigrationTrait for Migration {
                             .big_integer()
                             .not_null(),
                     )
+                    .col(created_at_col())
                     .primary_key(
                         Index::create()
                             .name("pk_app_role_permissions")
@@ -175,6 +183,8 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        create_updated_at_triggers(manager, &["app_roles", "app_permissions", "app_users"]).await?;
 
         Ok(())
     }
@@ -217,6 +227,65 @@ impl MigrationTrait for Migration {
 
         Ok(())
     }
+}
+
+fn created_at_col() -> ColumnDef {
+    let mut col = ColumnDef::new(AuditColumns::CreatedAt);
+    col.timestamp_with_time_zone()
+        .not_null()
+        .default(Expr::current_timestamp());
+    col
+}
+
+fn updated_at_col() -> ColumnDef {
+    let mut col = ColumnDef::new(AuditColumns::UpdatedAt);
+    col.timestamp_with_time_zone()
+        .not_null()
+        .default(Expr::current_timestamp());
+    col
+}
+
+async fn create_updated_at_triggers(
+    manager: &SchemaManager<'_>,
+    table_names: &[&str],
+) -> Result<(), DbErr> {
+    manager
+        .get_connection()
+        .execute_unprepared(
+            r#"
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+"#,
+        )
+        .await?;
+
+    for table_name in table_names {
+        manager
+            .get_connection()
+            .execute_unprepared(&format!(
+                r#"
+DROP TRIGGER IF EXISTS trg_{table_name}_updated_at ON {table_name};
+CREATE TRIGGER trg_{table_name}_updated_at
+BEFORE UPDATE ON {table_name}
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+"#
+            ))
+            .await?;
+    }
+
+    Ok(())
+}
+
+#[derive(DeriveIden)]
+enum AuditColumns {
+    CreatedAt,
+    UpdatedAt,
 }
 
 #[derive(DeriveIden)]
