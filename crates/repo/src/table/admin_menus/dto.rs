@@ -7,7 +7,9 @@ pub struct Menu {
     pub name: String,
     pub parent_id: Option<i64>,
     pub permission_code: Option<String>,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
 }
 

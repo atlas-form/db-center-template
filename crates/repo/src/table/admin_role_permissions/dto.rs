@@ -5,6 +5,7 @@ use time::OffsetDateTime;
 pub struct RolePermission {
     pub role_id: i64,
     pub permission_id: i64,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
 }
 

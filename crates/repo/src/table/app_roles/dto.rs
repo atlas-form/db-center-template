@@ -6,7 +6,9 @@ pub struct Role {
     pub id: i64,
     pub name: String,
     pub code: String,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
 }
 

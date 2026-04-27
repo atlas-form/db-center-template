@@ -49,7 +49,9 @@ pub struct AppUser {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AppUserStatus,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
 }
 

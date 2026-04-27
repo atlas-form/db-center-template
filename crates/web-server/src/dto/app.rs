@@ -53,7 +53,9 @@ pub struct AppUserResponse {
     pub display_name: String,
     pub remark: Option<String>,
     pub status: AppUserStatus,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
     pub roles: Vec<RoleResponse>,
 }
@@ -73,7 +75,9 @@ pub struct RoleResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
 }
 
@@ -95,7 +99,9 @@ pub struct UserRoleOptionResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
     pub checked: bool,
 }
@@ -106,7 +112,9 @@ pub struct PermissionTreeNode {
     pub id: i64,
     pub name: String,
     pub kind: PermissionKind,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
     pub children: Vec<PermissionTreeNode>,
 }
@@ -117,7 +125,9 @@ pub struct RolePermissionTreeNode {
     pub id: i64,
     pub name: String,
     pub kind: PermissionKind,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
     pub checked: bool,
     pub children: Vec<RolePermissionTreeNode>,

@@ -49,7 +49,9 @@ pub struct Permission {
     pub parent_code: Option<String>,
     pub sort: i32,
     pub kind: PermissionKind,
+    #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub updated_at: OffsetDateTime,
 }
 
