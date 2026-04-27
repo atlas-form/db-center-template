@@ -95,6 +95,14 @@ pub async fn list_app_users(
                 created_at_to: query.created_at_to,
                 updated_at_from: query.updated_at_from,
                 updated_at_to: query.updated_at_to,
+                sort_by: query.sort_by.map(|sort_by| match sort_by {
+                    AppUserSortBy::CreatedAt => service::dto::app::AppUserSortBy::CreatedAt,
+                    AppUserSortBy::UpdatedAt => service::dto::app::AppUserSortBy::UpdatedAt,
+                }),
+                sort_order: query.sort_order.map(|sort_order| match sort_order {
+                    SortOrder::Asc => service::dto::app::SortOrder::Asc,
+                    SortOrder::Desc => service::dto::app::SortOrder::Desc,
+                }),
             },
         )
         .await

@@ -1,4 +1,6 @@
-use db_core::{DbContext, PaginatedResponse, PaginationParams, Repository, error::BizResult};
+use db_core::{
+    DbContext, OrderBy, PaginatedResponse, PaginationParams, Repository, error::BizResult,
+};
 use sea_orm::{
     ActiveValue::{Set, Unchanged},
     ColumnTrait, Condition, QueryOrder,
@@ -7,7 +9,10 @@ use uuid::Uuid;
 
 use crate::{
     entity::app_users,
-    table::app_users::dto::{AppUser, AppUserFilter, AppUserStatus, CreateAppUser, UpdateAppUser},
+    table::app_users::dto::{
+        AppUser, AppUserFilter, AppUserSortBy, AppUserStatus, CreateAppUser, SortOrder,
+        UpdateAppUser,
+    },
 };
 
 db_core::impl_repository!(AppUserRepo, app_users::Entity, app_users::Model);
@@ -52,14 +57,11 @@ impl AppUserService {
         pagination: PaginationParams,
     ) -> BizResult<PaginatedResponse<AppUser>> {
         let page = pagination.validate();
+        let order_by = Self::build_order_by(&filter);
         let filter = Self::build_filter(filter);
         let response = self
             .repo
-            .find_paginated(
-                filter,
-                &page,
-                Some(&db_core::OrderBy::asc(app_users::Column::UserId)),
-            )
+            .find_paginated(filter, &page, Some(&order_by))
             .await?;
 
         let items = response
@@ -158,5 +160,22 @@ impl AppUserService {
         }
 
         has_filter.then_some(condition)
+    }
+
+    fn build_order_by(filter: &AppUserFilter) -> OrderBy<app_users::Entity> {
+        let Some(sort_by) = filter.sort_by else {
+            return OrderBy::desc(app_users::Column::UpdatedAt);
+        };
+
+        let column = match sort_by {
+            AppUserSortBy::CreatedAt => app_users::Column::CreatedAt,
+            AppUserSortBy::UpdatedAt => app_users::Column::UpdatedAt,
+        };
+
+        match filter.sort_order {
+            Some(SortOrder::Desc) => OrderBy::desc(column),
+            Some(SortOrder::Asc) => OrderBy::asc(column),
+            None => OrderBy::desc(column),
+        }
     }
 }

@@ -64,6 +64,20 @@ pub struct AppUserFilter {
     pub created_at_to: Option<OffsetDateTime>,
     pub updated_at_from: Option<OffsetDateTime>,
     pub updated_at_to: Option<OffsetDateTime>,
+    pub sort_by: Option<AppUserSortBy>,
+    pub sort_order: Option<SortOrder>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum AppUserSortBy {
+    CreatedAt,
+    UpdatedAt,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SortOrder {
+    Asc,
+    Desc,
 }
 
 #[derive(Debug, Clone, Deserialize)]

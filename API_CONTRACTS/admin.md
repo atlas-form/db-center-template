@@ -582,11 +582,13 @@ null
 | `createdAtTo`   | `string(datetime)` | 否   | -      | 创建时间终点，RFC3339                                                                  |
 | `updatedAtFrom` | `string(datetime)` | 否   | -      | 更新时间起点，RFC3339                                                                  |
 | `updatedAtTo`   | `string(datetime)` | 否   | -      | 更新时间终点，RFC3339                                                                  |
+| `sortBy`        | `string`           | 否   | -      | 排序字段：`createdAt` / `updatedAt`；不传时默认按 `updatedAt` 排序                      |
+| `sortOrder`     | `string`           | 否   | -      | 排序方向：`asc` / `desc`；不传时默认 `desc`                                             |
 
 示例：
 
 ```http
-GET /api/admin/account/app-users?page=1&pageSize=20&keyword=App%20User&status=enabled&createdAtFrom=2026-04-27T00:00:00Z
+GET /api/admin/account/app-users?page=1&pageSize=20&keyword=App%20User&status=enabled&createdAtFrom=2026-04-27T00:00:00Z&sortBy=createdAt&sortOrder=desc
 ```
 
 服务端查询语义：
@@ -604,6 +606,8 @@ WHERE
   AND created_at <= :created_at_to
   AND updated_at >= :updated_at_from
   AND updated_at <= :updated_at_to
+ORDER BY updated_at DESC
+-- 或按参数指定：created_at|updated_at ASC|DESC
 ```
 
 成功响应 `data`：

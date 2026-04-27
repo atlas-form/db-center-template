@@ -20,10 +20,10 @@ use uuid::Uuid;
 use crate::{
     api::admin::AdminApi,
     dto::app::{
-        AppUserResponse, CreateRoleRequest, CurrentUserPermissionsResponse, ListAppUsersRequest,
-        PermissionTreeNode, RegisterAppUserRequest, RolePermissionTreeNode, RoleResponse,
-        UpdateAppUserRequest, UpdateRolePermissionsRequest, UpdateUserRolesRequest,
-        UserRoleOptionResponse,
+        AppUserResponse, AppUserSortBy, CreateRoleRequest, CurrentUserPermissionsResponse,
+        ListAppUsersRequest, PermissionTreeNode, RegisterAppUserRequest, RolePermissionTreeNode,
+        RoleResponse, SortOrder, UpdateAppUserRequest, UpdateRolePermissionsRequest,
+        UpdateUserRolesRequest, UserRoleOptionResponse,
     },
 };
 
@@ -113,6 +113,18 @@ impl AppApi {
                     created_at_to: parse_optional_rfc3339(req.created_at_to)?,
                     updated_at_from: parse_optional_rfc3339(req.updated_at_from)?,
                     updated_at_to: parse_optional_rfc3339(req.updated_at_to)?,
+                    sort_by: req.sort_by.map(|sort_by| match sort_by {
+                        AppUserSortBy::CreatedAt => {
+                            repo::table::app_users::AppUserSortBy::CreatedAt
+                        }
+                        AppUserSortBy::UpdatedAt => {
+                            repo::table::app_users::AppUserSortBy::UpdatedAt
+                        }
+                    }),
+                    sort_order: req.sort_order.map(|sort_order| match sort_order {
+                        SortOrder::Asc => repo::table::app_users::SortOrder::Asc,
+                        SortOrder::Desc => repo::table::app_users::SortOrder::Desc,
+                    }),
                 },
                 req.pagination,
             )

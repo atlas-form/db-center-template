@@ -13,6 +13,22 @@ pub struct ListAppUsersRequest {
     pub created_at_to: Option<String>,
     pub updated_at_from: Option<String>,
     pub updated_at_to: Option<String>,
+    pub sort_by: Option<AppUserSortBy>,
+    pub sort_order: Option<SortOrder>,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AppUserSortBy {
+    CreatedAt,
+    UpdatedAt,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SortOrder {
+    Asc,
+    Desc,
 }
 
 #[derive(Debug, Clone, Deserialize)]
