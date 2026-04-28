@@ -70,6 +70,53 @@ upsert_menu() {
   fi
 }
 
+upsert_role() {
+  local code="$1"
+  local name="$2"
+
+  run_psql "$DB_NAME" "
+    INSERT INTO admin_roles (code, name)
+    VALUES ('${code}', '${name}')
+    ON CONFLICT (code) DO UPDATE
+    SET name = EXCLUDED.name;
+  " >/dev/null
+}
+
+grant_role_permissions() {
+  local role_code="$1"
+  shift
+
+  local permission_values=""
+  local permission_code
+  for permission_code in "$@"; do
+    if [ -n "$permission_values" ]; then
+      permission_values="${permission_values},"
+    fi
+    permission_values="${permission_values}('${permission_code}')"
+  done
+
+  run_psql "$DB_NAME" "
+    WITH role_row AS (
+      SELECT id
+      FROM admin_roles
+      WHERE code = '${role_code}'
+    ),
+    permission_rows AS (
+      SELECT id
+      FROM admin_permissions
+      WHERE code IN (
+        SELECT code
+        FROM (VALUES ${permission_values}) AS permission_codes(code)
+      )
+    )
+    INSERT INTO admin_role_permissions (role_id, permission_id)
+    SELECT role_row.id, permission_rows.id
+    FROM role_row
+    CROSS JOIN permission_rows
+    ON CONFLICT (role_id, permission_id) DO NOTHING;
+  " >/dev/null
+}
+
 echo "初始化基础权限节点..."
 
 run_psql "$DB_NAME" "
@@ -101,6 +148,28 @@ upsert_menu "Roles" "access_control:roles" "access_control" "access_control:role
 upsert_menu "Role Permissions" "access_control:role_permissions" "access_control" "access_control:role_permissions" "320"
 upsert_menu "App Roles" "access_control:app_roles" "access_control" "access_control:app_roles" "330"
 upsert_menu "App Role Permissions" "access_control:app_role_permissions" "access_control" "access_control:app_role_permissions" "340"
+
+echo "初始化后台基础角色..."
+
+upsert_role "admin" "超级管理员"
+upsert_role "support" "客服"
+
+grant_role_permissions "admin" \
+  "dashboard" \
+  "accounts" \
+  "accounts:admin_users" \
+  "accounts:app_users" \
+  "access_control" \
+  "access_control:roles" \
+  "access_control:role_permissions" \
+  "access_control:app_roles" \
+  "access_control:app_role_permissions"
+
+grant_role_permissions "support" \
+  "dashboard" \
+  "accounts:app_users" \
+  "access_control:app_roles" \
+  "access_control:app_role_permissions"
 
 PERMISSION_COUNT="$(
   run_psql "$DB_NAME" "
@@ -138,6 +207,25 @@ MENU_COUNT="$(
   " | tr -d '[:space:]'
 )"
 
+ROLE_COUNT="$(
+  run_psql "$DB_NAME" "
+    SELECT COUNT(*)
+    FROM admin_roles
+    WHERE code IN ('admin', 'support');
+  " | tr -d '[:space:]'
+)"
+
+ROLE_PERMISSION_COUNT="$(
+  run_psql "$DB_NAME" "
+    SELECT COUNT(*)
+    FROM admin_role_permissions rp
+    JOIN admin_roles r ON r.id = rp.role_id
+    WHERE r.code IN ('admin', 'support');
+  " | tr -d '[:space:]'
+)"
+
 echo "基础权限初始化完成"
 echo "admin_permissions: ${PERMISSION_COUNT}"
 echo "admin_menus: ${MENU_COUNT}"
+echo "admin_roles: ${ROLE_COUNT}"
+echo "admin_role_permissions: ${ROLE_PERMISSION_COUNT}"
