@@ -35,6 +35,40 @@ header = "x-internal-token"
 token = "dev-internal-token-change-me"
 ```
 
+## 1.1 LLM 配置
+
+项目通过 `model-gateway-rs` 接入 OpenAI-compatible Chat Completions 服务。服务启动时会读取 `config/services.toml` 中的多个 `[[llm]]` 配置，并初始化到 `crates/web-server/src/statics/llm_client.rs`。
+
+配置样例：
+
+```toml
+[[llm]]
+name = "ollama-gemma4"
+base_url = "http://127.0.0.1:11434"
+model = "gemma4:26b"
+max_tokens = 20000
+temperature = 0.2
+```
+
+字段说明：
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `name` | 是 | LLM client 名称，必须唯一 |
+| `base_url` | 是 | OpenAI-compatible 服务地址；可以是根地址，也可以是带 `/v1` 的 API base |
+| `model` | 是 | 模型名 |
+| `api_key` | 否 | 远程 provider 需要鉴权时使用 |
+| `max_tokens` | 否 | 默认输出 token 上限 |
+| `temperature` | 否 | 默认温度 |
+| `reasoning_effort` | 否 | 支持 reasoning effort 的 provider 使用 |
+| `chat_completions_endpoint` | 否 | 特殊 provider 覆盖 endpoint 时使用，普通情况不需要配置 |
+
+本地 Ollama 图片识别 smoke 测试：
+
+```bash
+cargo run -p web-server --example llm_vision_smoke
+```
+
 ## 2. 统一响应格式
 
 项目中的 handler 统一通过 `CommonResponse<T>` 返回成功结果，通过 `CommonError` 返回错误结果。

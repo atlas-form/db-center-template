@@ -13,6 +13,7 @@
 4. **强类型约束**：请求参数需通过 `validator` 和 `serde` 在进入 Handler 前完成校验。
 5. **统一认证来源**：如果接口需要登录态，请按 `AUTH_INTEGRATION_GUIDE.md` 集成 `auth` 服务，不要在当前业务服务内重复实现登录或 JWT 签发。
 6. **先确认接口设计**：如果“服务端开发文档”还没有被用户确认，不要直接开始写 Handler 和路由。
+7. **LLM client 统一入口**：如果接口需要调用大模型，只能通过 `statics::llm_client` 获取已初始化的 client，不要在 handler 中直接创建模型 client。
 
 ---
 
@@ -100,6 +101,23 @@ pub async fn my_handler(
 }
 ```
 
+如果接口需要 LLM 调用，应从静态 client 获取：
+
+```rust
+use model_gateway_rs::model::llm::{ChatMessage, LlmInput};
+use crate::statics::llm_client;
+
+let output = llm_client::chat_once(
+    Some("ollama-gemma4"),
+    LlmInput {
+        messages: vec![ChatMessage::user("hello")],
+    },
+)
+.await?;
+```
+
+LLM 配置和调用规则见 `AI_PROTOCOLS/LLM_CLIENT_GUIDE.md`。
+
 ### Step 3: 注册 Routes (`routes/xxx.rs`)
 
 在 `crates/web-server/src/routes/user_biz.rs` 中定义子路由结构。如果接口需要登录态，请给该子路由挂 `auth::<VerifyJwt>` 中间件：
@@ -167,3 +185,4 @@ pub mod user_biz;
 - [ ] `API_CONTRACTS/` 中对应的 Markdown 文档是否已经同步更新？
 - [ ] `routes/mod.rs` 中是否已经正确挂载实际路由前缀？
 - [ ] 数据结构的参数验证是否完整使用了 `validator` 标签？
+- [ ] 如果接口调用 LLM，是否通过 `statics::llm_client`，并同步更新了配置文档和验证命令？

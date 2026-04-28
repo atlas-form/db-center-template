@@ -36,6 +36,15 @@
 - 普通用户是否只能看自己创建的数据
 - 管理员是否能看全部数据
 
+是否涉及 AI/LLM：
+- 是 / 否
+
+如果涉及 AI/LLM：
+- 需要文本生成、图片识别，还是其它模型能力
+- 使用本地 Ollama 还是远程 OpenAI-compatible provider
+- 输入来自文本、图片 URL、base64 data URL，还是文件上传
+- 是否需要支持多个模型
+
 你希望系统提供的接口：
 1. <接口用途 1>
 2. <接口用途 2>
@@ -75,6 +84,9 @@
 - 普通用户只能访问自己创建的任务
 - 管理员可以访问全部任务
 
+是否涉及 AI/LLM：
+- 否
+
 你希望系统提供的接口：
 1. 创建任务
 2. 查询我的任务
@@ -97,6 +109,7 @@
 请先不要直接写代码。
 先阅读 AI_PROTOCOLS/AI_WORKFLOW.md 和 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
 如果需求涉及登录用户，请继续阅读 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
+如果需求涉及 AI/LLM、图片识别或模型调用，请继续阅读 AI_PROTOCOLS/LLM_CLIENT_GUIDE.md。
 
 然后根据我的需求，先输出一份“服务端开发文档”，等我确认后再开始开发。
 

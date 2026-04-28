@@ -53,6 +53,7 @@ AI 在真正开发前，必须先阅读：
 
 - `AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md`
 - 如果涉及登录用户：`AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md`
+- 如果涉及 AI/LLM：`AI_PROTOCOLS/LLM_CLIENT_GUIDE.md`
 
 然后先输出一份“服务端实现文档”，供用户确认。
 
@@ -68,6 +69,7 @@ AI 在真正开发前，必须先阅读：
 8. 哪些接口需要登录
 9. 哪些接口只能查询当前用户自己的数据
 10. 开发顺序
+11. 如果涉及 AI/LLM：模型配置名称、输入输出格式、失败处理和验证方式
 
 这一阶段 **禁止直接开始写代码**。
 
@@ -96,6 +98,7 @@ AI 输出文档后，用户需要先确认：
 - 已确认的服务端实现文档
 - `AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md`
 - 如果涉及登录用户：`AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md`
+- 如果涉及 AI/LLM：`AI_PROTOCOLS/LLM_CLIENT_GUIDE.md`
 
 推荐顺序：
 
@@ -117,6 +120,7 @@ AI 输出文档后，用户需要先确认：
 
 先阅读 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
 如果需求涉及登录用户，请继续阅读 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
+如果需求涉及 AI/LLM、图片识别或模型调用，请继续阅读 AI_PROTOCOLS/LLM_CLIENT_GUIDE.md。
 
 然后根据我的业务需求，先输出一份“服务端实现文档”，内容至少包括：
 1. 业务理解
@@ -126,7 +130,8 @@ AI 输出文档后，用户需要先确认：
 5. 哪些字段需要关联当前登录用户 user_id
 6. 需要提供的 HTTP 接口
 7. 每个接口的权限要求
-8. 开发顺序
+8. 如果涉及 AI/LLM：使用哪个 llm.name、输入输出格式、失败处理和验证方式
+9. 开发顺序
 
 不要开始写代码，先等我确认。
 ```
@@ -143,6 +148,7 @@ AI 输出文档后，用户需要先确认：
 请严格按照已经确认的服务端实现文档执行。
 同时遵守 AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md。
 如果涉及登录用户，同时遵守 AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md。
+如果涉及 AI/LLM，同时遵守 AI_PROTOCOLS/LLM_CLIENT_GUIDE.md。
 
 按以下顺序完成：
 1. migration
@@ -201,6 +207,20 @@ AI 输出文档后，用户需要先确认：
 - 按用户隔离
 - 创建人 / owner / created_by
 
+## 什么时候必须引入 LLM 协议
+
+只要需求里出现下面这些意思，就必须让 AI 同时阅读 `LLM_CLIENT_GUIDE.md`：
+
+- AI 生成
+- 大模型 / LLM
+- 图片识别
+- OCR 或视觉理解
+- OpenAI-compatible provider
+- Ollama
+- 多模型切换
+
+当前项目的 LLM client 统一配置在 `config/services.toml` 的 `[[llm]]`，并通过 `crates/web-server/src/statics/llm_client.rs` 获取。
+
 ---
 
 ## 与 AI 协作时的注意事项
@@ -219,3 +239,4 @@ AI 输出文档后，用户需要先确认：
 2. `user_docs/requirement_to_backend_doc.md`
 3. `AI_PROTOCOLS/TABLE_ADDING_PROTOCOL.md`
 4. `AI_PROTOCOLS/AUTH_INTEGRATION_GUIDE.md`
+5. `AI_PROTOCOLS/LLM_CLIENT_GUIDE.md`

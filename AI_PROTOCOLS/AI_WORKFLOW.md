@@ -33,6 +33,7 @@ AI 在这个项目里必须遵守下面的顺序：
 - PostgreSQL
 - `auth` 服务可达性
 - 配置文件是否可用
+- 如果需求涉及 AI/LLM，检查 `[[llm]]` 配置和模型服务是否可用
 
 如果出错，优先自己排查和修复，不要立即把问题丢给用户。
 
@@ -53,6 +54,7 @@ AI 需要先提炼出：
 - 权限边界
 - 是否需要登录
 - 数据是否按用户隔离
+- 是否需要 AI/LLM 调用、图片识别或多模型配置
 
 ### Step 2：输出“服务端开发文档”
 
@@ -67,7 +69,8 @@ AI 需要先提炼出：
 5. 权限设计
 6. HTTP 接口设计
 7. 与当前登录用户 `user_id` 的关系
-8. 开发顺序
+8. 如果涉及 AI/LLM：模型配置名称、输入输出格式、失败处理和验证方式
+9. 开发顺序
 
 ### Step 3：等待用户确认
 
@@ -100,7 +103,7 @@ AI 需要先提炼出：
 
 - `cargo check`
 - 启动服务
-- 验证 Swagger
+- 按 `API_CONTRACTS/` 验证关键接口
 - 进行必要的自测
 - 若失败，优先自行修复
 
@@ -126,9 +129,31 @@ AI 需要先提炼出：
 3. 不得改成整数
 4. 不得重复实现登录体系
 
+## 四、LLM 相关规则
+
+只要需求涉及：
+
+- AI 生成
+- LLM 调用
+- 图片识别
+- 多模型切换
+- OpenAI-compatible、Ollama 或其它模型服务
+
+则必须同时阅读：
+
+- `LLM_CLIENT_GUIDE.md`
+
+必须遵守：
+
+1. LLM client 统一通过 `crates/web-server/src/statics/llm_client.rs` 初始化和获取。
+2. 不允许在 handler 中临时创建 LLM client。
+3. 模型、base URL、API key 只能来自 `config/services.toml`。
+4. 服务端开发文档必须写清使用哪个 `llm.name`。
+5. 开发完成后优先运行 `cargo check --workspace --examples`，涉及图片识别时运行 `cargo run -p web-server --example llm_vision_smoke`。
+
 ---
 
-## 四、数据库相关规则
+## 五、数据库相关规则
 
 ### 1. migration 不等于 entity
 
@@ -157,14 +182,15 @@ make entity-generate
 
 ---
 
-## 五、必须阅读的文档顺序
+## 六、必须阅读的文档顺序
 
 推荐顺序：
 
 1. `AI_WORKFLOW.md`
 2. `TABLE_ADDING_PROTOCOL.md`
 3. 如果涉及登录用户：`AUTH_INTEGRATION_GUIDE.md`
-4. 分层协议：
+4. 如果涉及 AI/LLM：`LLM_CLIENT_GUIDE.md`
+5. 分层协议：
    - `MIGRATION_GUIDE.md`
    - `REPO_GUIDE.md`
    - `SERVICE_GUIDE.md`
@@ -172,6 +198,6 @@ make entity-generate
 
 ---
 
-## 六、一句话要求
+## 七、一句话要求
 
 **先解决环境，先做设计，先让用户确认，再开始开发。**

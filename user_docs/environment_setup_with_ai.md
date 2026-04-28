@@ -17,7 +17,8 @@
 5. 检查 PostgreSQL 是否可用
 6. 检查 `auth` 服务是否可访问
 7. 检查配置文件是否正确
-8. 启动当前服务并测试 Swagger
+8. 如果配置了 `[[llm]]`，检查模型服务是否可访问
+9. 启动当前服务并测试接口文档中的关键接口
 
 ---
 
@@ -90,6 +91,7 @@ postgres://username:password@host:5432/database_name
 - 需要公司内部网络地址
 - 需要技术同事提供数据库连接
 - 需要提供 `auth` 服务地址或 token
+- 需要提供远程 LLM 服务地址、模型名或 API key
 
 除此之外，优先让 AI 自己解决。
 
@@ -109,8 +111,39 @@ postgres://username:password@host:5432/database_name
 6. 检查 auth 服务是否可访问
 7. 运行数据库初始化和迁移
 8. 启动当前服务
-9. 核对 `API_CONTRACTS/` 下的 Markdown 接口文档是否与当前代码一致
-10. 告诉我当前环境是否已经可以开始开发
+9. 如果配置了 `[[llm]]`，检查模型服务是否可访问；如果是本地 Ollama，可运行 `cargo run -p web-server --example llm_vision_smoke`
+10. 核对 `API_CONTRACTS/` 下的 Markdown 接口文档是否与当前代码一致
+11. 告诉我当前环境是否已经可以开始开发
 
 如果中间发现问题，请先自行排查和修复，不要直接开始写业务代码。
 ```
+
+---
+
+## 六、如果 LLM 或 Ollama 不可用
+
+当前项目支持通过 `config/services.toml` 配置多个 LLM client：
+
+```toml
+[[llm]]
+name = "ollama-gemma4"
+base_url = "http://127.0.0.1:11434"
+model = "gemma4:26b"
+max_tokens = 20000
+temperature = 0.2
+```
+
+如果本地 Ollama 不可用，AI 应先自己检查：
+
+1. `curl http://127.0.0.1:11434/api/tags` 是否可访问
+2. 目标模型是否存在，例如 `gemma4:26b`
+3. `config/services.toml` 中 `base_url` 和 `model` 是否正确
+4. `cargo run -p web-server --example llm_vision_smoke` 是否可以识别测试图片
+
+如果用户改用远程模型服务，AI 应让用户提供：
+
+- OpenAI-compatible base URL
+- model 名称
+- API key，如果 provider 需要
+
+API key 只能写入配置文件或环境化配置，不允许写死到代码里。
