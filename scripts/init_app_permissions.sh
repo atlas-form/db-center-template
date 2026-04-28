@@ -36,9 +36,8 @@ echo "初始化普通用户基础权限节点..."
 
 run_psql "$DB_NAME" "
   INSERT INTO app_roles (code, name)
-  VALUES ('free', 'Free')
-  ON CONFLICT (code) DO UPDATE
-  SET name = EXCLUDED.name;
+  VALUES ('free', '免费')
+  ON CONFLICT (code) DO NOTHING;
 
   DELETE FROM app_role_permissions;
   DELETE FROM app_permissions;

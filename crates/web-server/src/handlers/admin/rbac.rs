@@ -18,7 +18,6 @@ fn map_role_response(role: service::dto::admin::RoleResponse) -> RoleResponse {
         name: role.name,
         code: role.code,
         created_at: role.created_at,
-        updated_at: role.updated_at,
     }
 }
 
@@ -194,7 +193,6 @@ pub async fn create_role(
         name: role.name,
         code: role.code,
         created_at: role.created_at,
-        updated_at: role.updated_at,
     }
     .into_common_response()
     .to_json())
@@ -216,7 +214,6 @@ pub async fn list_roles(
             name: role.name,
             code: role.code,
             created_at: role.created_at,
-            updated_at: role.updated_at,
         })
         .collect::<Vec<_>>()
         .into_common_response()
@@ -303,7 +300,6 @@ pub async fn list_user_roles(
             name: role.name,
             code: role.code,
             created_at: role.created_at,
-            updated_at: role.updated_at,
             checked: role.checked,
         })
         .collect::<Vec<_>>()
@@ -336,7 +332,6 @@ pub async fn update_user_roles(
             name: role.name,
             code: role.code,
             created_at: role.created_at,
-            updated_at: role.updated_at,
             checked: role.checked,
         })
         .collect::<Vec<_>>()

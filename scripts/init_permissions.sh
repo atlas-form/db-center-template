@@ -77,8 +77,7 @@ upsert_role() {
   run_psql "$DB_NAME" "
     INSERT INTO admin_roles (code, name)
     VALUES ('${code}', '${name}')
-    ON CONFLICT (code) DO UPDATE
-    SET name = EXCLUDED.name;
+    ON CONFLICT (code) DO NOTHING;
   " >/dev/null
 }
 

@@ -22,7 +22,9 @@ use crate::dto::admin::{
     UpdateUserRolesRequest, UserRoleOptionResponse,
 };
 
+const ADMIN_ROLE_CODE: &str = "admin";
 const ROOT_ROLE_CODE: &str = "root";
+const SUPPORT_ROLE_CODE: &str = "support";
 const PERM_ADMIN_USERS: &str = "accounts:admin_users";
 const PERM_ROLES: &str = "access_control:roles";
 const PERM_ROLE_PERMISSIONS: &str = "access_control:role_permissions";
@@ -180,10 +182,10 @@ impl AdminApi {
         req: CreateRoleRequest,
     ) -> BizResult<RoleResponse> {
         self.ensure_permission(&current_user_id, PERM_ROLES).await?;
-        if req.code == ROOT_ROLE_CODE {
+        if is_reserved_role_code(&req.code) {
             return Err(BizError::new(
                 admin_error::ADMIN_ROLE_RESERVED,
-                "role code 'root' is reserved".to_string(),
+                format!("role code '{}' is reserved", req.code),
             ));
         }
         let role = self
@@ -211,10 +213,10 @@ impl AdminApi {
     pub async fn delete_role(&self, current_user_id: String, role_id: i64) -> BizResult<()> {
         self.ensure_permission(&current_user_id, PERM_ROLES).await?;
         let role = self.ensure_role_exists(role_id).await?;
-        if role.code == ROOT_ROLE_CODE {
+        if is_reserved_role_code(&role.code) {
             return Err(BizError::new(
                 admin_error::ADMIN_ROLE_RESERVED,
-                "role code 'root' is reserved".to_string(),
+                format!("role code '{}' is reserved", role.code),
             ));
         }
 
@@ -351,7 +353,6 @@ impl AdminApi {
                 name: role.name,
                 code: role.code,
                 created_at: role.created_at,
-                updated_at: role.updated_at,
                 checked: checked_role_ids.contains(&role.id),
             })
             .collect())
@@ -795,7 +796,6 @@ impl AdminApi {
             name: role.name,
             code: role.code,
             created_at: role.created_at,
-            updated_at: role.updated_at,
         }
     }
 
@@ -837,4 +837,8 @@ impl AdminAccess {
     fn is_root(&self) -> bool {
         self.role_codes.iter().any(|code| code == ROOT_ROLE_CODE)
     }
+}
+
+fn is_reserved_role_code(code: &str) -> bool {
+    matches!(code, ROOT_ROLE_CODE | ADMIN_ROLE_CODE | SUPPORT_ROLE_CODE)
 }

@@ -28,7 +28,7 @@ use crate::{
     },
 };
 
-const DEFAULT_APP_ROLE_NAME: &str = "Free";
+const DEFAULT_APP_ROLE_NAME: &str = "免费";
 const DEFAULT_APP_ROLE_CODE: &str = "free";
 const PERM_APP_USERS: &str = "accounts:app_users";
 const PERM_APP_ROLES: &str = "access_control:app_roles";
@@ -229,6 +229,12 @@ impl AppApi {
     ) -> BizResult<RoleResponse> {
         self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLES)
             .await?;
+        if req.code == DEFAULT_APP_ROLE_CODE {
+            return Err(BizError::new(
+                admin_error::ADMIN_ROLE_RESERVED,
+                "role code 'free' is reserved".to_string(),
+            ));
+        }
         let role = self
             .role_svc
             .create(CreateRole {
@@ -254,7 +260,13 @@ impl AppApi {
     pub async fn delete_role(&self, current_admin_user_id: String, role_id: i64) -> BizResult<()> {
         self.ensure_admin_permission(current_admin_user_id, PERM_APP_ROLES)
             .await?;
-        self.ensure_role_exists(role_id).await?;
+        let role = self.ensure_role_exists(role_id).await?;
+        if role.code == DEFAULT_APP_ROLE_CODE {
+            return Err(BizError::new(
+                admin_error::ADMIN_ROLE_RESERVED,
+                "role code 'free' is reserved".to_string(),
+            ));
+        }
         self.role_permission_svc.delete_by_role_id(role_id).await?;
         self.user_role_svc.delete_by_role_id(role_id).await?;
         self.role_svc.delete_by_id(role_id).await?;
@@ -524,7 +536,6 @@ impl AppApi {
                 name: role.name,
                 code: role.code,
                 created_at: role.created_at,
-                updated_at: role.updated_at,
                 checked: checked_role_ids.contains(&role.id),
             })
             .collect())
@@ -625,7 +636,6 @@ impl AppApi {
             name: role.name,
             code: role.code,
             created_at: role.created_at,
-            updated_at: role.updated_at,
         }
     }
 

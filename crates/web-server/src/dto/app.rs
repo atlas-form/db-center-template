@@ -115,8 +115,6 @@ pub struct RoleResponse {
     pub code: String,
     #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
-    #[serde(with = "time::serde::rfc3339")]
-    pub updated_at: OffsetDateTime,
 }
 
 #[derive(Debug, Deserialize, Validate)]
@@ -139,8 +137,6 @@ pub struct UserRoleOptionResponse {
     pub code: String,
     #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
-    #[serde(with = "time::serde::rfc3339")]
-    pub updated_at: OffsetDateTime,
     pub checked: bool,
 }
 

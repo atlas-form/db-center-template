@@ -21,7 +21,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(AdminRoles::Name).string().not_null())
                     .col(ColumnDef::new(AdminRoles::Code).string().not_null())
                     .col(created_at_col())
-                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_admin_roles_code")
@@ -224,12 +223,7 @@ impl MigrationTrait for Migration {
 
         create_updated_at_triggers(
             manager,
-            &[
-                "admin_roles",
-                "admin_permissions",
-                "admin_users",
-                "admin_menus",
-            ],
+            &["admin_permissions", "admin_users", "admin_menus"],
         )
         .await?;
 

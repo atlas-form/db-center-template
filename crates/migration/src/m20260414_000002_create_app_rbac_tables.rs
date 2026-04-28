@@ -21,7 +21,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(AppRoles::Name).string().not_null())
                     .col(ColumnDef::new(AppRoles::Code).string().not_null())
                     .col(created_at_col())
-                    .col(updated_at_col())
                     .index(
                         Index::create()
                             .name("uk_app_roles_code")
@@ -184,7 +183,7 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        create_updated_at_triggers(manager, &["app_roles", "app_permissions", "app_users"]).await?;
+        create_updated_at_triggers(manager, &["app_permissions", "app_users"]).await?;
 
         Ok(())
     }

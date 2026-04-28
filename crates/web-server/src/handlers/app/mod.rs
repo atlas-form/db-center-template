@@ -15,7 +15,6 @@ fn map_role_response(role: service::dto::app::RoleResponse) -> crate::dto::app::
         name: role.name,
         code: role.code,
         created_at: role.created_at,
-        updated_at: role.updated_at,
     }
 }
 

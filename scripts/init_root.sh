@@ -170,11 +170,13 @@ ROLE_ID="$(
     WITH upserted AS (
       INSERT INTO admin_roles (name, code)
       VALUES ('Root', 'root')
-      ON CONFLICT (code) DO UPDATE
-      SET name = EXCLUDED.name
+      ON CONFLICT (code) DO NOTHING
       RETURNING id
     )
-    SELECT id FROM upserted;
+    SELECT id FROM upserted
+    UNION ALL
+    SELECT id FROM admin_roles WHERE code = 'root'
+    LIMIT 1;
   " | awk 'NF { print $1 }' | tail -n 1 | tr -d '[:space:]'
 )"
 
