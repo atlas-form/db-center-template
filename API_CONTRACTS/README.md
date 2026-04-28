@@ -7,6 +7,7 @@
 - `common.md`: 通用约定，包括鉴权、LLM 配置、统一响应格式、错误码
 - `admin.md`: 后台 RBAC 相关接口
 - `app.md`: 普通客户端接口
+- `sse.md`: LLM 流式输出 SSE 协议
 - `ws.md`: WebSocket 连接与小铃铛通知推送协议
 
 ## 路由前缀
@@ -15,6 +16,7 @@
 - 后台账号管理接口前缀：`/api/admin/account`
 - 后台权限中心接口前缀：`/api/admin/access`
 - App 用户接口前缀：`/api/app`
+- SSE 流式接口前缀：`/api/sse`
 - WebSocket 连接路径：`/api/ws`
 
 ## 当前接口清单
@@ -54,6 +56,10 @@
 
 1. `POST /api/app/register`
 2. `GET /api/app/me/permissions`
+
+### SSE
+
+1. `POST /api/sse/llm/chat/stream` LLM stream
 
 ### WebSocket
 

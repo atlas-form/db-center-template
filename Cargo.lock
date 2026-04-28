@@ -4477,9 +4477,11 @@ dependencies = [
 name = "web-server"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "axum",
  "db-core-rs",
  "error-code",
+ "futures-util",
  "model-gateway-rs",
  "serde",
  "serde_json",

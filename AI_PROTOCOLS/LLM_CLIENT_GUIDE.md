@@ -22,6 +22,11 @@ crates/web-server/src/statics/llm_client.rs
 
 不要在 handler 里临时 new LLM client。业务代码应通过 `statics::llm_client` 获取已初始化的 client。
 
+前端实时通信边界：
+
+- WebSocket 只用于小铃铛通知、任务状态等业务推送。
+- SSE 只用于 LLM 单次流式响应。
+
 ---
 
 ## 二、配置方式
@@ -131,7 +136,57 @@ The image features a red circle.
 
 ---
 
-## 六、开发规则
+## 六、前端 SSE 协议
+
+LLM 流式输出使用 Axum SSE：
+
+```http
+POST /api/sse/llm/chat/stream
+Authorization: Bearer <access_token>
+Content-Type: application/json
+Accept: text/event-stream
+```
+
+请求体：
+
+```json
+{
+  "llmName": "ollama-gemma4",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello"
+    }
+  ]
+}
+```
+
+服务端事件：
+
+```text
+event: delta
+data: {"content":"hello"}
+
+event: reasoning
+data: {"content":"optional reasoning text"}
+
+event: done
+data: {}
+
+event: error
+data: {"message":"model unavailable"}
+```
+
+约束：
+
+1. SSE 只用于 LLM stream，不用于普通通知。
+2. 前端普通通知继续使用 `/api/ws`。
+3. LLM SSE 使用 `POST + fetch stream`，不使用 `GET EventSource`。
+4. 如果 provider 返回 OpenAI-compatible stream，web-server 负责归一成 `delta` / `reasoning` / `done` / `error`。
+
+---
+
+## 七、开发规则
 
 1. 新增 AI/LLM 功能前，服务端开发文档必须写清楚使用哪个 `llm.name`。
 2. 如果需要图片识别，必须说明图片来源、格式、大小限制和错误处理方式。
@@ -142,7 +197,8 @@ The image features a red circle.
    - `README.md`
    - `API_CONTRACTS/common.md`
    - 相关 `user_docs/`
-6. 修改 LLM 调用能力后，至少运行：
+6. 如果新增或修改 LLM stream 接口，必须同步更新 `API_CONTRACTS/sse.md`。
+7. 修改 LLM 调用能力后，至少运行：
 
 ```bash
 cargo check --workspace --examples

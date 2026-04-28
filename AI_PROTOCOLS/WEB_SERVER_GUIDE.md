@@ -118,6 +118,13 @@ let output = llm_client::chat_once(
 
 LLM 配置和调用规则见 `AI_PROTOCOLS/LLM_CLIENT_GUIDE.md`。
 
+如果接口是 LLM 流式输出，应使用 Axum SSE，并遵守：
+
+- 只在 LLM stream 场景使用 SSE
+- WebSocket 继续只做通知和业务推送
+- SSE endpoint 优先使用 `POST + fetch stream`
+- SSE 事件保持为 `delta` / `reasoning` / `done` / `error`
+
 ### Step 3: 注册 Routes (`routes/xxx.rs`)
 
 在 `crates/web-server/src/routes/user_biz.rs` 中定义子路由结构。如果接口需要登录态，请给该子路由挂 `auth::<VerifyJwt>` 中间件：

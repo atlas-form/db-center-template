@@ -20,6 +20,8 @@ validator.workspace = true
 thiserror.workspace = true
 time.workspace = true
 uuid.workspace = true
+async-stream = "0.3"
+futures-util = "0.3"
 axum = {version = "=0.8.9", features = ["macros", "multipart", "ws"]}
 toolcraft-axum-kit = {version = "0.2.10"}
 toolcraft-config= {version = "0.2.0"}
