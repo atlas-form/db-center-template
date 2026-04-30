@@ -35,13 +35,14 @@ fn map_app_user_response(app_user: service::dto::app::AppUserResponse) -> AppUse
 }
 
 pub async fn register_app_user(
+    Extension(auth_user): Extension<AuthUser>,
     Json(req): Json<RegisterAppUserRequest>,
 ) -> ResponseResult<AppUserResponse> {
     req.validate().map_err(Error::from)?;
     let api = AppApi::new(get_app_ctx());
     let app_user = api
         .register_app_user(service::dto::app::RegisterAppUserRequest {
-            user_id: req.user_id,
+            user_id: auth_user.user_id,
             display_id: req.display_id,
             display_name: req.display_name,
             remark: req.remark,

@@ -4,6 +4,7 @@ use db_core::{
     DbContext, PaginatedResponse,
     error::{BIZ_INTERNAL_ERROR, BizError, BizResult},
 };
+use error_code::app as app_error;
 use error_code::admin as admin_error;
 use repo::table::{
     app_permissions::{Permission, PermissionService},
@@ -412,7 +413,7 @@ impl AppApi {
         let app_user = self.ensure_app_user_exists(parsed_user_id).await?;
         if app_user.status != AppUserStatus::Enabled {
             return Err(BizError::new(
-                admin_error::ADMIN_USER_DISABLED,
+                app_error::APP_USER_DISABLED,
                 format!("app user is disabled: {user_id}"),
             ));
         }
@@ -486,7 +487,7 @@ impl AppApi {
             .await?
             .ok_or_else(|| {
                 BizError::new(
-                    admin_error::ADMIN_USER_NOT_FOUND,
+                    app_error::APP_USER_NOT_FOUND,
                     format!("app user not found: {user_id}"),
                 )
             })

@@ -57,8 +57,6 @@ fn default_page_size() -> u64 {
 #[serde(rename_all = "camelCase")]
 pub struct RegisterAppUserRequest {
     #[validate(length(min = 1, max = 64))]
-    pub user_id: String,
-    #[validate(length(min = 1, max = 64))]
     pub display_id: String,
     #[validate(length(min = 1, max = 64))]
     pub display_name: String,
